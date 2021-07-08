@@ -1,10 +1,12 @@
 from os import getcwd
 from time import strftime
+from random import randint
 
 
 class Context:
     _cwd: str = None
     _variables: dict = None
+    _error_level: int = 0
     _extensions_enabled: bool = False
     _dynamic_variables: list = [
         "cd", "date", "time", "random", "errorlevel",
@@ -23,6 +25,14 @@ class Context:
     def cwd(self):
         return self._cwd
 
+    @property
+    def error_level(self):
+        return self._error_level
+
+    @error_level.setter
+    def error_level(self, value):
+        self._error_level = value
+
     def _get_dynamic_variable(name: str):
         if name == "cd":
             return getcwd()
@@ -30,6 +40,10 @@ class Context:
             return strftime("%x")
         elif name == "time":
             return strftime("%X")
+        elif name == "random":
+            return randint(0, 32767)
+        elif name == "errorlevel":
+            return self.error_level
         return None
 
     @property
