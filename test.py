@@ -28,6 +28,15 @@ class Caller(TestCase):
         self.assertEquals(call(Command.ECHO, params), None)
         echo.assert_called_once_with(params)
 
+    def test_map_unresolved(self):
+        from caller import call
+        from commands import Command, CMD_MAP
+        echo = MagicMock()
+        params = [str(val) for val in range(3)]
+
+        with self.assertRaises(Exception):
+            call(Command.UNKNOWN, params)
+
 
 if __name__ == "__main__":
     main()
