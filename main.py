@@ -14,7 +14,7 @@ def loop():
             continue
 
         cmd, params = parse(inp)
-        call(cmd, params)
+        call(cmd=cmd, params=params, ctx=ctx)
 
 
 def ctrlc_handler(*_):

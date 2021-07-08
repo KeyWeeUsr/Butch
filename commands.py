@@ -5,10 +5,15 @@ class Command(Enum):
     UNKNOWN = "<unknown>"
     ECHO = "echo"
     CD = "cd"
+    SET = "set"
 
 
 def echo(params: list) -> None:
     print(*params)
+
+
+def set_cmd(params: list) -> None:
+    pass
 
 
 def _safe_chdir(*args):
@@ -32,5 +37,6 @@ def cd(params: list) -> None:
 
 CMD_MAP = {
     Command.ECHO: echo,
-    Command.CD: cd
+    Command.CD: cd,
+    Command.SET: set_cmd
 }
