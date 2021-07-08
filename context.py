@@ -15,4 +15,5 @@ class Context:
         return self._cwd
 
 def get_context() -> dict:
-    return Context(cwd=getcwd())
+    cwd = getcwd().replace("/", "\\")
+    return Context(cwd=cwd)

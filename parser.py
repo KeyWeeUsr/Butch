@@ -4,9 +4,17 @@ from commands import Command
 
 def parse(values: str) -> Tuple[Command, list]:
     cmd, *params = values.split(" ")
+    unk = Command.UNKNOWN.name
 
-    if cmd == Command.ECHO.value:
-        return (Command.ECHO, params)
+    cmds = {
+        getattr(Command, item).value: getattr(Command, item)
+        for item in dir(Command)
+        if isinstance(getattr(Command, item), Command) and item != unk
+    }
+    print(cmds)
+
+    if cmd in cmds:
+        return (cmds[cmd], params)
     return (Command.UNKNOWN, [cmd])
 
 
