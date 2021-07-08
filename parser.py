@@ -13,7 +13,6 @@ def parse(values: str) -> Tuple[Command, list]:
         for item in dir(Command)
         if isinstance(getattr(Command, item), Command) and item != unk
     }
-    print(cmds)
 
     if cmd in cmds:
         return (cmds[cmd], params)

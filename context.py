@@ -8,7 +8,7 @@ class Context:
     _cwd: str = None
     _variables: dict = None
     _error_level: int = 0
-    _extensions_enabled: bool = False
+    _extensions_enabled: bool = True
     _dynamic_variables: list = [
         "cd", "date", "time", "random", "errorlevel",
         "cmdextversion", "cmdcmdline"
@@ -34,7 +34,7 @@ class Context:
     def error_level(self, value):
         self._error_level = value
 
-    def _get_dynamic_variable(name: str):
+    def _get_dynamic_variable(self, name: str):
         if name == "cd":
             return getcwd()
         elif name == "date":
@@ -70,7 +70,7 @@ class Context:
 
     def get_variable(self, key):
         if self.extensions_enabled and key in self.dynamic_variables:
-            return _get_dynamic_variable(key)
+            return self._get_dynamic_variable(key)
         self.variables.get(key, f"%{key}%")
 
     def set_variable(self, key, value):
