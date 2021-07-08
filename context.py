@@ -1,3 +1,4 @@
+import sys
 from os import getcwd
 from time import strftime
 from random import randint
@@ -44,6 +45,11 @@ class Context:
             return randint(0, 32767)
         elif name == "errorlevel":
             return self.error_level
+        elif name == "cmdextversion":
+            return 2
+        elif name == "cmdcmdline":
+            # TODO: point to main.py, check after pyinstaller
+            return sys.executable
         return None
 
     @property
