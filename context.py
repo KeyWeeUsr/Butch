@@ -13,9 +13,11 @@ class Context:
         "cd", "date", "time", "random", "errorlevel",
         "cmdextversion", "cmdcmdline"
     ]
+    _history: list = None
 
     def __init__(self, **kwargs):
         self._variables = {}
+        self._history = []
 
         for key, val in kwargs.items():
             if key not in dir(Context):
@@ -75,6 +77,14 @@ class Context:
 
     def set_variable(self, key, value):
         self._variables[key] = value
+
+    @property
+    def history(self):
+        return self._history
+
+    @history.setter
+    def history(self, value):
+        self._history.append(value)
 
     def _get_default_variables(self):
         return {

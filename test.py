@@ -31,12 +31,14 @@ class Caller(TestCase):
     def test_map_resolve(self):
         from caller import call
         from commands import Command, CMD_MAP
+        from context import Context
         echo = MagicMock()
         CMD_MAP[Command.ECHO] = echo
         params = [str(val) for val in range(3)]
 
-        self.assertEqual(call(Command.ECHO, params), None)
-        echo.assert_called_once_with(params)
+        ctx = Context()
+        self.assertEqual(call(Command.ECHO, params, ctx=ctx), None)
+        echo.assert_called_once_with(params, ctx=ctx)
 
     def test_map_unresolved(self):
         from caller import call

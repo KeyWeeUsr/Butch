@@ -7,4 +7,5 @@ def call(cmd: Command, params: list, ctx: Context):
     if not func:
         raise Exception(f"Unknown function: '{cmd}'")
 
+    ctx.history = [cmd, params]
     func(params, ctx=ctx)
