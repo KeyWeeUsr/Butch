@@ -48,6 +48,21 @@ class Caller(TestCase):
             call(Command.UNKNOWN, params)
 
 
+class Context(TestCase):
+    def test_unknown_skipped(self):
+        from context import Context
+        with self.assertRaises(Exception):
+            Contest(unknown=123)
+
+    def test_known_init(self):
+        from context import Context
+        from random import randint
+        known = ["cwd"]
+        kwargs = {item: randint(1,5) for item in known}
+        ctx = Context(**kwargs)
+        for key, val in kwargs.items():
+            self.assertEqual(getattr(ctx, key), val)
+
 
 if __name__ == "__main__":
     main()
