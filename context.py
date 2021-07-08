@@ -54,7 +54,7 @@ class Context:
 
     @property
     def extensions_enabled(self):
-        return self._extensions_enables
+        return self._extensions_enabled
 
     @extensions_enabled.setter
     def extensions_enabled(self, value):
