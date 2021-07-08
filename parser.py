@@ -11,6 +11,6 @@ def parse(values: str) -> Tuple[Command, list]:
 
 
 def clear_input(value: str) -> str:
-    if set(value) in ("", "\n", "\r\n"):
+    if set(value) in (set(""), set("\n"), set("\r\n"), set("\n\r")):
         return ""
     return value

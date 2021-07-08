@@ -16,6 +16,16 @@ class Parser(TestCase):
         cmd = f"echo {params[0]}"
         self.assertEqual(parse(cmd), (Command.ECHO, params))
 
+    def test_empty(self):
+        from parser import clear_input as clr
+        for item in ["", "\n", "\r\n"]:
+            self.assertFalse(bool(clr(item)))
+
+    def test_empty_multi(self):
+        from parser import clear_input as clr
+        for item in ["", "\n", "\r\n"]:
+            self.assertFalse(bool(clr(item * 3)))
+
 
 class Caller(TestCase):
     def test_map_resolve(self):
@@ -25,7 +35,7 @@ class Caller(TestCase):
         CMD_MAP[Command.ECHO] = echo
         params = [str(val) for val in range(3)]
 
-        self.assertEquals(call(Command.ECHO, params), None)
+        self.assertEqual(call(Command.ECHO, params), None)
         echo.assert_called_once_with(params)
 
     def test_map_unresolved(self):
@@ -36,6 +46,7 @@ class Caller(TestCase):
 
         with self.assertRaises(Exception):
             call(Command.UNKNOWN, params)
+
 
 
 if __name__ == "__main__":
