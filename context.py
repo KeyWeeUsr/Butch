@@ -4,6 +4,11 @@ from os import getcwd
 class Context:
     _cwd: str = None
     _variables: dict = None
+    _extensions_enabled: bool = False
+    _dynamic_variables: list = [
+        "cd", "date", "time", "random", "errorlevel",
+        "cmdextversion", "cmdcmdline"
+    ]
 
     def __init__(self, **kwargs):
         self._variables = {}
@@ -17,9 +22,29 @@ class Context:
     def cwd(self):
         return self._cwd
 
+    def _get_dynamic_variable(name):
+        return
+
+    @property
+    def extensions_enabled(self):
+        return self._extensions_enables
+
+    @extensions_enabled.setter
+    def extensions_enabled(self, value):
+        self._extensions_enabled = value
+
+    @property
+    def dynamic_variables(self):
+        return self._dynamic_variables
+
     @property
     def variables(self):
         return self._variables
+
+    def get_variable(self, key):
+        if self.extensions_enabled and key in self.dynamic_variables:
+            return _get_dynamic_variable(key)
+        self.variables.get(key, f"%{key}%")
 
     def set_variable(self, key, value):
         self._variables[key] = value
