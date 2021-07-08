@@ -1,4 +1,5 @@
 from os import getcwd
+from time import strftime
 
 
 class Context:
@@ -22,8 +23,14 @@ class Context:
     def cwd(self):
         return self._cwd
 
-    def _get_dynamic_variable(name):
-        return
+    def _get_dynamic_variable(name: str):
+        if name == "cd":
+            return getcwd()
+        elif name == "date":
+            return strftime("%x")
+        elif name == "time":
+            return strftime("%X")
+        return None
 
     @property
     def extensions_enabled(self):
