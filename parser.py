@@ -8,3 +8,9 @@ def parse(values: str) -> Tuple[Command, list]:
     if cmd == Command.ECHO.value:
         return (Command.ECHO, params)
     return (Command.UNKNOWN, [cmd])
+
+
+def clear_input(value: str) -> str:
+    if set(value) in ("", "\n", "\r\n"):
+        return ""
+    return value
