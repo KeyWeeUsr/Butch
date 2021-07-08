@@ -1,4 +1,5 @@
 from enum import Enum
+from context import Context
 
 
 class Command(Enum):
@@ -8,11 +9,11 @@ class Command(Enum):
     SET = "set"
 
 
-def echo(params: list) -> None:
+def echo(params: list, ctx: Context) -> None:
     print(*params)
 
 
-def set_cmd(params: list) -> None:
+def set_cmd(params: list, ctx: Context) -> None:
     pass
 
 
@@ -23,7 +24,7 @@ def _safe_chdir(*args):
         print("The system cannot find the path specified.")
 
 
-def cd(params: list) -> None:
+def cd(params: list, ctx: Context) -> None:
     from os import chdir, environ
     if not params:
         # linux
