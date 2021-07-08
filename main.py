@@ -1,11 +1,13 @@
 from commands import Command
 from parser import parse, clear_input
 from caller import call
+from context import get_context
 
 
 def main():
     while True:
-        inp = input(">")
+        ctx = get_context()
+        inp = input(f"{ctx.cwd} >")
         inp = clear_input(inp)
         if not inp:
             continue
