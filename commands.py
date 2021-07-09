@@ -1,3 +1,4 @@
+from inspect import getframeinfo, currentframe
 from enum import Enum
 from context import Context
 from constants import PATH_NOT_FOUND
@@ -11,6 +12,9 @@ class Command(Enum):
 
 
 def echo(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8s>, params: %r, ctx: %r", this, params, ctx)
+
     from parser import parse_variables
     params = parse_variables(values=params, ctx=ctx)
     params_len = len(params)
@@ -31,7 +35,9 @@ def echo(params: list, ctx: Context) -> None:
 
 
 def set_cmd(params: list, ctx: Context) -> None:
-    ctx.log.debug("SET cmd params: %r", params)
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8s>, params: %r, ctx: %r", this, params, ctx)
+
     # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
@@ -64,6 +70,9 @@ def _safe_chdir(*args):
 
 
 def cd(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8s>, params: %r, ctx: %r", this, params, ctx)
+
     from os import chdir, environ
     if not params:
         # linux
