@@ -1,5 +1,5 @@
 from unittest import main, TestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class Parser(TestCase):
@@ -44,19 +44,19 @@ class Parser(TestCase):
 class Caller(TestCase):
     def test_map_resolve(self):
         from caller import call
-        from commands import Command, CMD_MAP
         from context import Context
-        echo = MagicMock()
-        CMD_MAP[Command.ECHO] = echo
+        from commands import Command
+
         params = [str(val) for val in range(3)]
 
         ctx = Context()
-        self.assertEqual(call(Command.ECHO, params, ctx=ctx), None)
-        echo.assert_called_once_with(params, ctx=ctx)
+        with patch("commands.echo") as echo:
+            self.assertEqual(call(Command.ECHO, params=params, ctx=ctx), None)
+            echo.assert_called_once_with(params=params, ctx=ctx)
 
     def test_map_unresolved(self):
         from caller import call
-        from commands import Command, CMD_MAP
+        from commands import Command
         echo = MagicMock()
         params = [str(val) for val in range(3)]
 
@@ -78,6 +78,23 @@ class Context(TestCase):
         ctx = Context(**kwargs)
         for key, val in kwargs.items():
             self.assertEqual(getattr(ctx, key), val)
+
+
+class Execution(TestCase):
+    def test_echo(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+
+        mock = MagicMock()
+        ctx = Context()
+        args = {"params": ["a", "b", "c"], "ctx": ctx}
+
+        with patch("commands.print") as mock:
+            call(Command.ECHO, **args)
+            mock.assert_called_once_with(*args["params"])
+
+        self.assertEqual(ctx.error_level, 0)
 
 
 if __name__ == "__main__":

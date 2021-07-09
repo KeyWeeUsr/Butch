@@ -38,8 +38,9 @@ def cd(params: list, ctx: Context) -> None:
     chdir(params[0])
 
 
-CMD_MAP = {
-    Command.ECHO: echo,
-    Command.CD: cd,
-    Command.SET: set_cmd
-}
+def get_cmd_map():
+    return {
+        Command.ECHO: echo,
+        Command.CD: cd,
+        Command.SET: set_cmd
+    }

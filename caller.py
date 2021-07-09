@@ -1,11 +1,12 @@
-from commands import Command, CMD_MAP
+from commands import Command, get_cmd_map
 from context import Context
 
 
 def call(cmd: Command, params: list, ctx: Context):
-    func = CMD_MAP.get(cmd)
+    cmd_map = get_cmd_map()
+    func = cmd_map.get(cmd)
     if not func:
         raise Exception(f"Unknown function: '{cmd}'")
 
     ctx.history = [cmd, params]
-    func(params, ctx=ctx)
+    func(params=params, ctx=ctx)
