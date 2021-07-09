@@ -83,6 +83,9 @@ class Context:
     def set_variable(self, key, value):
         self._variables[key] = value
 
+    def delete_variable(self, key, value):
+        del self._variables[key]
+
     @property
     def history(self):
         return self._history

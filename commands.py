@@ -31,7 +31,28 @@ def echo(params: list, ctx: Context) -> None:
 
 
 def set_cmd(params: list, ctx: Context) -> None:
-    pass
+    # TODO: stored as case-sensitive, access by insensitive
+    params_len = len(params)
+    if not params_len:
+        for key, val in ctx.variables.items():
+            # TODO: case-sensitive key should be printed
+            print(f"{key}={val}")
+        return
+
+    # >1 values are ignored
+    param = params[0]
+    if "=" not in param:
+        # TODO: case-sensitive key should be printed
+        key = param
+        print(f"{key}={ctx.get_variable(key)}")
+        return
+
+    left, right = param.split("=")
+    if left and not right:
+        ctx.delete_variable(left.lower())
+        return
+
+    ctx.set_variable(left.lower(), right)
 
 
 def _safe_chdir(*args):
