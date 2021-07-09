@@ -31,6 +31,7 @@ def echo(params: list, ctx: Context) -> None:
 
 
 def set_cmd(params: list, ctx: Context) -> None:
+    ctx.log.debug("SET cmd params: %r", params)
     # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:

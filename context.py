@@ -1,5 +1,6 @@
 import sys
-from os import getcwd
+import logging
+from os import getcwd, environ
 from time import strftime
 from random import randint
 
@@ -37,15 +38,21 @@ class Context:
     _history: list = None
     _echo: bool = True
     _prompt: str = f"{PROMPT_DRIVE_PATH}{PROMPT_GREATER}"
+    __logger = None
 
     def __init__(self, **kwargs):
-        self._variables = {}
+        self._variables = self._get_default_variables()
         self._history = []
+        self.__logger = self.get_logger()
 
         for key, val in kwargs.items():
             if key not in dir(Context):
                 raise Exception(f"Bad key: '{key}' (ignored)")
             setattr(self, f"_{key}", val)
+
+    @property
+    def log(self):
+        return self.__logger
 
     @property
     def cwd(self):
@@ -180,6 +187,15 @@ class Context:
                 out += self.cwd
                 continue
         return out
+
+    @staticmethod
+    def get_logger():
+        logger = logging.getLogger(__name__)
+        level = logging.INFO
+        if environ.get("DEBUG"):
+            level = logging.DEBUG
+        logging.basicConfig(level=level, force=True)
+        return logger
 
 
 def get_context() -> dict:
