@@ -104,11 +104,28 @@ class Execution(TestCase):
         ctx = Context()
         args = {"params": ["nonexistingfile"], "ctx": ctx}
 
-        with patch("commands.print") as mock:
+        chdir_mock = patch("os.chdir", side_effect=FileNotFoundError())
+        with chdir_mock as chdir, patch("commands.print") as mock:
             call(Command.CD, **args)
+            chdir.assert_called_once_with(args["params"][0])
             mock.assert_called_once_with(PATH_NOT_FOUND)
 
         self.assertEqual(ctx.error_level, 1)
+
+    def test_cd_existing(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+        from constants import PATH_NOT_FOUND
+
+        ctx = Context()
+        args = {"params": ["existing"], "ctx": ctx}
+
+        with patch("os.chdir") as chdir, patch("commands.print") as mock:
+            call(Command.CD, **args)
+            chdir.assert_called_once_with(args["params"][0])
+
+        self.assertEqual(ctx.error_level, 0)
 
 
 if __name__ == "__main__":
