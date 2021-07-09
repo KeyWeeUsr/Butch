@@ -1,40 +1,116 @@
 import sys
+
+from argparse import ArgumentParser
 from commands import Command
 from parser import parse, clear_input
 from caller import call
-from context import get_context
+from context import get_context, Context
 
 
-def loop():
-    ctx = get_context()
+def handle_input(inp: str, ctx: Context):
+    inp = clear_input(inp)
+    if not inp:
+        return
 
+    cmd, params = parse(inp)
+    call(cmd=cmd, params=params, ctx=ctx)
+
+
+def loop(ctx: Context):
     while True:
         prompt = ""
         if ctx.echo:
             prompt = ctx.resolve_prompt()
         inp = input(prompt)
-        inp = clear_input(inp)
-        if not inp:
-            continue
-
-        cmd, params = parse(inp)
-        call(cmd=cmd, params=params, ctx=ctx)
+        handle_input(inp=inp, ctx=ctx)
 
 
 def ctrlc_handler(*_):
     return False
 
 
-def main():
+def get_cli_parser():
+    cli = ArgumentParser(prefix_chars="/", prog="butch")
+    cli.add_argument("/C", help="Run Command and then terminate", nargs="+")
+    cli.add_argument(
+        "/K", help="Run Command and then return to the prompt.", nargs="+"
+    )
+
+    # :color
+    cli.add_argument("/T", help="Sets the foreground/background colours.")
+
+    cli.add_argument("/A", help="Output ANSI characters.")
+    cli.add_argument("/U", help="Output UNICODE characters (UCS-2 le).")
+    cli.add_argument("/D", help=(
+        "Ignore registry AutoRun commands.\n"
+        r"HKLM | HKCU \Software\Microsoft\Command Processor\AutoRun"
+    ))
+
+    cli.add_argument(
+        "/E:ON", help="Enable CMD Command Extensions (default)",
+        action="store_true", default=True
+    )
+    cli.add_argument(
+        "/E:OFF", help="Disable CMD Command Extensions.",
+        action="store_true"
+    )
+
+    cli.add_argument("/X", help=(
+        "Enable CMD Command Extensions (old switch for compatibility)"
+    ), default=True)
+    cli.add_argument("/Y", help=(
+        "Disable CMD Command Extensions (old switch for compatibility)"
+    ))
+    cli.add_argument("/Q", help="Turn echo off.", action="store_true")
+    cli.add_argument("/S", help=(
+        'Strip " quote characters from command.\n'
+        "If command starts with a quote, the first and last quote"
+        " chars in command will be removed, whether /s is specified or not."
+    ))
+    cli.add_argument("/V:ON", help=(
+        "Enable delayed environment variable expansion."
+    ), action="store_true")
+    cli.add_argument("/V:OFF", help=(
+        "Diable delayed environment expansion."
+    ), action="store_true")
+    return cli
+
+
+def mainloop(ctx: Context):
     while True:
         try:
-            loop()
+            loop(ctx=ctx)
         except KeyboardInterrupt:
             if not ctrlc_handler():
                 print()
                 continue
         except EOFError:
             sys.exit(0)
+
+
+def main():
+    cli = get_cli_parser()
+    args = cli.parse_args()
+    ctx = get_context()
+
+    ctx.extensions_enabled = (
+        (not getattr(args, "E:OFF", None) and not args.Y)
+        and
+        (getattr(args, "E:ON", None) and args.X)
+    )
+    ctx.echo = not args.Q
+
+    if args.C:
+        handle_input(" ".join(args.C), ctx=ctx)
+        sys.exit(ctx.error_level)
+        return
+
+    if args.K:
+        handle_input(" ".join(args.K), ctx=ctx)
+        mainloop(ctx=ctx)
+        return
+
+    mainloop(ctx=ctx)
 
 
 if __name__ == "__main__":
