@@ -168,11 +168,11 @@ class Context:
         elif name == "time":
             return strftime("%X")
         elif name == "random":
-            return randint(0, 32767)
+            return str(randint(0, 32767))
         elif name == "errorlevel":
-            return self.error_level
+            return str(self.error_level)
         elif name == "cmdextversion":
-            return 2
+            return "2"
         elif name == "cmdcmdline":
             # TODO: point to main.py, check after pyinstaller
             return sys.executable
