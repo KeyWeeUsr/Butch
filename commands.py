@@ -13,6 +13,7 @@ class Command(Enum):
     PROMPT = "prompt"
     TITLE = "title"
     PAUSE = "pause"
+    EXIT = "exit"
 
 
 def echo(params: list, ctx: Context) -> None:
@@ -152,6 +153,23 @@ def pause(params: list, ctx: Context) -> None:
     input(PAUSE_TEXT)
 
 
+def exit_cmd(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+
+    params_len = len(params)
+    if not params_len:
+        print()
+        return
+
+    if "/B" in params:
+        params.remove("/B")
+
+    ctx.error_level = int(params[0])
+    sys.exit(ctx.error_level)
+
+
 def get_cmd_map():
     return {
         Command.ECHO: echo,
@@ -159,5 +177,6 @@ def get_cmd_map():
         Command.SET: set_cmd,
         Command.PROMPT: prompt,
         Command.TITLE: title,
-        Command.PAUSE: pause
+        Command.PAUSE: pause,
+        Command.EXIT: exit_cmd
     }
