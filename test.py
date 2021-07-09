@@ -23,6 +23,13 @@ class Parser(TestCase):
         cmd = f"cd {params[0]}"
         self.assertEqual(parse(cmd), (Command.CD, params))
 
+    def test_set(self):
+        from parser import parse
+        from commands import Command
+        params = ["hello"]
+        cmd = f"set {params[0]}"
+        self.assertEqual(parse(cmd), (Command.SET, params))
+
     def test_empty(self):
         from parser import clear_input as clr
         for item in ["", "\n", "\r\n"]:
