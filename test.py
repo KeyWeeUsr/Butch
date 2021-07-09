@@ -86,7 +86,6 @@ class Execution(TestCase):
         from caller import call
         from context import Context
 
-        mock = MagicMock()
         ctx = Context()
         args = {"params": ["a", "b", "c"], "ctx": ctx}
 
@@ -95,6 +94,21 @@ class Execution(TestCase):
             mock.assert_called_once_with(*args["params"])
 
         self.assertEqual(ctx.error_level, 0)
+
+    def test_cd_nonexisting(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+        from constants import PATH_NOT_FOUND
+
+        ctx = Context()
+        args = {"params": ["nonexistingfile"], "ctx": ctx}
+
+        with patch("commands.print") as mock:
+            call(Command.CD, **args)
+            mock.assert_called_once_with(PATH_NOT_FOUND)
+
+        self.assertEqual(ctx.error_level, 1)
 
 
 if __name__ == "__main__":

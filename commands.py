@@ -1,5 +1,6 @@
 from enum import Enum
 from context import Context
+from constants import PATH_NOT_FOUND
 
 
 class Command(Enum):
@@ -35,7 +36,11 @@ def cd(params: list, ctx: Context) -> None:
         ## do nothing
         return
 
-    chdir(params[0])
+    try:
+        chdir(params[0])
+    except FileNotFoundError:
+        ctx.error_level = 1
+        print("The system cannot find the path specified.")
 
 
 def get_cmd_map():
