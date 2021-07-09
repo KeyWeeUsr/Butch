@@ -51,6 +51,13 @@ class Context:
                 raise Exception(f"Bad key: '{key}' (ignored)")
             setattr(self, f"_{key}", val)
 
+    def __repr__(self):
+        keys = [
+            "cwd", "variables", "error_level", "extensions_enabled",
+            "dynamic_variables", "history", "echo", "prompt"
+        ]
+        return str({key: getattr(self, key) for key in keys})
+
     @property
     def log(self):
         return self.__logger
