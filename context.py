@@ -37,13 +37,14 @@ class Context:
     ]
     _history: list = None
     _echo: bool = True
-    _prompt: str = f"{PROMPT_DRIVE_PATH}{PROMPT_GREATER}"
+    _prompt: str = ""
     __logger = None
 
     def __init__(self, **kwargs):
         self._variables = self._get_default_variables()
         self._history = []
         self.__logger = self.get_logger()
+        self._prompt = self._variables.get("prompt", "")
 
         for key, val in kwargs.items():
             if key not in dir(Context):
@@ -114,8 +115,9 @@ class Context:
         return self._prompt
 
     @prompt.setter
-    def prompt(self, value: bool):
+    def prompt(self, value: str):
         self._prompt = value
+        self.set_variable("prompt", value)
 
     def _get_default_variables(self):
         return {
@@ -139,7 +141,7 @@ class Context:
             "processor_level": None,
             "processor_revision": None,
             "programfiles": None,
-            "prompt": None,
+            "prompt": f"{PROMPT_DRIVE_PATH}{PROMPT_GREATER}",
             "sessionname": None,
             "systemdrive": None,
             "systemroot": None,
@@ -170,7 +172,10 @@ class Context:
         return None
 
     def resolve_prompt(self) -> str:
-        _, *flags = self.prompt.split(PROMPT_SYMBOL)
+        prompt = self.prompt
+        if PROMPT_SYMBOL not in prompt:
+            return prompt
+        _, *flags = prompt.split(PROMPT_SYMBOL)
         flags = [f"${flag}" for flag in flags]
 
         out = ""

@@ -9,6 +9,7 @@ class Command(Enum):
     ECHO = "echo"
     CD = "cd"
     SET = "set"
+    PROMPT = "prompt"
 
 
 def echo(params: list, ctx: Context) -> None:
@@ -102,9 +103,24 @@ def cd(params: list, ctx: Context) -> None:
         print("The system cannot find the path specified.")
 
 
+def prompt(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+
+    params_len = len(params)
+    if not params_len:
+        print()
+        return
+
+    text = params[0]
+    ctx.prompt = text
+
+
 def get_cmd_map():
     return {
         Command.ECHO: echo,
         Command.CD: cd,
-        Command.SET: set_cmd
+        Command.SET: set_cmd,
+        Command.PROMPT: prompt
     }
