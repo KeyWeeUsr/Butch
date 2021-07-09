@@ -6,9 +6,9 @@ from context import get_context
 
 
 def loop():
+    ctx = get_context()
     while True:
-        ctx = get_context()
-        inp = input(f"{ctx.cwd} >")
+        inp = input(f"{ctx.cwd}>" if ctx.echo else "")
         inp = clear_input(inp)
         if not inp:
             continue

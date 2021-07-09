@@ -13,9 +13,20 @@ class Command(Enum):
 def echo(params: list, ctx: Context) -> None:
     from parser import parse_variables
     params = parse_variables(values=params, ctx=ctx)
-    if not params:
-        print(f"ECHO is {ctx.echo}")
+    params_len = len(params)
+    state = {True: "on", False: "off"}
+    state_rev = {val: key for key, val in state.items()}
+
+    if params_len == 1:
+        first = params[0].lower()
+        if first in ("on", "off"):
+            ctx.echo = state_rev[first]
+            return
+
+    if not params_len:
+        print(f"ECHO is {state[ctx.echo]}.")
         return
+
     print(*params)
 
 

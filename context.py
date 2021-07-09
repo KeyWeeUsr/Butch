@@ -14,6 +14,7 @@ class Context:
         "cmdextversion", "cmdcmdline"
     ]
     _history: list = None
+    _echo: bool = True
 
     def __init__(self, **kwargs):
         self._variables = {}
@@ -35,24 +36,6 @@ class Context:
     @error_level.setter
     def error_level(self, value):
         self._error_level = value
-
-    def _get_dynamic_variable(self, name: str):
-        if name == "cd":
-            return getcwd()
-        elif name == "date":
-            return strftime("%x")
-        elif name == "time":
-            return strftime("%X")
-        elif name == "random":
-            return randint(0, 32767)
-        elif name == "errorlevel":
-            return self.error_level
-        elif name == "cmdextversion":
-            return 2
-        elif name == "cmdcmdline":
-            # TODO: point to main.py, check after pyinstaller
-            return sys.executable
-        return None
 
     @property
     def extensions_enabled(self):
@@ -85,6 +68,14 @@ class Context:
     @history.setter
     def history(self, value):
         self._history.append(value)
+
+    @property
+    def echo(self) -> bool:
+        return self._echo
+
+    @echo.setter
+    def echo(self, value: bool):
+        self._echo = value
 
     def _get_default_variables(self):
         return {
@@ -119,6 +110,24 @@ class Context:
             "userprofile": None,
             "windir": None
         }
+
+    def _get_dynamic_variable(self, name: str):
+        if name == "cd":
+            return getcwd()
+        elif name == "date":
+            return strftime("%x")
+        elif name == "time":
+            return strftime("%X")
+        elif name == "random":
+            return randint(0, 32767)
+        elif name == "errorlevel":
+            return self.error_level
+        elif name == "cmdextversion":
+            return 2
+        elif name == "cmdcmdline":
+            # TODO: point to main.py, check after pyinstaller
+            return sys.executable
+        return None
 
 
 def get_context() -> dict:
