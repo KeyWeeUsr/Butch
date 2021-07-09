@@ -25,7 +25,7 @@ def clear_input(value: str) -> str:
     return value
 
 
-def parse_variables(values: str, ctx: Context):
+def parse_variables(values: list, ctx: Context):
     out = []
 
     for value in values:
@@ -46,5 +46,6 @@ def parse_variables(values: str, ctx: Context):
             if new:
                 out.append(new)
                 continue
+
         out.append(value)
     return out

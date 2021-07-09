@@ -93,7 +93,7 @@ class Context:
     def get_variable(self, key):
         if self.extensions_enabled and key in self.dynamic_variables:
             return self._get_dynamic_variable(key)
-        self.variables.get(key, f"%{key}%")
+        return self.variables.get(key, f"%{key}%")
 
     def set_variable(self, key, value):
         self._variables[key] = value
