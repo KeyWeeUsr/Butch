@@ -127,6 +127,66 @@ class Execution(TestCase):
 
         self.assertEqual(ctx.error_level, 0)
 
+    def test_set_dumpall(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+
+        ctx = Context()
+        args = {"params": [], "ctx": ctx}
+
+        with patch("commands._print_all_variables") as mock:
+            call(Command.SET, **args)
+            mock.assert_called_once_with(ctx=ctx)
+
+        self.assertEqual(ctx.error_level, 0)
+
+    def test_set_dumpsingle(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+
+        ctx = Context()
+        key = "hello"
+        args = {"params": [key], "ctx": ctx}
+
+        with patch("commands._print_single_variable") as mock:
+            call(Command.SET, **args)
+            mock.assert_called_once_with(key=key, ctx=ctx)
+
+        self.assertEqual(ctx.error_level, 0)
+
+    def test_set_unset(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+
+        ctx = Context()
+        key = "hello"
+        args = {"params": [f"{key}="], "ctx": ctx}
+
+        with patch("commands._delete_single_variable") as mock:
+            call(Command.SET, **args)
+            mock.assert_called_once_with(key=key, ctx=ctx)
+
+        self.assertEqual(ctx.error_level, 0)
+
+    def test_set_setsingle(self):
+        from commands import Command
+        from caller import call
+        from context import Context
+
+        ctx = Context()
+        value = "123"
+        key = "hello"
+        args = {"params": [f"{key}={value}"], "ctx": ctx}
+
+        with patch("context.Context.set_variable") as mock:
+            call(Command.SET, **args)
+            mock.assert_called_once_with(key=key, value=value)
+
+        self.assertEqual(ctx.error_level, 0)
+
 
 if __name__ == "__main__":
     main()
