@@ -3,6 +3,27 @@ from os import getcwd
 from time import strftime
 from random import randint
 
+PROMPT_SYMBOL = "$"
+PROMPT_AMP = "$A"
+PROMPT_PIPE = "$B"
+PROMPT_LPARENT = "$C"
+PROMPT_DATE = "$D"
+PROMPT_ESCAPE = "$E"
+PROMPT_RPARENT = "$F"
+PROMPT_GREATER = "$G"
+PROMPT_BACKSPACE = "$H"
+PROMPT_LESSER = "$L"
+PROMPT_DRIVE = "$N"
+PROMPT_DRIVE_PATH = "$P"
+PROMPT_EQUAL = "$Q"
+PROMPT_SPACE = "$S"
+PROMPT_TIME = "$T"
+PROMPT_SYSTEMVERSION = "$V"
+PROMPT_CRLF = "$_"
+PROMPT_DOLLAR = "$$"
+PROMPT_PUSHD_STACK_PLUS = "$+"
+PROMPT_DRIVE_NETWORK = "$M"
+
 
 class Context:
     _cwd: str = None
@@ -15,6 +36,7 @@ class Context:
     ]
     _history: list = None
     _echo: bool = True
+    _prompt: str = f"{PROMPT_DRIVE_PATH}{PROMPT_GREATER}"
 
     def __init__(self, **kwargs):
         self._variables = {}
@@ -77,6 +99,14 @@ class Context:
     def echo(self, value: bool):
         self._echo = value
 
+    @property
+    def prompt(self) -> bool:
+        return self._prompt
+
+    @prompt.setter
+    def prompt(self, value: bool):
+        self._prompt = value
+
     def _get_default_variables(self):
         return {
             "allusersprofile": None,
@@ -128,6 +158,25 @@ class Context:
             # TODO: point to main.py, check after pyinstaller
             return sys.executable
         return None
+
+    def resolve_prompt(self) -> str:
+        _, *flags = self.prompt.split(PROMPT_SYMBOL)
+        flags = [f"${flag}" for flag in flags]
+
+        out = ""
+        for flag in flags:
+            if flag == PROMPT_LESSER:
+                out += "<"
+                continue
+
+            if flag == PROMPT_GREATER:
+                out += ">"
+                continue
+
+            if flag == PROMPT_DRIVE_PATH:
+                out += self.cwd
+                continue
+        return out
 
 
 def get_context() -> dict:

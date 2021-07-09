@@ -7,8 +7,12 @@ from context import get_context
 
 def loop():
     ctx = get_context()
+
     while True:
-        inp = input(f"{ctx.cwd}>" if ctx.echo else "")
+        prompt = ""
+        if ctx.echo:
+            prompt = ctx.resolve_prompt()
+        inp = input(prompt)
         inp = clear_input(inp)
         if not inp:
             continue
