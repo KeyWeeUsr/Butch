@@ -13,6 +13,9 @@ class Command(Enum):
 def echo(params: list, ctx: Context) -> None:
     from parser import parse_variables
     params = parse_variables(values=params, ctx=ctx)
+    if not params:
+        print(f"ECHO is {ctx.echo}")
+        return
     print(*params)
 
 
