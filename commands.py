@@ -2,7 +2,7 @@ import sys
 from inspect import getframeinfo, currentframe
 from enum import Enum
 from context import Context
-from constants import PATH_NOT_FOUND
+from constants import PATH_NOT_FOUND, PAUSE_TEXT
 
 
 class Command(Enum):
@@ -12,6 +12,7 @@ class Command(Enum):
     SET = "set"
     PROMPT = "prompt"
     TITLE = "title"
+    PAUSE = "pause"
 
 
 def echo(params: list, ctx: Context) -> None:
@@ -123,6 +124,7 @@ def title(params: list, ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
+
     params_len = len(params)
     if not params_len:
         print()
@@ -142,11 +144,20 @@ def title(params: list, ctx: Context) -> None:
         raise ctypes.WinError(error)
 
 
+def pause(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+
+    input(PAUSE_TEXT)
+
+
 def get_cmd_map():
     return {
         Command.ECHO: echo,
         Command.CD: cd,
         Command.SET: set_cmd,
         Command.PROMPT: prompt,
-        Command.TITLE: title
+        Command.TITLE: title,
+        Command.PAUSE: pause
     }
