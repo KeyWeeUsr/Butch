@@ -1,3 +1,4 @@
+import sys
 from inspect import getframeinfo, currentframe
 from enum import Enum
 from context import Context
@@ -10,6 +11,7 @@ class Command(Enum):
     CD = "cd"
     SET = "set"
     PROMPT = "prompt"
+    TITLE = "title"
 
 
 def echo(params: list, ctx: Context) -> None:
@@ -117,10 +119,34 @@ def prompt(params: list, ctx: Context) -> None:
     ctx.prompt = text
 
 
+def title(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+    params_len = len(params)
+    if not params_len:
+        print()
+        return
+
+    # Linux
+    text = params[0]
+    sys.stdout.write(f"\x1b]2;{text}\x07")
+    return
+
+    # Windows
+    import ctypes
+    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel32.SetConsoleTitleW(text)
+    error = ctypes.get_last_error()
+    if error:
+        raise ctypes.WinError(error)
+
+
 def get_cmd_map():
     return {
         Command.ECHO: echo,
         Command.CD: cd,
         Command.SET: set_cmd,
-        Command.PROMPT: prompt
+        Command.PROMPT: prompt,
+        Command.TITLE: title
     }
