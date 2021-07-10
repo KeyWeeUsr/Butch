@@ -214,6 +214,32 @@ class BatchFiles(TestCase):
                     mock_call(*out.rstrip("\n").split(" "))
                 )
 
+    def test_cd_existing(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "cd_existing.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("os.chdir") as cdr, patch("builtins.print") as stdout:
+            ctx = Context()
+            handle(text=join(folder, script_name), ctx=ctx)
+            cdr.assert_called_once_with("..")
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(*out.rstrip("\n").split(" "))
+                )
+
 
 if __name__ == "__main__":
     main()
