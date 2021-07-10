@@ -36,22 +36,31 @@ def parse_variables(values: list, ctx: Context):
 
     for value in values:
         new = None
+        tmp = ""
 
-        delayed = re.findall(r"!(.*)!", value)
-        if delayed:
-            delayed = delayed[0]
-            new = ctx.get_variable(delayed)
+        delayed = re.findall(r"!(.*?)!", value)
+        delay_cont = False
+        for item in delayed:
+            new = ctx.get_variable(item)
             if new:
-                out.append(new)
-                continue
+                delay_cont = True
+                tmp += new
+        if delay_cont:
+            out.append(tmp)
+            tmp = ""
+            continue
 
-        normal = re.findall(r"%(.*)%", value)
-        if normal:
-            normal = normal[0]
-            new = ctx.get_variable(normal)
+        normal = re.findall(r"%(.*?)%", value)
+        normal_cont = False
+        for item in normal:
+            new = ctx.get_variable(item)
             if new:
-                out.append(new)
-                continue
+                normal_cont = True
+                tmp += new
+        if normal_cont:
+            out.append(tmp)
+            tmp = ""
+            continue
 
         out.append(value)
     return out
