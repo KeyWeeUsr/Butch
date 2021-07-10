@@ -306,6 +306,7 @@ class BatchFiles(TestCase):
         with patch("builtins.print") as stdout:
             ctx = Context()
             handle(text=join(folder, script_name), ctx=ctx)
+            self.assertTrue(ctx.delayed_expansion_enabled)
             mcalls = stdout.mock_calls
             self.assertEqual(len(mcalls), len(output))
 

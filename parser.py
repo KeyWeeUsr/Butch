@@ -41,7 +41,7 @@ def parse_variables(values: list, ctx: Context):
         delayed = re.findall(r"!(.*?)!", value)
         delay_cont = False
         for item in delayed:
-            new = ctx.get_variable(item)
+            new = ctx.get_variable(item, delayed=True)
             if new:
                 delay_cont = True
                 tmp += new

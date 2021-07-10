@@ -14,6 +14,7 @@ class Command(Enum):
     TITLE = "title"
     PAUSE = "pause"
     EXIT = "exit"
+    SETLOCAL = "setlocal"
 
 
 def echo(params: list, ctx: Context) -> None:
@@ -77,6 +78,35 @@ def set_cmd(params: list, ctx: Context) -> None:
         return
 
     ctx.set_variable(key=left.lower(), value=right)
+
+
+def setlocal(params: list, ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+
+    # TODO: stored as case-sensitive, access by insensitive
+    params_len = len(params)
+    if not params_len:
+        # copy all variables to new session, restore old state with endlocal
+        return
+
+    value = [item.lower() for item in set(params)][0]
+    if value == "enabledelayedexpansion":
+        ctx.delayed_expansion_enabled = True
+        return
+
+    if value == "disabledelayedexpansion":
+        ctx.delayed_expansion_enabled = False
+        return
+
+    if value == "enableextensions":
+        ctx.extensions_enabled = True
+        return
+
+    if value == "disableextensions":
+        ctx.extensions_enabled = False
+        return
 
 
 def _safe_chdir(*args):
@@ -177,5 +207,6 @@ def get_cmd_map():
         Command.PROMPT: prompt,
         Command.TITLE: title,
         Command.PAUSE: pause,
-        Command.EXIT: exit_cmd
+        Command.EXIT: exit_cmd,
+        Command.SETLOCAL: setlocal
     }

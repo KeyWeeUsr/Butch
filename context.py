@@ -100,7 +100,7 @@ class Context:
     def variables(self):
         return self._variables
 
-    def get_variable(self, key):
+    def get_variable(self, key, delayed=False):
         if self.extensions_enabled and key in self.dynamic_variables:
             return self._get_dynamic_variable(key)
         return self.variables.get(key, f"%{key}%")
