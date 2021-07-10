@@ -1,4 +1,3 @@
-setlocal enabledelayedexpansion
 set abc=final
 set tmp=abc
 set result=!%tmp%!

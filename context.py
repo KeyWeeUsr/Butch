@@ -31,6 +31,7 @@ class Context:
     _variables: dict = None
     _error_level: int = 0
     _extensions_enabled: bool = True
+    _delayed_expansion_enabled: bool = False
     _dynamic_variables: list = [
         "cd", "date", "time", "random", "errorlevel",
         "cmdextversion", "cmdcmdline"
@@ -54,7 +55,8 @@ class Context:
     def __repr__(self):
         keys = [
             "cwd", "variables", "error_level", "extensions_enabled",
-            "dynamic_variables", "history", "echo", "prompt"
+            "dynamic_variables", "history", "echo", "prompt",
+            "delayed_expansion_enabled"
         ]
         return str({key: getattr(self, key) for key in keys})
 
@@ -81,6 +83,14 @@ class Context:
     @extensions_enabled.setter
     def extensions_enabled(self, value):
         self._extensions_enabled = value
+
+    @property
+    def delayed_expansion_enabled(self):
+        return self._delayed_expansion_enabled
+
+    @delayed_expansion_enabled.setter
+    def delayed_expansion_enabled(self, value):
+        self._delayed_expansion_enabled = value
 
     @property
     def dynamic_variables(self):
