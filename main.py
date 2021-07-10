@@ -1,8 +1,10 @@
 import sys
 
 from argparse import ArgumentParser
+from os.path import exists
+
 from commands import Command
-from parser import parse, clear_input
+from parser import parse, clear_input, parse_file
 from caller import call
 from context import get_context, Context
 
@@ -14,6 +16,12 @@ def handle_input(inp: str, ctx: Context):
 
     cmd, params = parse(inp)
     call(cmd=cmd, params=params, ctx=ctx)
+
+
+def handle_file(path: str, ctx: Context):
+    cmds = parse_file(path)
+    for cmd, params in cmds:
+        call(cmd=cmd, params=params, ctx=ctx)
 
 
 def loop(ctx: Context):
@@ -88,6 +96,12 @@ def mainloop(ctx: Context):
             sys.exit(0)
 
 
+def handle(text: str, ctx=ctx):
+    if exists(text):
+        return handle_file(path=text, ctx=ctx)
+    return handle_input(inp=text, ctx=ctx)
+
+
 def main():
     cli = get_cli_parser()
     args = cli.parse_args()
@@ -101,12 +115,12 @@ def main():
     ctx.echo = not args.Q
 
     if args.C:
-        handle_input(" ".join(args.C), ctx=ctx)
+        handle(" ".join(args.C))
         sys.exit(ctx.error_level)
         return
 
     if args.K:
-        handle_input(" ".join(args.K), ctx=ctx)
+        handle(" ".join(args.K))
         mainloop(ctx=ctx)
         return
 

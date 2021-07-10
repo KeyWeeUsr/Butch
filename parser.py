@@ -1,5 +1,5 @@
 import re
-from typing import Tuple
+from typing import Tuple, List
 from commands import Command
 from context import Context
 
@@ -17,6 +17,12 @@ def parse(values: str) -> Tuple[Command, list]:
     if cmd in cmds:
         return (cmds[cmd], params)
     return (Command.UNKNOWN, [cmd])
+
+
+def parse_file(path: str) -> List[Tuple[Command, list]]:
+    with open(path) as file:
+        lines = file.readlines()
+    return [parse(line.rstrip()) for line in lines]
 
 
 def clear_input(value: str) -> str:
