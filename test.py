@@ -1,5 +1,5 @@
 from unittest import main, TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call as mock_call
 
 
 class Parser(TestCase):
@@ -186,6 +186,33 @@ class Execution(TestCase):
             mock.assert_called_once_with(key=key, value=value)
 
         self.assertEqual(ctx.error_level, 0)
+
+
+class BatchFiles(TestCase):
+    def test_hello(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "hello.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context()
+            handle(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(*out.rstrip("\n").split(" "))
+                )
 
 
 if __name__ == "__main__":

@@ -96,7 +96,7 @@ def mainloop(ctx: Context):
             sys.exit(0)
 
 
-def handle(text: str, ctx=ctx):
+def handle(text: str, ctx: Context):
     if exists(text):
         return handle_file(path=text, ctx=ctx)
     return handle_input(inp=text, ctx=ctx)
@@ -115,12 +115,12 @@ def main():
     ctx.echo = not args.Q
 
     if args.C:
-        handle(" ".join(args.C))
+        handle(text=" ".join(args.C), ctx=ctx)
         sys.exit(ctx.error_level)
         return
 
     if args.K:
-        handle(" ".join(args.K))
+        handle(text=" ".join(args.K), ctx=ctx)
         mainloop(ctx=ctx)
         return
 

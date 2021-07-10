@@ -19,7 +19,6 @@ class Command(Enum):
 def echo(params: list, ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
-    ctx.error_level = 0
 
     from parser import parse_variables
     params = parse_variables(values=params, ctx=ctx)
