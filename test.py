@@ -290,6 +290,31 @@ class BatchFiles(TestCase):
                     mock_call(out.rstrip("\n"))
                 )
 
+    def test_set_join_expansion(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_join_expansion.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context()
+            handle(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
 
 if __name__ == "__main__":
     main()
