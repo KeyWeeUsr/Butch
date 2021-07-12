@@ -61,6 +61,12 @@ class BetterParser(TestCase):
         self.assertEqual(pxp(line="-%%hello%%-", ctx=ctx), "-%hello%-")
 
 
+class Tokenizer(TestCase):
+    def test_remove_carriage_return(self):
+        from tokenizer import tokenize
+        self.assertEqual(tokenize("\r"), [])
+
+
 class Parser(TestCase):
     def test_unknown(self):
         from parser import parse
