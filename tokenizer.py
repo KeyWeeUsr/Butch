@@ -52,6 +52,80 @@ class Flag(Enum):
     QUOTE = auto()
 
 
+class Command:
+    _name: str = ""
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+    def __repr__(self):
+        return f'<Command: "{self.name}">'
+
+
+class Connector:
+    _name: str = ""
+    _left: Command = None
+    _right: Command = None
+
+    def __init__(self, name: str, left: Command, right: Command):
+        self._name = name
+        self._left = left
+        self._right = right
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def left(self):
+        return self._left
+
+    @property
+    def right(self):
+        return self._right
+
+    def __repr__(self):
+        return f'<{self.name}: [{self.left}, {self.right}]>'
+
+
+class Concat(Connector):
+    def __init__(self, left: Command, right: Command):
+        super("Concat", left=left, right=right)
+
+
+class Pipe(Connector):
+    def __init__(self, left: Command, right: Command):
+        super("Pipe", left=left, right=right)
+
+
+class RedirType(Enum):
+    INPUT = auto()
+    OUTPUT = auto()
+
+
+class Redirection(Connector):
+    _type: RedirType
+
+    def __init__(self, redir_type: RedirType, left: Command, right: Command):
+        super("Redirection", left=left, right=right)
+        self._type = redir_type
+
+    @property
+    def type(self):
+        return self._type
+
+    def __repr__(self):
+        direction = "?"
+        if self.type == Redir.INPUT:
+            direction = "<-"
+        elif self.type == Redir.OUTPUT:
+            direction = "->"
+        return f'<{self.name}: {self.left} {direction} {self.right}>'
+
+
 def tokenize(text: str, debug: bool = False) -> list:
     output = []
 
