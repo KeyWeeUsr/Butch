@@ -64,7 +64,33 @@ class BetterParser(TestCase):
 class Tokenizer(TestCase):
     def test_remove_carriage_return(self):
         from tokenizer import tokenize
-        self.assertEqual(tokenize("\r"), [])
+        self.assertEqual(tokenize(text="\r"), [])
+
+    def test_carret_togle_escape(self):
+        from tokenizer import tokenize, Flag
+        flags = dict(tokenize(text="^", debug=True))
+        self.assertTrue(flags[Flag.ESCAPE])
+
+    def test_quote_double_toggle(self):
+        from tokenizer import tokenize, Flag
+        flags = dict(tokenize(text='"', debug=True))
+        self.assertTrue(flags[Flag.QUOTE])
+
+    def test_quote_double_untoggle(self):
+        from tokenizer import tokenize, Flag
+        flags = dict(tokenize(text='""', debug=True))
+        self.assertFalse(flags[Flag.QUOTE])
+
+    def test_lf_untoggle_quote(self):
+        from tokenizer import tokenize, Flag
+        flags = dict(tokenize(text='"\n', debug=True))
+        self.assertFalse(flags[Flag.QUOTE])
+
+    def test_quote_flag_strip_escaped_lf(self):
+        from tokenizer import tokenize, Flag
+        flags = dict(tokenize(text='"^\n', debug=True))
+        self.assertFalse(flags[Flag.QUOTE])
+        self.assertEqual(tokenize(text='"^\n', debug=False), [])
 
 
 class Parser(TestCase):

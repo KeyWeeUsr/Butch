@@ -1,3 +1,6 @@
+from collections import defaultdict
+from enum import Enum, auto
+
 # consecutive delims should be treated as one
 # no delims within a quoted string
 DELIM_SPACE = " "
@@ -40,14 +43,52 @@ SPECIALS = [
     SPECIAL_LF
 ] + DELIMS
 
-def tokenize(text: str) -> list:
+QUOTE_DOUBLE = '"'
+TOKENS = SPECIALS + [QUOTE_DOUBLE]
+
+
+class Flag(Enum):
+    ESCAPE = auto()
+    QUOTE = auto()
+
+
+def tokenize(text: str, debug: bool = False) -> list:
     output = []
 
     idx = 0
     text_len = len(text)
+    flags = defaultdict(bool)
+
+    buff = ""
     while idx < text_len:
         char = text[idx]
         if char == SPECIAL_CR:
-            pass
-        idx += 1
+            idx += 1
+            continue
+        elif char == SPECIAL_CARRET:
+            flags[Flag.ESCAPE] = True
+            idx += 1
+            continue
+        elif char == QUOTE_DOUBLE:
+            flags[Flag.QUOTE] = not flags[Flag.QUOTE]
+            idx += 1
+            if not flags[Flag.QUOTE]:
+                output.append(buff)
+                buff = ""
+            continue
+        elif char == SPECIAL_LF:
+            # SO says this, but CLI says no
+            # if not flags[Flag.ESCAPE]:
+            flags[Flag.QUOTE] = False
+            if flags[Flag.ESCAPE]:
+                # keep escape, move
+                pass
+            idx += 1
+            continue
+        else:
+            buff += char
+            idx += 1
+
+    if debug:
+        return list(flags.items())
     return output
