@@ -25,6 +25,7 @@ DELIMS = [
 SPECIAL_CR = "\r"
 SPECIAL_CARRET = "^"
 SPECIAL_LPAREN = "("
+SPECIAL_RPAREN = ")"
 SPECIAL_AT = "@"
 SPECIAL_AMP = "&"
 SPECIAL_PIPE = "|"
@@ -43,6 +44,7 @@ SPECIALS = [
     SPECIAL_CR,
     SPECIAL_CARRET,
     SPECIAL_LPAREN,
+    SPECIAL_RPAREN,
     SPECIAL_AT,
     SPECIAL_LF
 ] + SPECIAL_SPLITTERS + DELIMS
@@ -162,28 +164,24 @@ def tokenize(text: str, debug: bool = False) -> list:
     idx = 0
     text_len = len(text)
     flags = defaultdict(bool)
+    compound_count = 0
 
     buff = ""
     while idx < text_len:
         char = text[idx]
         next_char = ""
-        if idx != text_len:
-            next_char = text[idx + 1]
 
         if char == SPECIAL_CR:
             idx += 1
-            continue
         elif char == SPECIAL_CARRET:
             flags[Flag.ESCAPE] = True
             idx += 1
-            continue
         elif char == QUOTE_DOUBLE:
             flags[Flag.QUOTE] = not flags[Flag.QUOTE]
             idx += 1
             if not flags[Flag.QUOTE]:
                 output.append(buff)
                 buff = ""
-            continue
         elif char == SPECIAL_LF:
             # SO says this, but CLI says no
             # if not flags[Flag.ESCAPE]:
@@ -191,8 +189,11 @@ def tokenize(text: str, debug: bool = False) -> list:
             if flags[Flag.ESCAPE]:
                 # keep escape, move
                 pass
+            if compound_count > 0:
+                # do not move to the next line,
+                # join buff to single command
+                pass
             idx += 1
-            continue
         elif char in SPECIAL_SPLITTERS:
             left = Command(name="???", value=buff)
             right = ...
@@ -209,6 +210,12 @@ def tokenize(text: str, debug: bool = False) -> list:
                     left=left, right=right,
                     append=next_char in SPECIAL_REDIR
                 )
+        elif char == SPECIAL_LPAREN:
+            compound_count += 1
+            idx += 1
+        elif char == SPECIAL_RPAREN:
+            compound_count -= 1
+            idx += 1
         else:
             buff += char
             idx += 1
