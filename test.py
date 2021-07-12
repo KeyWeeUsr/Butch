@@ -290,7 +290,7 @@ class BatchFiles(TestCase):
                     mock_call(out.rstrip("\n"))
                 )
 
-    def test_set_join_expansion(self):
+    def ignore_test_set_join_expansion(self):
         from os.path import join, dirname, abspath
 
         script_name = "set_join_expansion.bat"
