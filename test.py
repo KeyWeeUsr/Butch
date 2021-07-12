@@ -7,6 +7,23 @@ class BetterParser(TestCase):
         from parser import read_line
         self.assertEqual(read_line("-\x1a-"), "-\n-")
 
+    def test_read_file(self):
+        from parser import read_file
+        text = "one\x1atwo\nthree\x1a\nfour\n\x1afive\n"
+        read = MagicMock()
+        read.read.return_value = text
+
+        enter = MagicMock()
+        enter.__enter__.return_value = read
+        with patch("builtins.open", return_value=enter) as opn:
+            self.assertEqual(
+                read_file("nonexisting"),
+                ["one", "two", "three", "", "four", "", "five"]
+            )
+            opn.assert_called_once_with("nonexisting")
+            enter.__enter__.assert_called_once_with()
+            read.read.assert_called_once_with()
+
 
 class Parser(TestCase):
     def test_unknown(self):

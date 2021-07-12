@@ -68,3 +68,9 @@ def parse_variables(values: list, ctx: Context):
 
 def read_line(text: str) -> str:
     return text.replace("\x1a", "\n")
+
+
+def read_file(path: str) -> list:
+    with open(path) as file:
+        text = file.read()
+    return read_line(text=text).splitlines()
