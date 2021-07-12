@@ -30,18 +30,22 @@ SPECIAL_AMP = "&"
 SPECIAL_PIPE = "|"
 SPECIAL_LT = "<"
 SPECIAL_GT = ">"
+SPECIAL_REDIR = [
+    SPECIAL_LT,
+    SPECIAL_GT
+]
+SPECIAL_SPLITTERS = [
+    SPECIAL_AMP,
+    SPECIAL_PIPE
+] + SPECIAL_REDIR
 SPECIAL_LF = "\n"
 SPECIALS = [
     SPECIAL_CR,
     SPECIAL_CARRET,
     SPECIAL_LPAREN,
     SPECIAL_AT,
-    SPECIAL_AMP,
-    SPECIAL_PIPE,
-    SPECIAL_LT,
-    SPECIAL_GT,
     SPECIAL_LF
-] + DELIMS
+] + SPECIAL_SPLITTERS + DELIMS
 
 QUOTE_DOUBLE = '"'
 TOKENS = SPECIALS + [QUOTE_DOUBLE]
@@ -54,15 +58,29 @@ class Flag(Enum):
 
 class Command:
     _name: str = ""
-    def __init__(self, name):
+    _value: str = ""
+    _echo: bool = True
+
+    def __init__(self, name: str, value: str, echo: bool = False):
         self._name = name
+        self._value = value
+        self._echo = echo
 
     @property
     def name(self):
         return self._name
 
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def echo(self):
+        return self._echo
+
     def __repr__(self):
-        return f'<Command: "{self.name}">'
+        prefix = "@" if self.echo else ""
+        return f'<{prefix}Command: "{self.name}" ({self.value})>'
 
 
 class Connector:
@@ -108,21 +126,33 @@ class RedirType(Enum):
 
 class Redirection(Connector):
     _type: RedirType
+    _append: bool = False
 
-    def __init__(self, redir_type: RedirType, left: Command, right: Command):
+    def __init__(
+            self, redir_type: RedirType,
+            left: Command, right: Command,
+            append: bool = False
+    ):
         super("Redirection", left=left, right=right)
         self._type = redir_type
+        self._append = append
 
     @property
     def type(self):
         return self._type
 
+    @property
+    def append(self):
+        return self._append
+
     def __repr__(self):
         direction = "?"
         if self.type == Redir.INPUT:
-            direction = "<-"
+            direction = "<"
         elif self.type == Redir.OUTPUT:
-            direction = "->"
+            direction = ">"
+        if self.append:
+            direction *= 2
         return f'<{self.name}: {self.left} {direction} {self.right}>'
 
 
@@ -136,6 +166,10 @@ def tokenize(text: str, debug: bool = False) -> list:
     buff = ""
     while idx < text_len:
         char = text[idx]
+        next_char = ""
+        if idx != text_len:
+            next_char = text[idx + 1]
+
         if char == SPECIAL_CR:
             idx += 1
             continue
@@ -159,6 +193,22 @@ def tokenize(text: str, debug: bool = False) -> list:
                 pass
             idx += 1
             continue
+        elif char in SPECIAL_SPLITTERS:
+            left = Command(name="???", value=buff)
+            right = ...
+            join = None
+            if char == SPECIAL_PIPE:
+                if next_char == SPECIAL_PIPE:
+                    join = Concat(left=left, right=right)
+                else:
+                    join = Pipe(left=left, right=right)
+            elif char == SPECIAL_AMP:
+                join = Concat(left=left, right=right)
+            elif char in SPECIAL_REDIR:
+                join = Redirection(
+                    left=left, right=right,
+                    append=next_char in SPECIAL_REDIR
+                )
         else:
             buff += char
             idx += 1
