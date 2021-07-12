@@ -41,5 +41,13 @@ SPECIALS = [
 ] + DELIMS
 
 def tokenize(text: str) -> list:
-    text = text.replace(SPECIAL_CR, "")
-    return []
+    output = []
+
+    idx = 0
+    text_len = len(text)
+    while idx < text_len:
+        char = text[idx]
+        if char == SPECIAL_CR:
+            pass
+        idx += 1
+    return output
