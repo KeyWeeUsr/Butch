@@ -24,6 +24,42 @@ class BetterParser(TestCase):
             enter.__enter__.assert_called_once_with()
             read.read.assert_called_once_with()
 
+    def test_percent_expansion(self):
+        from parser import percent_expansion as pxp
+        from context import Context
+
+        ctx = Context()
+        ctx.set_variable("hello", "value")
+        self.assertEqual(pxp(line="abc", ctx=ctx), "abc")
+        self.assertEqual(pxp(line="%", ctx=ctx), "")
+
+        arg_one = "one"
+        arg_two = "two"
+        arg_three = "three"
+        arg_all = [arg_one, arg_two, arg_three]
+        with patch("sys.argv", ["-", *arg_all]):
+            self.assertEqual(pxp(line="%1", ctx=ctx), arg_one)
+            self.assertEqual(pxp(line="%2", ctx=ctx), arg_two)
+            self.assertEqual(pxp(line="%3", ctx=ctx), arg_three)
+            self.assertEqual(pxp(line="%1%2%3", ctx=ctx), "".join(arg_all))
+            self.assertEqual(pxp(line="%*", ctx=ctx), " ".join(arg_all))
+            self.assertEqual(pxp(line="%1hello%", ctx=ctx), f"{arg_one}hello")
+            self.assertEqual(pxp(line="%1hello%", ctx=ctx), f"{arg_one}hello")
+        self.assertEqual(pxp(line="%%1hello%", ctx=ctx), f"%1hello")
+        self.assertEqual(pxp(line="%", ctx=ctx), "")
+        self.assertEqual(pxp(line="%%", ctx=ctx), "%")
+        self.assertEqual(pxp(line="%%%", ctx=ctx), "%")
+        self.assertEqual(pxp(line="%%%%", ctx=ctx), "%%")
+        self.assertEqual(pxp(line="%%%%%", ctx=ctx), "%%")
+        self.assertEqual(pxp(line="%hello%", ctx=ctx), "value")
+        self.assertEqual(pxp(line="%%hello%", ctx=ctx), "%hello")
+        self.assertEqual(pxp(line="%hello%%", ctx=ctx), "value")
+        self.assertEqual(pxp(line="%%hello%%", ctx=ctx), "%hello%")
+        self.assertEqual(pxp(line="-%hello%-", ctx=ctx), "-value-")
+        self.assertEqual(pxp(line="-%%hello%-", ctx=ctx), "-%hello-")
+        self.assertEqual(pxp(line="-%hello%%-", ctx=ctx), "-value-")
+        self.assertEqual(pxp(line="-%%hello%%-", ctx=ctx), "-%hello%-")
+
 
 class Parser(TestCase):
     def test_unknown(self):
