@@ -2,6 +2,12 @@ from unittest import main, TestCase
 from unittest.mock import MagicMock, patch, call as mock_call
 
 
+class BetterParser(TestCase):
+    def test_read_line(self):
+        from parser import read_line
+        self.assertEqual(read_line("-\x1a-"), "-\n-")
+
+
 class Parser(TestCase):
     def test_unknown(self):
         from parser import parse

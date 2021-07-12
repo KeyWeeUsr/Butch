@@ -64,3 +64,7 @@ def parse_variables(values: list, ctx: Context):
 
         out.append(value)
     return out
+
+
+def read_line(text: str) -> str:
+    return text.replace("\x1a", "\n")
