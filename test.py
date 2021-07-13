@@ -64,33 +64,39 @@ class BetterParser(TestCase):
 class Tokenizer(TestCase):
     def test_remove_carriage_return(self):
         from tokenizer import tokenize
-        self.assertEqual(tokenize(text="\r"), [])
+        from context import Context
+        self.assertEqual(tokenize(text="\r", ctx=Context()), [])
 
     def test_carret_togle_escape(self):
         from tokenizer import tokenize, Flag
-        flags = dict(tokenize(text="^", debug=True))
+        from context import Context
+        flags = dict(tokenize(text="^", ctx=Context(), debug=True))
         self.assertTrue(flags[Flag.ESCAPE])
 
     def test_quote_double_toggle(self):
         from tokenizer import tokenize, Flag
-        flags = dict(tokenize(text='"', debug=True))
+        from context import Context
+        flags = dict(tokenize(text='"', ctx=Context(), debug=True))
         self.assertTrue(flags[Flag.QUOTE])
 
     def test_quote_double_untoggle(self):
         from tokenizer import tokenize, Flag
-        flags = dict(tokenize(text='""', debug=True))
+        from context import Context
+        flags = dict(tokenize(text='""', ctx=Context(), debug=True))
         self.assertFalse(flags[Flag.QUOTE])
 
     def test_lf_untoggle_quote(self):
         from tokenizer import tokenize, Flag
-        flags = dict(tokenize(text='"\n', debug=True))
+        from context import Context
+        flags = dict(tokenize(text='"\n', ctx=Context(), debug=True))
         self.assertFalse(flags[Flag.QUOTE])
 
     def test_quote_flag_strip_escaped_lf(self):
         from tokenizer import tokenize, Flag
-        flags = dict(tokenize(text='"^\n', debug=True))
+        from context import Context
+        flags = dict(tokenize(text='"^\n', ctx=Context(), debug=True))
         self.assertFalse(flags[Flag.QUOTE])
-        self.assertEqual(tokenize(text='"^\n', debug=False), [])
+        self.assertEqual(tokenize(text='"^\n', ctx=Context(), debug=False), [])
 
 
 class Parser(TestCase):

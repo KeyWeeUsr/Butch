@@ -1,5 +1,6 @@
 from collections import defaultdict
 from enum import Enum, auto
+from context import Context
 
 # consecutive delims should be treated as one
 # no delims within a quoted string
@@ -158,10 +159,15 @@ class Redirection(Connector):
         return f'<{self.name}: {self.left} {direction} {self.right}>'
 
 
-def tokenize(text: str, debug: bool = False) -> list:
+def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
+    from parser import percent_expansion
     output = []
 
     idx = 0
+    text = "\n".join([
+        percent_expansion(line, ctx=ctx)
+        for line in text.split("\n")  # splitlines strips the last \n
+    ])
     text_len = len(text)
     flags = defaultdict(bool)
     compound_count = 0
@@ -189,10 +195,13 @@ def tokenize(text: str, debug: bool = False) -> list:
             if flags[Flag.ESCAPE]:
                 # keep escape, move
                 pass
+
             if compound_count > 0:
                 # do not move to the next line,
                 # join buff to single command
                 pass
+
+            
             idx += 1
         elif char in SPECIAL_SPLITTERS:
             left = Command(name="???", value=buff)
