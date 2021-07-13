@@ -1,6 +1,7 @@
 from collections import defaultdict
 from enum import Enum, auto
 from context import Context
+from commands import Command as CommandType
 
 # consecutive delims should be treated as one
 # no delims within a quoted string
@@ -60,14 +61,20 @@ class Flag(Enum):
 
 
 class Command:
+    _cmd: CommandType = None
     _name: str = ""
     _value: str = ""
     _echo: bool = True
 
-    def __init__(self, name: str, value: str, echo: bool = False):
-        self._name = name
+    def __init__(self, cmd: CommandType, value: str, echo: bool = False):
+        self._cmd = cmd
+        self._name = cmd.value
         self._value = value
         self._echo = echo
+
+    @property
+    def cmd(self):
+        return self._cmd
 
     @property
     def name(self):
@@ -195,7 +202,9 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             if flags[Flag.ESCAPE]:
                 # keep escape, move
                 pass
-
+            else:
+                # reverse me later to "if not" + main
+                pass
             if compound_count > 0:
                 # do not move to the next line,
                 # join buff to single command
