@@ -213,12 +213,18 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 if cmd_clear.startswith("@"):
                     echo = False
                     cmd_clear = cmd_clear[1:]
-                cmd = cmd_map.get(cmd_clear[:next_white], CommandType.UNKNOWN)
 
-                output.append(Command(
-                    # skip after the first whitespace
-                    cmd=cmd, value=cmd_clear[next_white + 1:], echo=echo
-                ))
+                cmd_raw = cmd_clear
+                cmd_val = cmd_clear
+                if next_white > 0:
+                    cmd_raw = cmd_clear[:next_white]
+                    cmd_val = cmd_clear[next_white + 1:]
+                if cmd_raw:
+                    cmd = cmd_map.get(cmd_raw, CommandType.UNKNOWN)
+                    output.append(Command(
+                        # skip after the first whitespace
+                        cmd=cmd, value=cmd_val, echo=echo
+                    ))
             if compound_count > 0:
                 # do not move to the next line,
                 # join buff to single command
