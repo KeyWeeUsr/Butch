@@ -1,7 +1,7 @@
 from collections import defaultdict
 from enum import Enum, auto
 from context import Context
-from commands import Command as CommandType
+from commands import Command as CommandType, get_reverse_cmd_map
 
 # consecutive delims should be treated as one
 # no delims within a quoted string
@@ -66,7 +66,7 @@ class Command:
     _value: str = ""
     _echo: bool = True
 
-    def __init__(self, cmd: CommandType, value: str, echo: bool = False):
+    def __init__(self, cmd: CommandType, value: str, echo: bool = True):
         self._cmd = cmd
         self._name = cmd.value
         self._value = value
@@ -89,7 +89,7 @@ class Command:
         return self._echo
 
     def __repr__(self):
-        prefix = "@" if self.echo else ""
+        prefix = "@" if not self.echo else ""
         return f'<{prefix}Command: "{self.name}" ({self.value})>'
 
 
@@ -176,6 +176,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         for line in text.split("\n")  # splitlines strips the last \n
     ])
     text_len = len(text)
+    cmd_map = get_reverse_cmd_map()
     flags = defaultdict(bool)
     compound_count = 0
 
@@ -204,7 +205,19 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 pass
             else:
                 # reverse me later to "if not" + main
-                pass
+                # naive
+                cmd_clear = buff.lstrip()
+                next_white = cmd_clear.find(" ")  # what if \t?
+
+                echo = True
+                if cmd_clear.startswith("@"):
+                    echo = False
+                    cmd_clear = cmd_clear[1:]
+                cmd = cmd_map.get(cmd_clear[:next_white], CommandType.UNKNOWN)
+
+                output.append(
+                    Command(cmd=cmd, value=cmd_clear[next_white:], echo=echo)
+                )
             if compound_count > 0:
                 # do not move to the next line,
                 # join buff to single command

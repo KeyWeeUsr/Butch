@@ -210,3 +210,11 @@ def get_cmd_map():
         Command.EXIT: exit_cmd,
         Command.SETLOCAL: setlocal
     }
+
+def get_reverse_cmd_map():
+    return {
+        getattr(Command, item).value: getattr(Command, item)
+        for item in dir(Command)
+        if isinstance(getattr(Command, item), Command)
+        and item != Command.UNKNOWN.name
+    }

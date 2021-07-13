@@ -98,6 +98,20 @@ class Tokenizer(TestCase):
         self.assertFalse(flags[Flag.QUOTE])
         self.assertEqual(tokenize(text='"^\n', ctx=Context(), debug=False), [])
 
+    def test_unknown(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+        cmd = "-\n"
+
+        output = tokenize(text=cmd, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+        com = output[0]
+        self.assertIsInstance(com, Command)
+        self.assertEqual(com.cmd, CommandType.UNKNOWN)
+        self.assertTrue(com.echo)
+
 
 class Parser(TestCase):
     def test_unknown(self):
