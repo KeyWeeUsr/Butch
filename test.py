@@ -112,6 +112,23 @@ class Tokenizer(TestCase):
         self.assertEqual(com.cmd, CommandType.UNKNOWN)
         self.assertTrue(com.echo)
 
+    def test_echo(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+
+        params = ["hello"]
+        cmd = f"echo {params[0]}\n"
+
+        output = tokenize(text=cmd, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+        com = output[0]
+        self.assertIsInstance(com, Command)
+        self.assertEqual(com.cmd, CommandType.ECHO)
+        self.assertTrue(com.echo)
+        self.assertEqual(com.value, params[0])
+
 
 class Parser(TestCase):
     def test_unknown(self):

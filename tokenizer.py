@@ -215,9 +215,10 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     cmd_clear = cmd_clear[1:]
                 cmd = cmd_map.get(cmd_clear[:next_white], CommandType.UNKNOWN)
 
-                output.append(
-                    Command(cmd=cmd, value=cmd_clear[next_white:], echo=echo)
-                )
+                output.append(Command(
+                    # skip after the first whitespace
+                    cmd=cmd, value=cmd_clear[next_white + 1:], echo=echo
+                ))
             if compound_count > 0:
                 # do not move to the next line,
                 # join buff to single command
