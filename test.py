@@ -67,7 +67,7 @@ class Tokenizer(TestCase):
         from context import Context
         self.assertEqual(tokenize(text="\r", ctx=Context()), [])
 
-    def test_carret_togle_escape(self):
+    def test_carret_toggle_escape(self):
         from tokenizer import tokenize, Flag
         from context import Context
         flags = dict(tokenize(text="^", ctx=Context(), debug=True))
@@ -681,6 +681,32 @@ class BatchFiles(TestCase):
         with patch("os.chdir") as cdr, patch("builtins.print") as stdout:
             ctx = Context()
             handle(text=join(folder, script_name), ctx=ctx)
+            cdr.assert_called_once_with("..")
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(*out.rstrip("\n").split(" "))
+                )
+
+    def test_cd_existing_new(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "cd_existing.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("os.chdir") as cdr, patch("builtins.print") as stdout:
+            ctx = Context()
+            handle_new(text=join(folder, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
             mcalls = stdout.mock_calls
             self.assertEqual(len(mcalls), len(output))

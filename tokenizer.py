@@ -252,24 +252,30 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         # last char isn't <LF>
         if char != SPECIAL_LF and idx == last_pos:
             log("- last char")
-            buff += char
-            # append last char because finishing
-            # and if buff is empty (single-char), then copy char to buff
-            if found_command:
-                log("\t- found command")
-                found_command.args = found_command.args + [
-                    Argument(value=buff)
-                ]
-                buff = ""
-                output = [found_command]
+            buff += char.replace("\r", "")
+
+            if not buff:
                 break
+
             if char == SPECIAL_CARRET:
                 log("\t- is carret, enabling escape flag")
                 flags[Flag.ESCAPE] = True
             elif char == QUOTE_DOUBLE:
                 log("\t- is quote, swapping quote flag")
                 flags[Flag.QUOTE] = not flags[Flag.QUOTE]
-            _finish_buffer(buff=buff, output=output)
+            #_finish_buffer(buff=buff, output=output)
+            # append last char because finishing
+            # and if buff is empty (single-char), then copy char to buff
+            if idx == 0:
+                log("\t- not found command, zero idx")
+                found_command = Command(cmd=CommandType.UNKNOWN)
+            if found_command:
+                log("\t- found command")
+                found_command.args = found_command.args + [
+                    Argument(value=buff)
+                ]
+                buff = ""
+                output.append(found_command)
             break
 
         if char == SPECIAL_CR:
@@ -300,15 +306,25 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 log("\t- is not in escape mode")
                 # reverse me later to "if not" + main
                 #_finish_buffer(buff=buff, output=output)
-                if idx == last_pos and buff:
-                    log("\t\t- found_command")
+                if idx == last_pos and buff:  # buff check for whitespace
+                    log("\t\t- last char")
                     if not found_command:
                         found_command = Command(cmd=CommandType.UNKNOWN)
                     found_command.args = found_command.args + [
                         Argument(value=buff)
                     ]
                     buff = ""
-                    output = [found_command]
+                    output.append(found_command)
+                if idx != last_pos and buff:  # buff check for whitespace
+                    log("\t\t- not last char")
+                    if not found_command:
+                        found_command = Command(cmd=CommandType.UNKNOWN)
+                    found_command.args = found_command.args + [
+                        Argument(value=buff)
+                    ]
+                    buff = ""
+                    output.append(found_command)
+                    found_command = None
 
             if compound_count > 0:
                 # do not move to the next line,
@@ -380,5 +396,5 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
 
     if debug:
         return list(flags.items())
-    log(output)
+    log("- tokenized output: %r", output)
     return output
