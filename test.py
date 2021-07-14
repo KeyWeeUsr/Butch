@@ -434,6 +434,26 @@ class Execution(TestCase):
 
         self.assertEqual(ctx.error_level, 1)
 
+    def test_cd_nonexisting_new(self):
+        from commands import Command as CommandType
+        from tokenizer import Command, Argument
+        from caller import new_call as call
+        from context import Context
+        from constants import PATH_NOT_FOUND
+
+        ctx = Context()
+        value = "nonexistingfile"
+
+        chdir_mock = patch("os.chdir", side_effect=FileNotFoundError())
+        with chdir_mock as chdir, patch("commands.print") as mock:
+            call(cmd=Command(cmd=CommandType.CD, args=[
+                Argument(value=value)
+            ]), ctx=ctx)
+            chdir.assert_called_once_with(value)
+            mock.assert_called_once_with(PATH_NOT_FOUND)
+
+        self.assertEqual(ctx.error_level, 1)
+
     def test_cd_existing(self):
         from commands import Command
         from caller import call
