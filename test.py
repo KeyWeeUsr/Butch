@@ -640,6 +640,31 @@ class BatchFiles(TestCase):
                     mock_call(*out.rstrip("\n").split(" "))
                 )
 
+    def test_hello_new(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "hello.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context()
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(*out.rstrip("\n").split(" "))
+                )
+
     def test_cd_existing(self):
         from os.path import join, dirname, abspath
 

@@ -5,8 +5,9 @@ from os.path import exists
 
 from commands import Command
 from parser import parse, clear_input, parse_file
-from caller import call
+from caller import call, new_call
 from context import get_context, Context
+from tokenizer import tokenize
 
 
 def handle_input(inp: str, ctx: Context):
@@ -18,10 +19,23 @@ def handle_input(inp: str, ctx: Context):
     call(cmd=cmd, params=params, ctx=ctx)
 
 
+def handle_input_new(inp: str, ctx: Context):
+    cmd = tokenize(text=inp)
+    new_call(cmd=cmd, ctx=ctx)
+
+
 def handle_file(path: str, ctx: Context):
     cmds = parse_file(path)
     for cmd, params in cmds:
         call(cmd=cmd, params=params, ctx=ctx)
+
+
+def handle_file_new(path: str, ctx: Context):
+    with open(path) as file:
+        content = file.read()
+    cmds = tokenize(text=content, ctx=ctx)
+    for cmd in cmds:
+        new_call(cmd=cmd, ctx=ctx)
 
 
 def loop(ctx: Context):
@@ -100,6 +114,12 @@ def handle(text: str, ctx: Context):
     if exists(text):
         return handle_file(path=text, ctx=ctx)
     return handle_input(inp=text, ctx=ctx)
+
+
+def handle_new(text: str, ctx: Context):
+    if exists(text):
+        return handle_file_new(path=text, ctx=ctx)
+    return handle_input_new(inp=text, ctx=ctx)
 
 
 def main():
