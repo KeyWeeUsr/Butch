@@ -116,7 +116,7 @@ class Tokenizer(TestCase):
         from tokenizer import tokenize, Command
         from commands import Command as CommandType
         from context import Context
-        cmd = "-\n"
+        cmd = "-"
 
         output = tokenize(text=cmd, ctx=Context())
         self.assertIsInstance(output, list)
@@ -133,6 +133,23 @@ class Tokenizer(TestCase):
 
         param = "hello"
         cmd = f"echo {param}\n"
+
+        output = tokenize(text=cmd, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+        com = output[0]
+        self.assertIsInstance(com, Command)
+        self.assertEqual(com.cmd, CommandType.ECHO)
+        self.assertTrue(com.echo)
+        self.assertEqual(com.value, param)
+
+    def test_echo_without_newline(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+
+        param = "hello"
+        cmd = f"echo {param}"
 
         output = tokenize(text=cmd, ctx=Context())
         self.assertIsInstance(output, list)

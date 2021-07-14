@@ -166,6 +166,30 @@ class Redirection(Connector):
         return f'<{self.name}: {self.left} {direction} {self.right}>'
 
 
+def _finish_buffer(buff: str, output: list) -> None:
+    cmd_map = get_reverse_cmd_map()
+    # naive
+    cmd_clear = buff.lstrip()
+    next_white = cmd_clear.find(" ")  # what if \t?
+
+    echo = True
+    if cmd_clear.startswith("@"):
+        echo = False
+        cmd_clear = cmd_clear[1:]
+
+    cmd_raw = cmd_clear
+    cmd_val = cmd_clear
+    if next_white > 0:
+        cmd_raw = cmd_clear[:next_white]
+        cmd_val = cmd_clear[next_white + 1:]
+    if cmd_raw:
+        cmd = cmd_map.get(cmd_raw, CommandType.UNKNOWN)
+        output.append(Command(
+            # skip after the first whitespace
+            cmd=cmd, value=cmd_val, echo=echo
+        ))
+
+
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     from parser import percent_expansion
     output = []
@@ -176,7 +200,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         for line in text.split("\n")  # splitlines strips the last \n
     ])
     text_len = len(text)
-    cmd_map = get_reverse_cmd_map()
+    last_pos = text_len - 1
     flags = defaultdict(bool)
     compound_count = 0
 
@@ -184,6 +208,18 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     while idx < text_len:
         char = text[idx]
         next_char = ""
+
+        # last char isn't <LF>
+        if char != SPECIAL_LF and idx == last_pos:
+            # append last char because finishing
+            # and if buff is empty (single-char), then copy char to buff
+            buff += char
+            if char == SPECIAL_CARRET:
+                flags[Flag.ESCAPE] = True
+            elif char == QUOTE_DOUBLE:
+                flags[Flag.QUOTE] = not flags[Flag.QUOTE]
+            _finish_buffer(buff=buff, output=output)
+            break
 
         if char == SPECIAL_CR:
             idx += 1
@@ -196,7 +232,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             if not flags[Flag.QUOTE]:
                 output.append(buff)
                 buff = ""
-        elif char == SPECIAL_LF or idx == text_len - 1:
+        elif char == SPECIAL_LF:
             # SO says this, but CLI says no
             # if not flags[Flag.ESCAPE]:
             flags[Flag.QUOTE] = False
@@ -205,26 +241,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 pass
             else:
                 # reverse me later to "if not" + main
-                # naive
-                cmd_clear = buff.lstrip()
-                next_white = cmd_clear.find(" ")  # what if \t?
-
-                echo = True
-                if cmd_clear.startswith("@"):
-                    echo = False
-                    cmd_clear = cmd_clear[1:]
-
-                cmd_raw = cmd_clear
-                cmd_val = cmd_clear
-                if next_white > 0:
-                    cmd_raw = cmd_clear[:next_white]
-                    cmd_val = cmd_clear[next_white + 1:]
-                if cmd_raw:
-                    cmd = cmd_map.get(cmd_raw, CommandType.UNKNOWN)
-                    output.append(Command(
-                        # skip after the first whitespace
-                        cmd=cmd, value=cmd_val, echo=echo
-                    ))
+                _finish_buffer(buff=buff, output=output)
             if compound_count > 0:
                 # do not move to the next line,
                 # join buff to single command
