@@ -195,30 +195,6 @@ class Redirection(Connector):
         return f'<{self.name}: {self.left} {direction} {self.right}>'
 
 
-def _finish_buffer(buff: str, output: list) -> None:
-    cmd_map = get_reverse_cmd_map()
-    # naive
-    cmd_clear = buff.lstrip()
-    next_white = cmd_clear.find(" ")  # what if \t?
-
-    echo = True
-    if cmd_clear.startswith("@"):
-        echo = False
-        cmd_clear = cmd_clear[1:]
-
-    cmd_raw = cmd_clear
-    cmd_val = cmd_clear
-    if next_white > 0:
-        cmd_raw = cmd_clear[:next_white]
-        cmd_val = cmd_clear[next_white + 1:]
-    if cmd_raw:
-        cmd = cmd_map.get(cmd_raw, CommandType.UNKNOWN)
-        output.append(Command(
-            # skip after the first whitespace
-            cmd=cmd, value=cmd_val, echo=echo
-        ))
-
-
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     log = ctx.log.debug
     log("Starting tokenization")
@@ -263,7 +239,6 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             elif char == QUOTE_DOUBLE:
                 log("\t- is quote, swapping quote flag")
                 flags[Flag.QUOTE] = not flags[Flag.QUOTE]
-            #_finish_buffer(buff=buff, output=output)
             # append last char because finishing
             # and if buff is empty (single-char), then copy char to buff
             if idx == 0:
@@ -305,7 +280,6 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             else:
                 log("\t- is not in escape mode")
                 # reverse me later to "if not" + main
-                #_finish_buffer(buff=buff, output=output)
                 if idx == last_pos and buff:  # buff check for whitespace
                     log("\t\t- last char")
                     if not found_command:

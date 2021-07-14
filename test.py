@@ -264,7 +264,7 @@ class Tokenizer(TestCase):
             self.assertIsInstance(output, list)
             self.assertEqual(len(output), 0)
 
-    def test_empty_multi_without_newline_placeholder(self):
+    def test_empty_multi_without_newline(self):
         from tokenizer import tokenize, Command
         from commands import Command as CommandType
         from context import Context

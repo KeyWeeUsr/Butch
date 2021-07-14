@@ -135,12 +135,12 @@ def main():
     ctx.echo = not args.Q
 
     if args.C:
-        handle(text=" ".join(args.C), ctx=ctx)
+        handle_new(text=" ".join(args.C), ctx=ctx)
         sys.exit(ctx.error_level)
         return
 
     if args.K:
-        handle(text=" ".join(args.K), ctx=ctx)
+        handle_new(text=" ".join(args.K), ctx=ctx)
         mainloop(ctx=ctx)
         return
 
