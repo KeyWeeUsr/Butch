@@ -196,7 +196,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             if not flags[Flag.QUOTE]:
                 output.append(buff)
                 buff = ""
-        elif char == SPECIAL_LF:
+        elif char == SPECIAL_LF or idx == text_len - 1:
             # SO says this, but CLI says no
             # if not flags[Flag.ESCAPE]:
             flags[Flag.QUOTE] = False

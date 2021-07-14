@@ -112,6 +112,20 @@ class Tokenizer(TestCase):
         self.assertEqual(com.cmd, CommandType.UNKNOWN)
         self.assertTrue(com.echo)
 
+    def test_unknown_without_newline(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+        cmd = "-\n"
+
+        output = tokenize(text=cmd, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+        com = output[0]
+        self.assertIsInstance(com, Command)
+        self.assertEqual(com.cmd, CommandType.UNKNOWN)
+        self.assertTrue(com.echo)
+
     def test_echo(self):
         from tokenizer import tokenize, Command
         from commands import Command as CommandType
