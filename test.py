@@ -127,7 +127,7 @@ class Tokenizer(TestCase):
         self.assertTrue(com.echo)
 
     def test_echo(self):
-        from tokenizer import tokenize, Command
+        from tokenizer import tokenize, Command, Argument
         from commands import Command as CommandType
         from context import Context
 
@@ -141,10 +141,10 @@ class Tokenizer(TestCase):
         self.assertIsInstance(com, Command)
         self.assertEqual(com.cmd, CommandType.ECHO)
         self.assertTrue(com.echo)
-        self.assertEqual(com.value, param)
+        self.assertEqual(com.args, [Argument(value=param)])
 
     def test_echo_without_newline(self):
-        from tokenizer import tokenize, Command
+        from tokenizer import tokenize, Command, Argument
         from commands import Command as CommandType
         from context import Context
 
@@ -158,10 +158,10 @@ class Tokenizer(TestCase):
         self.assertIsInstance(com, Command)
         self.assertEqual(com.cmd, CommandType.ECHO)
         self.assertTrue(com.echo)
-        self.assertEqual(com.value, param)
+        self.assertEqual(com.args, [Argument(value=param)])
 
     def test_cd(self):
-        from tokenizer import tokenize, Command
+        from tokenizer import tokenize, Command, Argument
         from commands import Command as CommandType
         from context import Context
 
@@ -175,10 +175,10 @@ class Tokenizer(TestCase):
         self.assertIsInstance(com, Command)
         self.assertEqual(com.cmd, CommandType.CD)
         self.assertTrue(com.echo)
-        self.assertEqual(com.value, param)
+        self.assertEqual(com.args, [Argument(value=param)])
 
     def test_cd_without_newline(self):
-        from tokenizer import tokenize, Command
+        from tokenizer import tokenize, Command, Argument
         from commands import Command as CommandType
         from context import Context
 
@@ -192,10 +192,10 @@ class Tokenizer(TestCase):
         self.assertIsInstance(com, Command)
         self.assertEqual(com.cmd, CommandType.CD)
         self.assertTrue(com.echo)
-        self.assertEqual(com.value, param)
+        self.assertEqual(com.args, [Argument(value=param)])
 
     def test_set(self):
-        from tokenizer import tokenize, Command
+        from tokenizer import tokenize, Command, Argument
         from commands import Command as CommandType
         from context import Context
 
@@ -209,10 +209,10 @@ class Tokenizer(TestCase):
         self.assertIsInstance(com, Command)
         self.assertEqual(com.cmd, CommandType.SET)
         self.assertTrue(com.echo)
-        self.assertEqual(com.value, param)
+        self.assertEqual(com.args, [Argument(value=param)])
 
     def test_set_without_newline(self):
-        from tokenizer import tokenize, Command
+        from tokenizer import tokenize, Command, Argument
         from commands import Command as CommandType
         from context import Context
 
@@ -226,7 +226,7 @@ class Tokenizer(TestCase):
         self.assertIsInstance(com, Command)
         self.assertEqual(com.cmd, CommandType.SET)
         self.assertTrue(com.echo)
-        self.assertEqual(com.value, param)
+        self.assertEqual(com.args, [Argument(value=param)])
 
     def test_empty(self):
         from tokenizer import tokenize, Command
@@ -264,7 +264,7 @@ class Tokenizer(TestCase):
             self.assertIsInstance(output, list)
             self.assertEqual(len(output), 0)
 
-    def test_empty_multi_without_newline(self):
+    def test_empty_multi_without_newline_placeholder(self):
         from tokenizer import tokenize, Command
         from commands import Command as CommandType
         from context import Context
