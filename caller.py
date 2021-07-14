@@ -4,7 +4,7 @@ from commands import Command as CommandType, get_cmd_map
 from context import Context
 
 
-def call(cmd: CommandType, params: list, ctx: Context):
+def call(cmd: CommandType, params: list, ctx: Context) -> None:
     cmd_map = get_cmd_map()
     func = cmd_map.get(cmd)
     if not func:
@@ -14,7 +14,7 @@ def call(cmd: CommandType, params: list, ctx: Context):
     func(params=params, ctx=ctx)
 
 
-def new_call(cmd: Union[Command, Connector], ctx: Context):
+def new_call(cmd: Union[Command, Connector], ctx: Context) -> None:
     ctx.log.debug("Calling command %r", cmd)
     if isinstance(cmd, Connector):
         raise NotImplementedError("connectors")

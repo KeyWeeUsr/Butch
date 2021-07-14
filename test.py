@@ -341,7 +341,7 @@ class Caller(TestCase):
         with patch("commands.echo") as echo:
             self.assertEqual(call(cmd=Command(
                 cmd=CommandType.ECHO,
-                args=[Argument(value) for value in params]
+                args=[Argument(value=value) for value in params]
             ), ctx=ctx), None)
             echo.assert_called_once_with(params=params, ctx=ctx)
 
@@ -353,6 +353,19 @@ class Caller(TestCase):
 
         with self.assertRaises(Exception):
             call(Command.UNKNOWN, params)
+
+    def test_map_unresolved_new(self):
+        from caller import new_call as call
+        from commands import Command as CommandType
+        from tokenizer import Command, Argument
+        echo = MagicMock()
+        params = [str(val) for val in range(3)]
+
+        with self.assertRaises(Exception):
+            call(Command(cmd=CommandType.UNKNOWN, args=[
+                Argument(value=value) for value in params
+            ]))
+                
 
 
 class Context(TestCase):
