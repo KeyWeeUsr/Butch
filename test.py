@@ -177,6 +177,23 @@ class Tokenizer(TestCase):
         self.assertTrue(com.echo)
         self.assertEqual(com.value, param)
 
+    def test_cd_without_newline(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+
+        param = "hello"
+        cmd = f"cd {param}"
+
+        output = tokenize(text=cmd, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+        com = output[0]
+        self.assertIsInstance(com, Command)
+        self.assertEqual(com.cmd, CommandType.CD)
+        self.assertTrue(com.echo)
+        self.assertEqual(com.value, param)
+
     def test_set(self):
         from tokenizer import tokenize, Command
         from commands import Command as CommandType
@@ -184,6 +201,23 @@ class Tokenizer(TestCase):
 
         param = "hello"
         cmd = f"set {param}\n"
+
+        output = tokenize(text=cmd, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+        com = output[0]
+        self.assertIsInstance(com, Command)
+        self.assertEqual(com.cmd, CommandType.SET)
+        self.assertTrue(com.echo)
+        self.assertEqual(com.value, param)
+
+    def test_set_without_newline(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+
+        param = "hello"
+        cmd = f"set {param}"
 
         output = tokenize(text=cmd, ctx=Context())
         self.assertIsInstance(output, list)
@@ -206,6 +240,18 @@ class Tokenizer(TestCase):
             self.assertIsInstance(output, list)
             self.assertEqual(len(output), 0)
 
+    def test_empty_without_newline(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+
+        param = "hello"
+
+        for cmd in ["", "\n", "\r\n"]:
+            output = tokenize(text=cmd, ctx=Context())
+            self.assertIsInstance(output, list)
+            self.assertEqual(len(output), 0)
+
     def test_empty_multi(self):
         from tokenizer import tokenize, Command
         from commands import Command as CommandType
@@ -214,6 +260,18 @@ class Tokenizer(TestCase):
         param = "hello"
 
         for cmd in ["", "\n", "\r\n"]:
+            output = tokenize(text=cmd * 3, ctx=Context())
+            self.assertIsInstance(output, list)
+            self.assertEqual(len(output), 0)
+
+    def test_empty_multi_without_newline(self):
+        from tokenizer import tokenize, Command
+        from commands import Command as CommandType
+        from context import Context
+
+        param = "hello"
+
+        for cmd in ["", " ", "\r"]:
             output = tokenize(text=cmd * 3, ctx=Context())
             self.assertIsInstance(output, list)
             self.assertEqual(len(output), 0)
