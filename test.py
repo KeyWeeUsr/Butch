@@ -329,6 +329,22 @@ class Caller(TestCase):
             self.assertEqual(call(Command.ECHO, params=params, ctx=ctx), None)
             echo.assert_called_once_with(params=params, ctx=ctx)
 
+    def test_map_resolve_new(self):
+        from caller import new_call as call
+        from context import Context
+        from commands import Command as CommandType
+        from tokenizer import Command, Argument
+
+        params = [str(val) for val in range(3)]
+
+        ctx = Context()
+        with patch("commands.echo") as echo:
+            self.assertEqual(call(cmd=Command(
+                cmd=CommandType.ECHO,
+                args=[Argument(value) for value in params]
+            ), ctx=ctx), None)
+            echo.assert_called_once_with(params=params, ctx=ctx)
+
     def test_map_unresolved(self):
         from caller import call
         from commands import Command
