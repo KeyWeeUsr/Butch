@@ -469,6 +469,24 @@ class Execution(TestCase):
 
         self.assertEqual(ctx.error_level, 0)
 
+    def test_cd_existing_new(self):
+        from commands import Command as CommandType
+        from tokenizer import Command, Argument
+        from caller import new_call as call
+        from context import Context
+        from constants import PATH_NOT_FOUND
+
+        ctx = Context()
+        value = "existing"
+
+        with patch("os.chdir") as chdir, patch("commands.print") as mock:
+            call(cmd=Command(cmd=CommandType.CD, args=[
+                Argument(value=value)
+            ]), ctx=ctx)
+            chdir.assert_called_once_with(value)
+
+        self.assertEqual(ctx.error_level, 0)
+
     def test_set_dumpall(self):
         from commands import Command
         from caller import call
