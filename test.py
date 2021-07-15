@@ -515,21 +515,6 @@ class Execution(TestCase):
 
         self.assertEqual(ctx.error_level, 0)
 
-    def test_set_dumpsingle(self):
-        from commands import Command
-        from caller import call
-        from context import Context
-
-        ctx = Context()
-        key = "hello"
-        args = {"params": [key], "ctx": ctx}
-
-        with patch("commands._print_single_variable") as mock:
-            call(Command.SET, **args)
-            mock.assert_called_once_with(key=key, ctx=ctx)
-
-        self.assertEqual(ctx.error_level, 0)
-
     def test_set_dumpsingle_new(self):
         from commands import Command as CommandType
         from tokenizer import Command, Argument
@@ -547,21 +532,6 @@ class Execution(TestCase):
 
         self.assertEqual(ctx.error_level, 0)
 
-    def test_set_unset(self):
-        from commands import Command
-        from caller import call
-        from context import Context
-
-        ctx = Context()
-        key = "hello"
-        args = {"params": [f"{key}="], "ctx": ctx}
-
-        with patch("commands._delete_single_variable") as mock:
-            call(Command.SET, **args)
-            mock.assert_called_once_with(key=key, ctx=ctx)
-
-        self.assertEqual(ctx.error_level, 0)
-
     def test_set_unset_new(self):
         from commands import Command as CommandType
         from tokenizer import Command, Argument
@@ -576,22 +546,6 @@ class Execution(TestCase):
                 Argument(value=f"{value}=")
             ]), ctx=ctx)
             mock.assert_called_once_with(key=value, ctx=ctx)
-
-        self.assertEqual(ctx.error_level, 0)
-
-    def test_set_setsingle(self):
-        from commands import Command
-        from caller import call
-        from context import Context
-
-        ctx = Context()
-        value = "123"
-        key = "hello"
-        args = {"params": [f"{key}={value}"], "ctx": ctx}
-
-        with patch("context.Context.set_variable") as mock:
-            call(Command.SET, **args)
-            mock.assert_called_once_with(key=key, value=value)
 
         self.assertEqual(ctx.error_level, 0)
 
@@ -742,7 +696,32 @@ class BatchFiles(TestCase):
                     mock_call(out.rstrip("\n"))
                 )
 
-    def test_set_join(self):
+    def test_cd_nonexisting_new(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "cd_nonexisting.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context()
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_set_join_new(self):
         from os.path import join, dirname, abspath
 
         script_name = "set_join.bat"
@@ -750,14 +729,65 @@ class BatchFiles(TestCase):
         folder = join(dirname(abspath(__file__)), 'batch')
 
         from context import Context
-        from main import handle
+        from main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
 
         with patch("builtins.print") as stdout:
             ctx = Context()
-            handle(text=join(folder, script_name), ctx=ctx)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_echo_quote(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "hello_quote.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            ctx.log.debug("->, %s", stdout.mock_calls)
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_set_quote(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_quote.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
             mcalls = stdout.mock_calls
             self.assertEqual(len(mcalls), len(output))
 

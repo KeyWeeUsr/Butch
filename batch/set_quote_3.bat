@@ -1,0 +1,10 @@
+set name=123
+echo %errorlevel%
+echo %name%
+echo %errorlevel%
+set "name="ignored
+echo %errorlevel%
+set "name"
+echo %errorlevel%
+echo EMPTY%name%VALUE
+echo %errorlevel%

@@ -57,20 +57,30 @@ TOKENS = SPECIALS + [QUOTE_DOUBLE]
 class Flag(Enum):
     ESCAPE = auto()
     QUOTE = auto()
+    WORD = auto()
 
 
 class Argument:
     _value: str = ""
+    _quoted: bool = False
 
-    def __init__(self, value: str):
+    def __init__(self, value: str, quoted: bool = False):
         self._value = value
+        self._quoted = quoted
 
     @property
     def value(self):
         return self._value
 
+    @property
+    def quoted(self):
+        return self._quoted
+
     def __repr__(self):
-        return f'<Argument: {self._value!r}>'
+        val = self._value
+        if self.quoted:
+            val = repr(val)
+        return f'<Argument: {val!r}>'
 
     def __eq__(self, other):
         return self.value == other.value
@@ -119,7 +129,7 @@ class Command:
 
     def __repr__(self):
         prefix = "@" if not self.echo else ""
-        return f'<{prefix}Command: "{self.name}" ({self.value})>'
+        return f'<{prefix}Command: "{self.name}" {self.args}>'
 
 
 class Connector:
@@ -202,13 +212,6 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     output = []
 
     idx = 0
-    log("Percent expansion")
-    log("Old data: %r", text)
-    text = "\n".join([
-        percent_expansion(line, ctx=ctx)
-        for line in text.split("\n")  # splitlines strips the last \n
-    ])
-    log("New data: %r", text)
 
     text_len = len(text)
     last_pos = text_len - 1
@@ -216,14 +219,22 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     flags = defaultdict(bool)
     compound_count = 0
 
+    fword = Flag.WORD
+    fquot = Flag.QUOTE
+
     buff = ""
-    arg_buff = ""
     found_command = None
     while idx < text_len:
         char = text[idx]
         log("Position: (end=%04d, idx=%04d, char=%r)", last_pos, idx, char)
+        log("- buff: %r", buff)
 
-        next_char = ""
+        pchar = ""
+        nchar = ""
+        if idx > 0:
+            pchar = text[idx - 1]
+        if idx < last_pos:
+            nchar = text[idx + 1]
 
         # last char isn't <LF>
         if char != SPECIAL_LF and idx == last_pos:
@@ -238,7 +249,8 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 flags[Flag.ESCAPE] = True
             elif char == QUOTE_DOUBLE:
                 log("\t- is quote, swapping quote flag")
-                flags[Flag.QUOTE] = not flags[Flag.QUOTE]
+                flags[fquot] = not flags[fquot]
+                log("\t\t- quote: %s", flags[fquot])
             # append last char because finishing
             # and if buff is empty (single-char), then copy char to buff
             if idx == 0:
@@ -261,13 +273,32 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             flags[Flag.ESCAPE] = True
             idx += 1
         elif char == QUOTE_DOUBLE:
+            if pchar in DELIM_WHITE and not flags[fword] and not flags[fquot]:
+                log("- is word, enabling word flag")
+                flags[Flag.WORD] = True
             log("- is quote, swapping quote flag")
-            flags[Flag.QUOTE] = not flags[Flag.QUOTE]
+            flags[fquot] = not flags[fquot]
+            log("\t- quote: %s", flags[Flag.QUOTE])
             idx += 1
             if not flags[Flag.QUOTE]:
                 log("\t- unquoting")
-                output.append(buff)
+                buff += QUOTE_DOUBLE
+
+                if found_command:
+                    found_command.args = found_command.args + [
+                        Argument(
+                            value=buff,
+                            quoted=True and not flags[Flag.WORD]
+                        )
+                    ]
+                    output.append(found_command)
+                    found_command = None
+                if nchar in DELIM_WHITE:
+                    log("\t- unwording, next char is white")
+                    flags[fword] = False
                 buff = ""
+            else:
+                buff += QUOTE_DOUBLE
         elif char == SPECIAL_LF:
             log("- is <LF>, disabling quote flag")
             # SO says this, but CLI says no
@@ -290,7 +321,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     buff = ""
                     output.append(found_command)
                 if idx != last_pos and buff:  # buff check for whitespace
-                    log("\t\t- not last char")
+                    log("\t\t- not last char, %r", buff)
                     if not found_command:
                         found_command = Command(cmd=CommandType.UNKNOWN)
                     found_command.args = found_command.args + [
@@ -314,7 +345,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             join = None
             if char == SPECIAL_PIPE:
                 log("\t- is pipe")
-                if next_char == SPECIAL_PIPE:
+                if nchar == SPECIAL_PIPE:
                     log("\t\t- is double-pipe (OR)")
                     join = Concat(left=left, right=right)
                 else:
@@ -327,7 +358,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 log("\t- is redirection")
                 join = Redirection(
                     left=left, right=right,
-                    append=next_char in SPECIAL_REDIR
+                    append=nchar in SPECIAL_REDIR
                 )
         elif char == SPECIAL_LPAREN:
             log("- is left-paren")
@@ -335,10 +366,16 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             idx += 1
         elif char == SPECIAL_RPAREN:
             log("- is right-paren")
+            flags[Flag.WORD] = False
             compound_count -= 1
             idx += 1
         elif char in DELIM_WHITE:
             log("- is whitespace")
+            if flags[Flag.QUOTE]:
+                log("\t- is quoted")
+                buff += char
+                idx += 1
+                continue
             if not found_command and buff:
                 log("\t- not found command")
 
@@ -362,9 +399,14 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                         Argument(value=buff)
                     ]
                     buff = ""
+            flags[Flag.WORD] = False
             idx += 1
         else:
             log("- not matching, increment + append")
+            if idx == 0:
+                flags[fword] = True
+            elif pchar in DELIM_WHITE and not flags[fquot]:
+                flags[fword] = True
             buff += char
             idx += 1
 

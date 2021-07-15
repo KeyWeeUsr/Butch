@@ -1,6 +1,9 @@
 import sys
+import json
+from typing import List
 from inspect import getframeinfo, currentframe
 from enum import Enum
+from ast import literal_eval
 from context import Context
 from constants import PATH_NOT_FOUND, PAUSE_TEXT
 
@@ -55,7 +58,7 @@ def _delete_single_variable(key: str, ctx: Context) -> None:
     ctx.delete_variable(key)
 
 
-def set_cmd(params: list, ctx: Context) -> None:
+def set_cmd(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -68,16 +71,25 @@ def set_cmd(params: list, ctx: Context) -> None:
 
     # >1 values are ignored
     param = params[0]
-    if "=" not in param:
-        _print_single_variable(key=param, ctx=ctx)
+    quoted = param.quoted
+    value = param.value
+    if quoted:
+        ctx.log.debug("\t- quoted variable")
+        value = value[1:-1]
+    if "=" not in value:
+        ctx.log.debug("\t- single variable print")
+        _print_single_variable(key=value, ctx=ctx)
         return
 
-    left, right = param.split("=")
+    left, right = value.split("=")
     if left and not right:
+        ctx.log.debug("\t- single variable delete")
         _delete_single_variable(key=left.lower(), ctx=ctx)
         return
 
-    ctx.set_variable(key=left.lower(), value=right)
+    left = left.lower()
+    ctx.log.debug("\t- single variable create: %r, %r", left, right)
+    ctx.set_variable(key=left, value=right)
 
 
 def setlocal(params: list, ctx: Context) -> None:
@@ -109,13 +121,6 @@ def setlocal(params: list, ctx: Context) -> None:
         return
 
 
-def _safe_chdir(*args):
-    try:
-        chdir(*args)
-    except FileNotFoundError:
-        print("The system cannot find the path specified.")
-
-
 def cd(params: list, ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -133,7 +138,7 @@ def cd(params: list, ctx: Context) -> None:
         chdir(params[0])
     except FileNotFoundError:
         ctx.error_level = 1
-        print("The system cannot find the path specified.")
+        print(PATH_NOT_FOUND)
 
 
 def prompt(params: list, ctx: Context) -> None:

@@ -37,6 +37,7 @@ class Context:
         "cmdextversion", "cmdcmdline"
     ]
     _history: list = None
+    _history_enabled: bool = True
     _echo: bool = True
     _prompt: str = ""
     __logger = None
@@ -46,6 +47,7 @@ class Context:
         self._history = []
         self.__logger = self.get_logger()
         self._prompt = self._variables.get("prompt", "")
+        self._cwd = getcwd()
 
         for key, val in kwargs.items():
             if key not in dir(Context):
@@ -56,7 +58,7 @@ class Context:
         keys = [
             "cwd", "variables", "error_level", "extensions_enabled",
             "dynamic_variables", "history", "echo", "prompt",
-            "delayed_expansion_enabled"
+            "delayed_expansion_enabled", "history_enabled"
         ]
         return str({key: getattr(self, key) for key in keys})
 
@@ -83,6 +85,14 @@ class Context:
     @extensions_enabled.setter
     def extensions_enabled(self, value):
         self._extensions_enabled = value
+
+    @property
+    def history_enabled(self):
+        return self._history_enabled
+
+    @history_enabled.setter
+    def history_enabled(self, value):
+        self._history_enabled = value
 
     @property
     def delayed_expansion_enabled(self):
@@ -117,6 +127,8 @@ class Context:
 
     @history.setter
     def history(self, value):
+        if not self.history_enabled:
+            return
         self._history.append(value)
 
     @property

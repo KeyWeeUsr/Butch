@@ -24,4 +24,14 @@ def new_call(cmd: Union[Command, Connector], ctx: Context) -> None:
         raise Exception(f"Unknown function: '{cmd}'")
 
     ctx.history = [cmd]
-    func(params=[item.value for item in cmd.args], ctx=ctx)
+    if cmd.cmd == CommandType.SET:
+        func(params=cmd.args, ctx=ctx)
+        return
+
+    values = []
+    for item in cmd.args:
+        if item.quoted:
+            values.append(repr(item.value))
+        else:
+            values.append(item.value)
+    func(params=values, ctx=ctx)
