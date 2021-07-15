@@ -201,6 +201,12 @@ def pause(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
+    from help import print_help
+    first = params[0] if params else ""
+    if first == "/?":
+        print_help(cmd=Command.PAUSE)
+        return
+
     input(PAUSE_TEXT)
 
 
