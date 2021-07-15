@@ -138,6 +138,8 @@ def cd(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     from os import chdir, environ
+    from help import print_help
+    params_len = len(params)
     if not params:
         # linux
         chdir(environ.get("HOME"))
@@ -145,8 +147,13 @@ def cd(params: list, ctx: Context) -> None:
         ## do nothing
         return
 
+    first = params[0]
+    if params_len == 1 and first == "/?":
+        print_help(cmd=Command.CD)
+        return
+
     try:
-        chdir(params[0])
+        chdir(first)
     except FileNotFoundError:
         ctx.error_level = 1
         print(PATH_NOT_FOUND)
