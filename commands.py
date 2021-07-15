@@ -108,10 +108,15 @@ def setlocal(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
+    from help import print_help
     # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
         # copy all variables to new session, restore old state with endlocal
+        return
+
+    if params_len == 1 and params[0] == "/?":
+        print_help(cmd=Command.SETLOCAL)
         return
 
     value = [item.lower() for item in set(params)][0]
