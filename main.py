@@ -20,8 +20,8 @@ def handle_input(inp: str, ctx: Context):
 
 
 def handle_input_new(inp: str, ctx: Context):
-    cmd = tokenize(text=inp)
-    new_call(cmd=cmd, ctx=ctx)
+    for cmd in tokenize(text=inp, ctx=ctx):
+        new_call(cmd=cmd, ctx=ctx)
 
 
 def handle_file(path: str, ctx: Context):

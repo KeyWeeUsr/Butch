@@ -25,6 +25,7 @@ def echo(params: List["Argument"], ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     from parser import percent_expansion
+    from help import print_help
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -37,6 +38,9 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         first = params[0].lower()
         if first in ("on", "off"):
             ctx.echo = state_rev[first]
+            return
+        elif first == "/?":
+            print_help(cmd=Command.ECHO)
             return
 
     if not params_len:
