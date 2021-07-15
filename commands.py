@@ -20,12 +20,12 @@ class Command(Enum):
     SETLOCAL = "setlocal"
 
 
-def echo(params: list, ctx: Context) -> None:
+def echo(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     from parser import parse_variables
-    params = parse_variables(values=params, ctx=ctx)
+    params = parse_variables(values=[param.value for param in params], ctx=ctx)
     params_len = len(params)
     state = {True: "on", False: "off"}
     state_rev = {val: key for key, val in state.items()}

@@ -336,14 +336,15 @@ class Caller(TestCase):
         from tokenizer import Command, Argument
 
         params = [str(val) for val in range(3)]
+        args = [Argument(value=value) for value in params]
 
         ctx = Context()
         with patch("commands.echo") as echo:
             self.assertEqual(call(cmd=Command(
                 cmd=CommandType.ECHO,
-                args=[Argument(value=value) for value in params]
+                args=args
             ), ctx=ctx), None)
-            echo.assert_called_once_with(params=params, ctx=ctx)
+            echo.assert_called_once_with(params=args, ctx=ctx)
 
     def test_map_unresolved(self):
         from caller import call
@@ -385,20 +386,6 @@ class Context(TestCase):
 
 
 class Execution(TestCase):
-    def test_echo(self):
-        from commands import Command
-        from caller import call
-        from context import Context
-
-        ctx = Context()
-        args = {"params": ["a", "b", "c"], "ctx": ctx}
-
-        with patch("commands.print") as mock:
-            call(Command.ECHO, **args)
-            mock.assert_called_once_with(*args["params"])
-
-        self.assertEqual(ctx.error_level, 0)
-
     def test_echo_new(self):
         from commands import Command as CommandType
         from tokenizer import Command, Argument
@@ -569,31 +556,6 @@ class Execution(TestCase):
 
 
 class BatchFiles(TestCase):
-    def test_hello(self):
-        from os.path import join, dirname, abspath
-
-        script_name = "hello.bat"
-        out_name = f"{script_name}.out"
-        folder = join(dirname(abspath(__file__)), 'batch')
-
-        from context import Context
-        from main import handle
-
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
-        with patch("builtins.print") as stdout:
-            ctx = Context()
-            handle(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "))
-                )
-
     def test_hello_new(self):
         from os.path import join, dirname, abspath
 
@@ -610,32 +572,6 @@ class BatchFiles(TestCase):
         with patch("builtins.print") as stdout:
             ctx = Context()
             handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "))
-                )
-
-    def test_cd_existing(self):
-        from os.path import join, dirname, abspath
-
-        script_name = "cd_existing.bat"
-        out_name = f"{script_name}.out"
-        folder = join(dirname(abspath(__file__)), 'batch')
-
-        from context import Context
-        from main import handle
-
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
-        with patch("os.chdir") as cdr, patch("builtins.print") as stdout:
-            ctx = Context()
-            handle(text=join(folder, script_name), ctx=ctx)
-            cdr.assert_called_once_with("..")
             mcalls = stdout.mock_calls
             self.assertEqual(len(mcalls), len(output))
 
@@ -669,31 +605,6 @@ class BatchFiles(TestCase):
                 self.assertEqual(
                     mcalls[idx],
                     mock_call(*out.rstrip("\n").split(" "))
-                )
-
-    def test_cd_nonexisting(self):
-        from os.path import join, dirname, abspath
-
-        script_name = "cd_nonexisting.bat"
-        out_name = f"{script_name}.out"
-        folder = join(dirname(abspath(__file__)), 'batch')
-
-        from context import Context
-        from main import handle
-
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
-        with patch("builtins.print") as stdout:
-            ctx = Context()
-            handle(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"))
                 )
 
     def test_cd_nonexisting_new(self):
@@ -776,6 +687,31 @@ class BatchFiles(TestCase):
         from os.path import join, dirname, abspath
 
         script_name = "set_quote.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_set_quote_2(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_quote_2.bat"
         out_name = f"{script_name}.out"
         folder = join(dirname(abspath(__file__)), 'batch')
 

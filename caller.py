@@ -24,7 +24,7 @@ def new_call(cmd: Union[Command, Connector], ctx: Context) -> None:
         raise Exception(f"Unknown function: '{cmd}'")
 
     ctx.history = [cmd]
-    if cmd.cmd == CommandType.SET:
+    if cmd.cmd in (CommandType.SET, CommandType.ECHO):
         func(params=cmd.args, ctx=ctx)
         return
 

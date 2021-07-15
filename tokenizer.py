@@ -58,6 +58,7 @@ class Flag(Enum):
     ESCAPE = auto()
     QUOTE = auto()
     WORD = auto()
+    QUOTE_IN_WORD = auto()
 
 
 class Argument:
@@ -80,7 +81,7 @@ class Argument:
         val = self._value
         if self.quoted:
             val = repr(val)
-        return f'<Argument: {val!r}>'
+        return f'<Argument: {val!r}, q={int(self.quoted)}>'
 
     def __eq__(self, other):
         return self.value == other.value
@@ -221,6 +222,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
 
     fword = Flag.WORD
     fquot = Flag.QUOTE
+    fqinw = Flag.QUOTE_IN_WORD
 
     buff = ""
     found_command = None
@@ -278,23 +280,33 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 flags[Flag.WORD] = True
             log("- is quote, swapping quote flag")
             flags[fquot] = not flags[fquot]
+            if pchar not in DELIM_WHITE and flags[fquot]:
+                log("- is quote in the middle of word")
+                flags[fqinw] = True
             log("\t- quote: %s", flags[Flag.QUOTE])
             idx += 1
-            if not flags[Flag.QUOTE]:
+            if not flags[fquot] and flags[fword]:
                 log("\t- unquoting")
                 buff += QUOTE_DOUBLE
+                log("-> %r", buff)
 
                 if found_command:
+                    log("\t\t- found command")
                     found_command.args = found_command.args + [
                         Argument(
                             value=buff,
-                            quoted=True and not flags[Flag.WORD]
+                            quoted=True and not flags[fqinw]
                         )
                     ]
                     output.append(found_command)
                     found_command = None
                 if nchar in DELIM_WHITE:
                     log("\t- unwording, next char is white")
+                    flags[fword] = False
+                    log("- unquoting middle quote")
+                    flags[fqinw] = False
+                if nchar in SPECIAL_LF:
+                    log("\t- unwording, next char is <LF>")
                     flags[fword] = False
                 buff = ""
             else:
