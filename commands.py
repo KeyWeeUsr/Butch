@@ -74,14 +74,20 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
+    from help import print_help
     # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
         _print_all_variables(ctx=ctx)
         return
 
-    # >1 values are ignored
     param = params[0]
+    value = param.value
+    if params_len == 1 and value == "/?":
+        print_help(cmd=Command.SET)
+        return
+
+    # >1 values are ignored
     quoted = param.quoted
     value = param.value
     if quoted:
