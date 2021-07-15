@@ -758,6 +758,106 @@ class BatchFiles(TestCase):
                     mock_call(out.rstrip("\n"))
                 )
 
+    def test_set_quote_4(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_quote_4.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_set_quote_5(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_quote_5.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_set_quote_6(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_quote_6.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
+    def test_set_quote_7(self):
+        from os.path import join, dirname, abspath
+
+        script_name = "set_quote_7.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout:
+            ctx = Context(history_enabled=False)
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(out.rstrip("\n"))
+                )
+
     def ignore_test_set_join_expansion(self):
         from os.path import join, dirname, abspath
 
