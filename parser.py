@@ -142,4 +142,5 @@ def percent_expansion(line: str, ctx: Context) -> str:
             if idx != line_len:
                 tmp += "%"
             continue
+    ctx.log.debug("percent expansion result: %r", tmp)
     return tmp

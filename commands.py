@@ -5,7 +5,7 @@ from inspect import getframeinfo, currentframe
 from enum import Enum
 from ast import literal_eval
 from context import Context
-from constants import PATH_NOT_FOUND, PAUSE_TEXT
+from constants import PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED
 
 
 class Command(Enum):
@@ -24,8 +24,11 @@ def echo(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    from parser import parse_variables
-    params = parse_variables(values=[param.value for param in params], ctx=ctx)
+    from parser import percent_expansion
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
     params_len = len(params)
     state = {True: "on", False: "off"}
     state_rev = {val: key for key, val in state.items()}
@@ -51,11 +54,15 @@ def _print_all_variables(ctx: Context) -> None:
 
 def _print_single_variable(key: str, ctx: Context) -> None:
     # TODO: case-sensitive key should be printed
-    print(f"{key}={ctx.get_variable(key)}")
+    value = ctx.get_variable(key)
+    if not value:
+        print(ENV_VAR_UNDEFINED)
+        return
+    print(f"{key}={value}")
 
 
 def _delete_single_variable(key: str, ctx: Context) -> None:
-    ctx.delete_variable(key)
+    ctx.delete_variable(key=key)
 
 
 def set_cmd(params: List["Argument"], ctx: Context) -> None:
@@ -75,15 +82,15 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
     value = param.value
     if quoted:
         ctx.log.debug("\t- quoted variable")
-        value = value[1:-1]
+        value = value[1:value.rfind('"')]
     if "=" not in value:
-        ctx.log.debug("\t- single variable print")
+        ctx.log.debug("\t- single variable print: %r", value)
         _print_single_variable(key=value, ctx=ctx)
         return
 
     left, right = value.split("=")
     if left and not right:
-        ctx.log.debug("\t- single variable delete")
+        ctx.log.debug("\t- single variable delete: %r", left)
         _delete_single_variable(key=left.lower(), ctx=ctx)
         return
 

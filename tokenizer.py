@@ -59,6 +59,7 @@ class Flag(Enum):
     QUOTE = auto()
     WORD = auto()
     QUOTE_IN_WORD = auto()
+    UNFINISHED_LINE = auto()
 
 
 class Argument:
@@ -72,6 +73,10 @@ class Argument:
     @property
     def value(self):
         return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
 
     @property
     def quoted(self):
@@ -223,12 +228,14 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     fword = Flag.WORD
     fquot = Flag.QUOTE
     fqinw = Flag.QUOTE_IN_WORD
+    funfi = Flag.UNFINISHED_LINE
 
     buff = ""
     found_command = None
     while idx < text_len:
         char = text[idx]
         log("Position: (end=%04d, idx=%04d, char=%r)", last_pos, idx, char)
+        log("- flags: %r", flags)
         log("- buff: %r", buff)
 
         pchar = ""
@@ -299,7 +306,13 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                         )
                     ]
                     output.append(found_command)
-                    found_command = None
+                    if nchar == SPECIAL_LF:
+                        # keep to collect quoted but mangled
+                        # "name="ignored -> 1 arg later unquoted in cmd func
+                        # and 'ignored' part would be stripped
+                        found_command = None
+                    else:
+                        flags[funfi] = True
                 if nchar in DELIM_WHITE:
                     log("\t- unwording, next char is white")
                     flags[fword] = False
@@ -336,11 +349,17 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     log("\t\t- not last char, %r", buff)
                     if not found_command:
                         found_command = Command(cmd=CommandType.UNKNOWN)
-                    found_command.args = found_command.args + [
-                        Argument(value=buff)
-                    ]
+                    if flags[funfi]:
+                        found_command.args[-1].value = (
+                            found_command.args[-1].value + buff
+                        )
+                        flags[funfi] = False
+                    else:
+                        found_command.args = found_command.args + [
+                            Argument(value=buff)
+                        ]
+                        output.append(found_command)
                     buff = ""
-                    output.append(found_command)
                     found_command = None
 
             if compound_count > 0:
@@ -416,8 +435,10 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         else:
             log("- not matching, increment + append")
             if idx == 0:
+                log("\t- word flag on, idx == 0")
                 flags[fword] = True
             elif pchar in DELIM_WHITE and not flags[fquot]:
+                log("\t- word flag on, pchar is white")
                 flags[fword] = True
             buff += char
             idx += 1
