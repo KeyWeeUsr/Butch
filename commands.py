@@ -209,9 +209,15 @@ def exit_cmd(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
+    from help import print_help
     params_len = len(params)
     if not params_len:
         print()
+        return
+
+    first = params[0]
+    if first == "/?":
+        print_help(cmd=Command.EXIT)
         return
 
     if "/B" in params:

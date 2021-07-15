@@ -1,0 +1,11 @@
+Quits the program or the current batch script.
+
+EXIT [/B] [exitCode]
+
+  /B		specifies to exit the current batch script instead of
+		the program. If executed from outside a batch script,
+		it will quit the program.
+
+  exitCode	specifies a numeric number.  if /B is specified, sets
+		ERRORLEVEL that number.  If quitting program, sets the process
+		exit code with that number.
