@@ -2,56 +2,7 @@ from collections import defaultdict
 from enum import Enum, auto
 from context import Context
 from commands import Command as CommandType, get_reverse_cmd_map
-
-# consecutive delims should be treated as one
-# no delims within a quoted string
-DELIM_SPACE = " "
-DELIM_TAB = "\t"
-DELIM_SEMI = ";"
-DELIM_COMMA = ","
-DELIM_EQ = "="
-DELIM_VERTAB = "\x0B"
-DELIM_FORMFEED = "\x0C"
-DELIM_WTF = "\xff"
-DELIM_WHITE = [DELIM_SPACE, DELIM_TAB]
-DELIMS = DELIM_WHITE + [
-    DELIM_SEMI,
-    DELIM_COMMA,
-    DELIM_EQ,
-    DELIM_VERTAB,
-    DELIM_FORMFEED,
-    DELIM_WTF
-]
-
-SPECIAL_CR = "\r"
-SPECIAL_CARRET = "^"
-SPECIAL_LPAREN = "("
-SPECIAL_RPAREN = ")"
-SPECIAL_AT = "@"
-SPECIAL_AMP = "&"
-SPECIAL_PIPE = "|"
-SPECIAL_LT = "<"
-SPECIAL_GT = ">"
-SPECIAL_REDIR = [
-    SPECIAL_LT,
-    SPECIAL_GT
-]
-SPECIAL_SPLITTERS = [
-    SPECIAL_AMP,
-    SPECIAL_PIPE
-] + SPECIAL_REDIR
-SPECIAL_LF = "\n"
-SPECIALS = [
-    SPECIAL_CR,
-    SPECIAL_CARRET,
-    SPECIAL_LPAREN,
-    SPECIAL_RPAREN,
-    SPECIAL_AT,
-    SPECIAL_LF
-] + SPECIAL_SPLITTERS + DELIMS
-
-QUOTE_DOUBLE = '"'
-TOKENS = SPECIALS + [QUOTE_DOUBLE]
+from grammar import *
 
 
 class Flag(Enum):
