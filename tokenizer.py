@@ -339,10 +339,22 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 if idx == last_pos and buff:  # buff check for whitespace
                     log("\t\t- last char")
                     if not found_command:
-                        found_command = Command(cmd=CommandType.UNKNOWN)
-                    found_command.args = found_command.args + [
-                        Argument(value=buff)
-                    ]
+                        cmd_clear = buff.strip().lower()
+                        echo = True
+                        if cmd_clear.startswith("@"):
+                            log("\t\t- echo off")
+                            echo = False
+                            cmd_clear = cmd_clear[1:]
+                        log("\t- cmd string: %r", cmd_clear)
+                        found_command = Command(
+                            cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN),
+                            echo=echo
+                        )
+                        buff = ""
+                    if buff:
+                        found_command.args = found_command.args + [
+                            Argument(value=buff)
+                        ]
                     buff = ""
                     output.append(found_command)
                 if idx != last_pos and buff:  # buff check for whitespace
