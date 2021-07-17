@@ -11,7 +11,7 @@ from os.path import abspath, isdir, exists, join
 from context import Context
 from constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
-    SURE
+    SURE, DELETE
 )
 
 
@@ -26,6 +26,7 @@ class Command(Enum):
     EXIT = "exit"
     SETLOCAL = "setlocal"
     DELETE = "del"
+    ERASE = "erase"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -293,6 +294,16 @@ def delete(params: List["Argument"], ctx: Context) -> None:
             ctx.error_level = 0
             return
 
+    # higher priority than quiet (/p /q = prompt)
+    prompt_for_all = False
+    quiet = False
+    for item in params:
+        low = item.lower()
+        if "/p" == low:
+            prompt_for_all = True
+        elif "/q" == low:
+            quiet = True
+
     # for multiple paths "not found" or error level setting is skipped
     for param in params:
         path = abspath(param)
@@ -301,12 +312,17 @@ def delete(params: List["Argument"], ctx: Context) -> None:
 
         os_path = path.replace('/', '\\')
         if isdir(param):
-            answer = input(f"{os_path}\*, {SURE} ")
-            if answer.lower() != "y":
+            answer = ""
+            if prompt_for_all or not quiet:
+                answer = input(f"{os_path}\\*, {SURE} ").lower()
+            if answer != "y":
                 continue
             for file in listdir(param):
                 remove(join(path, file))
             return
+        if prompt_for_all:
+            if input(f"{os_path}, {DELETE} ").lower() != "y":
+                continue
         remove(path)
     ctx.error_level = 0
 
@@ -321,7 +337,8 @@ def get_cmd_map():
         Command.PAUSE: pause,
         Command.EXIT: exit_cmd,
         Command.SETLOCAL: setlocal,
-        Command.DELETE: delete
+        Command.DELETE: delete,
+        Command.ERASE: delete
     }
 
 def get_reverse_cmd_map():
