@@ -13,6 +13,7 @@ from constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
     SURE, DELETE
 )
+from outputs import CommandOutput
 
 
 class Command(Enum):
@@ -31,7 +32,14 @@ class Command(Enum):
 
 def echo(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
 
     from parser import percent_expansion
     from help import print_help
@@ -49,29 +57,29 @@ def echo(params: List["Argument"], ctx: Context) -> None:
             ctx.echo = state_rev[first]
             return
         elif first == "/?":
-            print_help(cmd=Command.ECHO)
+            print_help(cmd=Command.ECHO, file=out)
             return
 
     if not params_len:
-        print(f"ECHO is {state[ctx.echo]}.")
+        print(f"ECHO is {state[ctx.echo]}.", file=out)
         return
 
-    print(*params)
+    print(*params, file=out)
 
 
 def _print_all_variables(ctx: Context) -> None:
     for key, val in ctx.variables.items():
         # TODO: case-sensitive key should be printed
-        print(f"{key}={val}")
+        print(f"{key}={val}", file=sys.stdout)
 
 
 def _print_single_variable(key: str, ctx: Context) -> None:
     # TODO: case-sensitive key should be printed
     value = ctx.get_variable(key)
     if not value:
-        print(ENV_VAR_UNDEFINED)
+        print(ENV_VAR_UNDEFINED, file=sys.stdout)
         return
-    print(f"{key}={value}")
+    print(f"{key}={value}", file=sys.stdout)
 
 
 def _delete_single_variable(key: str, ctx: Context) -> None:
@@ -176,7 +184,7 @@ def cd(params: list, ctx: Context) -> None:
         chdir(first)
     except FileNotFoundError:
         ctx.error_level = 1
-        print(PATH_NOT_FOUND)
+        print(PATH_NOT_FOUND, file=sys.stdout)
 
 
 def prompt(params: list, ctx: Context) -> None:
@@ -306,6 +314,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
 
     # for multiple paths "not found" or error level setting is skipped
     for param in params:
+        import sys
         path = abspath(param)
         if not exists(path):
             continue
@@ -314,17 +323,30 @@ def delete(params: List["Argument"], ctx: Context) -> None:
         if isdir(param):
             answer = ""
             if prompt_for_all or not quiet:
-                answer = input(f"{os_path}\\*, {SURE} ").lower()
+                text = f"{os_path}\\*, {SURE}"
+                if ctx.piped:
+                    answer = ctx.output.stdout.read(1).decode("utf-8")
+                    print(f"{text} {answer}")
+                else:
+                    answer = input(f"{text} ").lower()
             if answer != "y":
-                continue
+                continue 
             for file in listdir(param):
                 remove(join(path, file))
             return
         if prompt_for_all:
-            if input(f"{os_path}, {DELETE} ").lower() != "y":
+            answer = ""
+            text = f"{os_path}, {DELETE}"
+            if ctx.piped:
+                answer = ctx.output.stdout.read(1).decode("utf-8")
+                print(f"{text} {answer}")
+            else:
+                answer = input(text).lower()
+            if answer != "y":
                 continue
         remove(path)
     ctx.error_level = 0
+    ctx.piped = False
 
 
 def get_cmd_map():

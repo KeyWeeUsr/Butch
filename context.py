@@ -4,6 +4,8 @@ from os import getcwd, environ
 from time import strftime
 from random import randint
 
+from outputs import CommandOutput
+
 PROMPT_SYMBOL = "$"
 PROMPT_AMP = "$A"
 PROMPT_PIPE = "$B"
@@ -40,6 +42,9 @@ class Context:
     _history_enabled: bool = True
     _echo: bool = True
     _prompt: str = ""
+    _output: CommandOutput = None
+    _collect_output: bool = False
+    _piped: bool = False
     __logger = None
 
     def __init__(self, **kwargs):
@@ -77,6 +82,30 @@ class Context:
     @error_level.setter
     def error_level(self, value):
         self._error_level = value
+
+    @property
+    def piped(self):
+        return self._piped
+
+    @piped.setter
+    def piped(self, value):
+        self._piped = value
+
+    @property
+    def collect_output(self):
+        return self._collect_output
+
+    @collect_output.setter
+    def collect_output(self, value):
+        self._collect_output = value
+
+    @property
+    def output(self):
+        return self._output
+
+    @output.setter
+    def output(self, value):
+        self._output = value
 
     @property
     def extensions_enabled(self):

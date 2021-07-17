@@ -387,6 +387,7 @@ class Context(TestCase):
 
 class Execution(TestCase):
     def test_echo_new(self):
+        import sys
         from commands import Command as CommandType
         from tokenizer import Command, Argument
         from caller import new_call as call
@@ -400,11 +401,12 @@ class Execution(TestCase):
                 Argument(value=value)
                 for value in values
             ]), ctx=ctx)
-            mock.assert_called_once_with(*values)
+            mock.assert_called_once_with(*values, file=sys.stdout)
 
         self.assertEqual(ctx.error_level, 0)
 
     def test_cd_nonexisting(self):
+        import sys
         from commands import Command
         from caller import call
         from context import Context
@@ -417,11 +419,12 @@ class Execution(TestCase):
         with chdir_mock as chdir, patch("commands.print") as mock:
             call(Command.CD, **args)
             chdir.assert_called_once_with(args["params"][0])
-            mock.assert_called_once_with(PATH_NOT_FOUND)
+            mock.assert_called_once_with(PATH_NOT_FOUND, file=sys.stdout)
 
         self.assertEqual(ctx.error_level, 1)
 
     def test_cd_nonexisting_new(self):
+        import sys
         from commands import Command as CommandType
         from tokenizer import Command, Argument
         from caller import new_call as call
@@ -437,7 +440,7 @@ class Execution(TestCase):
                 Argument(value=value)
             ]), ctx=ctx)
             chdir.assert_called_once_with(value)
-            mock.assert_called_once_with(PATH_NOT_FOUND)
+            mock.assert_called_once_with(PATH_NOT_FOUND, file=sys.stdout)
 
         self.assertEqual(ctx.error_level, 1)
 
@@ -557,6 +560,7 @@ class Execution(TestCase):
 
 class BatchFiles(TestCase):
     def test_hello_new(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "hello.bat"
@@ -578,10 +582,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "))
+                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
                 )
 
     def test_cd_existing_new(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "cd_existing.bat"
@@ -604,10 +609,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "))
+                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
                 )
 
     def test_cd_nonexisting_new(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "cd_nonexisting.bat"
@@ -629,10 +635,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_join_new(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_join.bat"
@@ -654,10 +661,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_echo_quote(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "hello_quote.bat"
@@ -680,10 +688,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote.bat"
@@ -705,10 +714,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote_2(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote_2.bat"
@@ -730,10 +740,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote_3(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote_3.bat"
@@ -755,10 +766,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote_4(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote_4.bat"
@@ -780,10 +792,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote_5(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote_5.bat"
@@ -805,10 +818,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote_6(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote_6.bat"
@@ -830,10 +844,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_set_quote_7(self):
+        import sys
         from os.path import join, dirname, abspath
 
         script_name = "set_quote_7.bat"
@@ -855,10 +870,11 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_delete_file(self):
+        import sys
         from os.path import join, dirname, abspath, exists
 
         script_name = "delete_file.bat"
@@ -888,7 +904,7 @@ class BatchFiles(TestCase):
             for idx, out in enumerate(output):
                 self.assertEqual(
                     mcalls[idx],
-                    mock_call(out.rstrip("\n"))
+                    mock_call(out.rstrip("\n"), file=sys.stdout)
                 )
 
     def test_delete_file_syntax(self):
@@ -916,6 +932,54 @@ class BatchFiles(TestCase):
                     mcalls[idx],
                     mock_call(out.rstrip("\n"))
                 )
+
+
+    def test_delete_folder_pipe(self):
+        import sys
+        from os import mkdir, rmdir, listdir
+        from shutil import rmtree
+        from os.path import join, dirname, abspath, exists
+
+        script_name = "delete_folder_files.bat"
+        out_name = f"{script_name}.out"
+        folder = join(dirname(abspath(__file__)), 'batch')
+        tmp_folder = join("/tmp", "butch-tmp")
+
+        from context import Context
+        from constants import SURE
+        from main import handle_new
+
+        with open(join(folder, script_name)) as file:
+            script = file.readlines()
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        with patch("builtins.print") as stdout, patch("os.remove") as rmv:
+            ctx = Context(history_enabled=True)
+
+            if exists(tmp_folder):
+                rmtree(tmp_folder)
+
+            mkdir(tmp_folder)
+
+            handle_new(text=join(folder, script_name), ctx=ctx)
+            rmv.assert_not_called()  # captured STDOUT prevents the call
+
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(output), 2)
+            self.assertEqual(len(mcalls), 3)
+
+            self.assertTrue("|" in script[0])
+            self.assertEqual(mcalls[0].args[0], output[0].rstrip("\n")[-1])
+            self.assertEqual(str(ctx.error_level), output[1].rstrip("\n"))
+
+            tmp = ctx.history[0].right.args[0].value.replace("/", "\\")
+            self.assertEqual(mcalls[1].args[0], f"{tmp}\\*, {SURE} ")
+            self.assertEqual(mcalls[2].args[0], str(ctx.error_level))
+
+            self.assertTrue(exists(tmp_folder))
+            self.assertEqual(listdir(tmp_folder), [])
+            rmdir(tmp_folder)
 
     def ignore_test_set_join_expansion(self):
         from os.path import join, dirname, abspath

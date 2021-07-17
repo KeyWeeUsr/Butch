@@ -89,7 +89,7 @@ Syntax
 - [ ] Caret escaping (``^``)
 - [ ] Code blocks (``(``, ``)``)
 - [ ] Code blocks (multi-line block with ``(``, ``)``)
-- [ ] Redirection to commands (``|`` - pipes)
+- [X] Redirection to commands (``|`` - pipes)
 - [ ] Redirection to files (``<``, ``<<``, ``>>``, ``>``)
 - [ ] Redirection to special (``nul``)
 - [ ] Command concatenation (``&``)

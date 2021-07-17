@@ -139,6 +139,7 @@ class Command:
 
 
 class Connector:
+    """Shouldn't be used directly, but ABC might be overkill."""
     _name: str = ""
     _left: Command = None
     _right: Command = None
@@ -160,18 +161,22 @@ class Connector:
     def right(self):
         return self._right
 
+    @right.setter
+    def right(self, value):
+        self._right = value
+
     def __repr__(self):
         return f'<{self.name}: [{self.left}, {self.right}]>'
 
 
 class Concat(Connector):
-    def __init__(self, left: Command, right: Command):
-        super("Concat", left=left, right=right)
+    def __init__(self, left: Command, right: Command = None):
+        super().__init__("Concat", left=left, right=right)
 
 
 class Pipe(Connector):
-    def __init__(self, left: Command, right: Command):
-        super("Pipe", left=left, right=right)
+    def __init__(self, left: Command, right: Command = None):
+        super().__init__("Pipe", left=left, right=right)
 
 
 class RedirType(Enum):
@@ -185,10 +190,10 @@ class Redirection(Connector):
 
     def __init__(
             self, redir_type: RedirType,
-            left: Command, right: Command,
+            left: Command, right: Command = None,
             append: bool = False
     ):
-        super("Redirection", left=left, right=right)
+        super().__init__("Redirection", left=left, right=right)
         self._type = redir_type
         self._append = append
 
@@ -271,6 +276,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     Argument(value=buff)
                 ]
                 buff = ""
+                log("\t- appending to output: %r", found_command)
                 output.append(found_command)
             break
 
@@ -305,6 +311,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                             quoted=True and not flags[fqinw]
                         )
                     ]
+                    log("\t\t- appending to output: %r", found_command)
                     output.append(found_command)
                     if nchar == SPECIAL_LF:
                         # keep to collect quoted but mangled
@@ -356,7 +363,24 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                             Argument(value=buff)
                         ]
                     buff = ""
-                    output.append(found_command)
+                    if not output:
+                        log("\t\t- appending to output: %r", found_command)
+                        output.append(found_command)
+                    else:
+                        log("\t\t- output present, check if connector")
+                        last = output[-1]
+                        if isinstance(last, Connector) and not last.right:
+                            log("\t\t\t- is connector w/ empty r-val")
+                            log("\t\t\t\t- insert: %r", found_command)
+                            output[-1].right = found_command
+                            found_command = None
+                        else:
+                            log(
+                                "\t\t\t- not connector, appending: %r",
+                                found_command
+                            )
+                            output.append(found_command)
+                            found_command = None
                 if idx != last_pos and buff:  # buff check for whitespace
                     log("\t\t- not last char, %r", buff)
                     if not found_command:
@@ -370,7 +394,26 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                         found_command.args = found_command.args + [
                             Argument(value=buff)
                         ]
-                        output.append(found_command)
+
+                        if not output:
+                            log("\t\t- appending to output: %r", found_command)
+                            output.append(found_command)
+                        else:
+                            log("\t\t- output present, check if connector")
+                            last = output[-1]
+                            if isinstance(last, Connector) and not last.right:
+                                log("\t\t\t- is connector w/ empty r-val")
+                                log("\t\t\t\t- insert: %r", found_command)
+                                output[-1].right = found_command
+                                found_command = None
+                            else:
+                                log(
+                                    "\t\t\t- not connector, appending: %r",
+                                    found_command
+                                )
+                                output.append(found_command)
+                                found_command = None
+
                     buff = ""
                     found_command = None
 
@@ -379,30 +422,65 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 # join buff to single command
                 pass
 
-            
+
             idx += 1
         elif char in SPECIAL_SPLITTERS:
-            log("- is splitter (TBD)")
-            left = Command(name="???", value=buff)
-            right = ...
+            log("- is splitter")
+            last = output[-1] if output else None
+            if last and not isinstance(last, Command):
+                log("\t- left isn't command, assuming splitter")
+                log("\t- assuming argument leftovers in buffer")
+
+                # cmd1 [arg ...] | cmd2 [arg ...] | cmd3 [arg ...]
+                # \---parse---> P(P(1 | 2) | 3)
+                #
+                # P----(L)---P--(L)---1
+                #  \          \
+                #   \          \(R)---2
+                #    \
+                #     \(R)------------3
+                if buff:
+                    last.right.args = last.right.args + [
+                        Argument(value=buff)
+                    ]
+            elif found_command:
+                # command not yet added, assembling now
+                log("\t- found_command: %r", found_command)
+                last = found_command
             join = None
             if char == SPECIAL_PIPE:
                 log("\t- is pipe")
                 if nchar == SPECIAL_PIPE:
                     log("\t\t- is double-pipe (OR)")
-                    join = Concat(left=left, right=right)
+                    join = Concat(left=last)
+                    idx += 1
                 else:
                     log("\t\t- is normal pipe")
-                    join = Pipe(left=left, right=right)
+                    join = Pipe(left=last)
             elif char == SPECIAL_AMP:
                 log("\t- is amp")
-                join = Concat(left=left, right=right)
+                join = Concat(left=last)
+                if nchar == SPECIAL_AMP:
+                    log("\t\t- is &&")
+                    idx += 1
             elif char in SPECIAL_REDIR:
                 log("\t- is redirection")
-                join = Redirection(
-                    left=left, right=right,
-                    append=nchar in SPECIAL_REDIR
-                )
+                append = False
+                if nchar in SPECIAL_REDIR:
+                    append = True
+                    idx += 1
+                join = Redirection(left=last, right=None, append=append)
+            # the last command is now encapsulated in a connector
+            # the newest command is stored in the "right" branch
+            log("\t- check output: %r", output)
+            if output:
+                log("\t- attaching command to connector")
+                output[-1] = join
+            else:
+                log("\t- creating new item: %r", join)
+                output.append(join)
+            found_command = None
+            idx += 1
         elif char == SPECIAL_LPAREN:
             log("- is left-paren")
             compound_count += 1
@@ -431,8 +509,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     cmd_clear = cmd_clear[1:]
                 log("\t- cmd string: %r", cmd_clear)
                 found_command = Command(
-                    cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN),
-                    echo=echo
+                    cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
                 )
                 buff = ""
             elif found_command:
@@ -447,12 +524,18 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             idx += 1
         else:
             log("- not matching, increment + append")
+            split_next = nchar in SPECIAL_SPLITTERS
             if idx == 0:
                 log("\t- word flag on, idx == 0")
                 flags[fword] = True
-            elif pchar in DELIM_WHITE and not flags[fquot]:
+            elif pchar in DELIM_WHITE and not split_next and not flags[fquot]:
                 log("\t- word flag on, pchar is white")
                 flags[fword] = True
+            if split_next:
+                log("\t- appending to output before splitting")
+                flags[fword] = False
+                output.append(found_command)
+                found_command = None
             buff += char
             idx += 1
 
