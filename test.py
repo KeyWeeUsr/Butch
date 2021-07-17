@@ -875,6 +875,7 @@ class BatchFiles(TestCase):
 
     def test_delete_file(self):
         import sys
+        from os import remove
         from os.path import join, dirname, abspath, exists
 
         script_name = "delete_file.bat"
@@ -890,7 +891,9 @@ class BatchFiles(TestCase):
         with patch("builtins.print") as stdout:
             ctx = Context(history_enabled=False)
             tmp = script_name.replace(".bat", ".tmp")
-            self.assertFalse(exists(tmp))
+
+            if exists(tmp):
+                remove(tmp)
             with open(tmp, "w") as file:
                 file.write(".")
             self.assertTrue(exists(tmp))

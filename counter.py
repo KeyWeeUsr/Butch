@@ -34,8 +34,16 @@ class Count:
         self._value += self._step
         return self._value
 
+
+    def __reversed__(self):
+        self._value -= self._step
+        return self._value
+
     def next(self):
         return self.__next__()
+
+    def previous(self):
+        return self.__reversed__()
 
     def __repr__(self):
         return f"count({self.value})"
