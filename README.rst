@@ -21,17 +21,28 @@ Commands
 - [ ] `ASSOC <https://ss64.com/nt/assoc.html>`__
 - [ ] `CALL <https://ss64.com/nt/call.html>`__
 - [X] |CD|_
-- [ ] ``/D`` switch for |CD|_
-- [ ] `CHDIR <https://ss64.com/nt/chdir.html>`__
+
+  *pending:*
+
+  - [ ] ``/D`` change current drive + path
+
+- [X] `CHDIR <https://ss64.com/nt/chdir.html>`__
 - [ ] `CLS <https://ss64.com/nt/cls.html>`__
 - [ ] `COLOR <https://ss64.com/nt/color.html>`__
 - [ ] `COPY <https://ss64.com/nt/copy.html>`__
 - [ ] `DATE <https://ss64.com/nt/date.html>`__
 - [X] `DEL <https://ss64.com/nt/del.html>`__
+
+  *pending:*
+
+  - [ ] ``/F`` force deleting of read-only files
+  - [ ] ``/S`` delete specified files from all subdirectories
+  - [ ] ``/A`` selects files to delete based on attributes
+
 - [ ] `DIR <https://ss64.com/nt/dir.html>`__
 - [X] `ECHO <https://ss64.com/nt/echo.html>`__
 - [ ] `ENDLOCAL <https://ss64.com/nt/endlocal.html>`__
-- [ ] `ERASE <https://ss64.com/nt/erase.html>`__
+- [X] `ERASE <https://ss64.com/nt/erase.html>`__
 - [X] `EXIT <https://ss64.com/nt/exit.html>`__
 - [ ] `FOR <https://ss64.com/nt/for.html>`__
 - [ ] `FOR <https://ss64.com/nt/for.html>`__
@@ -52,11 +63,14 @@ Commands
 - [ ] `REN <https://ss64.com/nt/ren.html>`__
 - [ ] `RMDIR <https://ss64.com/nt/rmdir.html>`__
 - [ ] `SET <https://ss64.com/nt/set.html>`__
+
+  *pending:* pretty much everything except the basic value add + clear
+
 - [ ] `SETLOCAL <https://ss64.com/nt/setlocal.html>`__
 - [ ] `SHIFT <https://ss64.com/nt/shift.html>`__
 - [ ] `START <https://ss64.com/nt/start.html>`__
 - [ ] `TIME <https://ss64.com/nt/time.html>`__
-- [ ] `TITLE <https://ss64.com/nt/title.html>`__
+- [X] `TITLE <https://ss64.com/nt/title.html>`__
 - [ ] `TYPE <https://ss64.com/nt/type.html>`__
 - [ ] `VER <https://ss64.com/nt/ver.html>`__
 - [ ] `VERIFY <https://ss64.com/nt/verify.html>`__
@@ -81,6 +95,7 @@ Syntax
 - [ ] Command concatenation (``&``)
 - [ ] Command concatenation (``&&``)
 - [ ] Command concatenation (``||``)
+- [ ] Recognize Windows path separator in path input (``\``)
 
 TODO
 ****
