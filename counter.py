@@ -1,4 +1,4 @@
-class count:
+class Count:
     "Like itertools.counter(), but this one is observable, but also heavier."
 
     _value: int = 0

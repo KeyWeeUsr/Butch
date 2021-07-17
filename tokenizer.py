@@ -3,7 +3,10 @@ from enum import Enum, auto
 from context import Context
 from commands import Command as CommandType, get_reverse_cmd_map
 from grammar import *
+from counter import Count
 
+
+EMPTYF = lambda *_: None
 
 class Flag(Enum):
     ESCAPE = auto()
@@ -167,13 +170,26 @@ class Redirection(Connector):
         return f'<{self.name}: {self.left} {direction} {self.right}>'
 
 
+def handle_char_cr(pos: Count, ctx: Context = None, log=EMPTYF) -> None:
+    log("- is <CR>")
+    next(pos)
+
+
+def handle_char_carret(
+        pos: Count, flags: dict, ctx: Context = None, log=EMPTYF
+) -> None:
+    log("- is carret, enabling escape flag")
+    flags[Flag.ESCAPE] = True
+    next(pos)
+
+
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     log = ctx.log.debug
     log("Starting tokenization")
     from parser import percent_expansion
     output = []
 
-    idx = 0
+    idx = Count()
 
     text_len = len(text)
     last_pos = text_len - 1
@@ -188,18 +204,18 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
 
     buff = ""
     found_command = None
-    while idx < text_len:
-        char = text[idx]
-        log("Position: (end=%04d, idx=%04d, char=%r)", last_pos, idx, char)
+    while idx.value < text_len:
+        char = text[idx.value]
+        log("Position: (end=%04d, idx=%04d, char=%r)", last_pos, idx.value, char)
         log("- flags: %r", flags)
         log("- buff: %r", buff)
 
         pchar = ""
         nchar = ""
         if idx > 0:
-            pchar = text[idx - 1]
+            pchar = text[idx.value - 1]
         if idx < last_pos:
-            nchar = text[idx + 1]
+            nchar = text[idx.value + 1]
 
         # last char isn't <LF>
         if char != SPECIAL_LF and idx == last_pos:
@@ -232,12 +248,9 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             break
 
         if char == SPECIAL_CR:
-            log("- is <CR>")
-            idx += 1
+            handle_char_cr(pos=idx, log=log)
         elif char == SPECIAL_CARRET:
-            log("- is carret, enabling escape flag")
-            flags[Flag.ESCAPE] = True
-            idx += 1
+            handle_char_carret(pos=idx, flags=flags, log=log)
         elif char == QUOTE_DOUBLE:
             if pchar in DELIM_WHITE and not flags[fword] and not flags[fquot]:
                 log("- is word, enabling word flag")
@@ -248,7 +261,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 log("- is quote in the middle of word")
                 flags[fqinw] = True
             log("\t- quote: %s", flags[Flag.QUOTE])
-            idx += 1
+            next(idx)
             if not flags[fquot] and flags[fword]:
                 log("\t- unquoting")
                 buff += QUOTE_DOUBLE
@@ -374,7 +387,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 pass
 
 
-            idx += 1
+            next(idx)
         elif char in SPECIAL_SPLITTERS:
             log("- is splitter")
             last = output[-1] if output else None
@@ -404,7 +417,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 if nchar == SPECIAL_PIPE:
                     log("\t\t- is double-pipe (OR)")
                     join = Concat(left=last)
-                    idx += 1
+                    next(idx)
                 else:
                     log("\t\t- is normal pipe")
                     join = Pipe(left=last)
@@ -413,13 +426,13 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 join = Concat(left=last)
                 if nchar == SPECIAL_AMP:
                     log("\t\t- is &&")
-                    idx += 1
+                    next(idx)
             elif char in SPECIAL_REDIR:
                 log("\t- is redirection")
                 append = False
                 if nchar in SPECIAL_REDIR:
                     append = True
-                    idx += 1
+                    next(idx)
                 join = Redirection(left=last, right=None, append=append)
             # the last command is now encapsulated in a connector
             # the newest command is stored in the "right" branch
@@ -431,22 +444,22 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 log("\t- creating new item: %r", join)
                 output.append(join)
             found_command = None
-            idx += 1
+            next(idx)
         elif char == SPECIAL_LPAREN:
             log("- is left-paren")
             compound_count += 1
-            idx += 1
+            next(idx)
         elif char == SPECIAL_RPAREN:
             log("- is right-paren")
             flags[Flag.WORD] = False
             compound_count -= 1
-            idx += 1
+            next(idx)
         elif char in DELIM_WHITE:
             log("- is whitespace")
             if flags[Flag.QUOTE]:
                 log("\t- is quoted")
                 buff += char
-                idx += 1
+                next(idx)
                 continue
             if not found_command and buff:
                 log("\t- not found command")
@@ -472,7 +485,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     ]
                     buff = ""
             flags[Flag.WORD] = False
-            idx += 1
+            next(idx)
         else:
             log("- not matching, increment + append")
             split_next = nchar in SPECIAL_SPLITTERS
@@ -488,7 +501,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 output.append(found_command)
                 found_command = None
             buff += char
-            idx += 1
+            next(idx)
 
     if debug:
         return list(flags.items())
