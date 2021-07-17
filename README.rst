@@ -90,6 +90,12 @@ Syntax
 - [ ] Code blocks (``(``, ``)``)
 - [ ] Code blocks (multi-line block with ``(``, ``)``)
 - [X] Redirection to commands (``|`` - pipes)
+
+  *pending:*
+
+  - [ ] some individual commands don't pull ctx.output and related parts
+  - [ ] generic command I/O handling as a decorator/class?
+
 - [ ] Redirection to files (``<``, ``<<``, ``>>``, ``>``)
 - [ ] Redirection to special (``nul``)
 - [ ] Command concatenation (``&``)
