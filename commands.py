@@ -1,11 +1,18 @@
 import sys
 import json
+
 from typing import List
 from inspect import getframeinfo, currentframe
 from enum import Enum
 from ast import literal_eval
+from os import remove, listdir
+from os.path import abspath, isdir, exists, join
+
 from context import Context
-from constants import PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED
+from constants import (
+    PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
+    SURE
+)
 
 
 class Command(Enum):
@@ -18,6 +25,7 @@ class Command(Enum):
     PAUSE = "pause"
     EXIT = "exit"
     SETLOCAL = "setlocal"
+    DELETE = "del"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -256,6 +264,53 @@ def exit_cmd(params: list, ctx: Context) -> None:
     sys.exit(ctx.error_level)
 
 
+def delete(params: List["Argument"], ctx: Context) -> None:
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    from parser import percent_expansion
+    from help import print_help
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        print(SYNTAX_INCORRECT)
+        ctx.error_level = 1
+        return
+
+    if params_len == 1:
+        first = params[0]
+        if first.lower() == "/?":
+            print_help(cmd=Command.ECHO)
+            return
+        path = abspath(first)
+        if not exists(path):
+            os_path = path.replace('/', '\\')
+            print(f"Could Not Find {os_path}")
+            ctx.error_level = 0
+            return
+
+    # for multiple paths "not found" or error level setting is skipped
+    for param in params:
+        path = abspath(param)
+        if not exists(path):
+            continue
+
+        os_path = path.replace('/', '\\')
+        if isdir(param):
+            answer = input(f"{os_path}\*, {SURE} ")
+            if answer.lower() != "y":
+                continue
+            for file in listdir(param):
+                remove(join(path, file))
+            return
+        remove(path)
+    ctx.error_level = 0
+
+
 def get_cmd_map():
     return {
         Command.ECHO: echo,
@@ -265,7 +320,8 @@ def get_cmd_map():
         Command.TITLE: title,
         Command.PAUSE: pause,
         Command.EXIT: exit_cmd,
-        Command.SETLOCAL: setlocal
+        Command.SETLOCAL: setlocal,
+        Command.DELETE: delete
     }
 
 def get_reverse_cmd_map():

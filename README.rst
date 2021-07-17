@@ -27,7 +27,7 @@ Commands
 - [ ] `COLOR <https://ss64.com/nt/color.html>`__
 - [ ] `COPY <https://ss64.com/nt/copy.html>`__
 - [ ] `DATE <https://ss64.com/nt/date.html>`__
-- [ ] `DEL <https://ss64.com/nt/del.html>`__
+- [X] `DEL <https://ss64.com/nt/del.html>`__
 - [ ] `DIR <https://ss64.com/nt/dir.html>`__
 - [X] `ECHO <https://ss64.com/nt/echo.html>`__
 - [ ] `ENDLOCAL <https://ss64.com/nt/endlocal.html>`__

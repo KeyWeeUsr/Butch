@@ -417,6 +417,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                     log("\t\t- echo off")
                     echo = False
                     cmd_clear = cmd_clear[1:]
+                log("\t- cmd string: %r", cmd_clear)
                 found_command = Command(
                     cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN),
                     echo=echo
