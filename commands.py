@@ -284,7 +284,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     if params_len == 1:
         first = params[0]
         if first.lower() == "/?":
-            print_help(cmd=Command.ECHO)
+            print_help(cmd=Command.DELETE)
             return
         path = abspath(first)
         if not exists(path):
