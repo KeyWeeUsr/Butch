@@ -34,7 +34,6 @@ class Count:
         self._value += self._step
         return self._value
 
-
     def __reversed__(self):
         self._value -= self._step
         return self._value

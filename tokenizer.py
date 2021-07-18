@@ -9,7 +9,9 @@ from charlist import CharList
 from shared import Shared
 
 
-EMPTYF = lambda *_: None
+def emptyf(*_, **__):
+    pass
+
 
 class Flag(Enum):
     ESCAPE = auto()
@@ -173,13 +175,13 @@ class Redirection(Connector):
         return f'<{self.name}: {self.left} {direction} {self.right}>'
 
 
-def handle_char_cr(pos: Count, ctx: Context = None, log=EMPTYF) -> None:
+def handle_char_cr(pos: Count, ctx: Context = None, log=emptyf) -> None:
     log("- is <CR>")
     next(pos)
 
 
 def handle_char_carret(
-        pos: Count, flags: dict, ctx: Context = None, log=EMPTYF
+        pos: Count, flags: dict, ctx: Context = None, log=emptyf
 ) -> None:
     log("- is carret, enabling escape flag")
     flags[Flag.ESCAPE] = True
@@ -189,7 +191,7 @@ def handle_char_carret(
 def handle_char_quote(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        ctx: Context = None, log=EMPTYF
+        ctx: Context = None, log=emptyf
 ) -> None:
     prev_white = text.pchar in DELIM_WHITE
     if prev_white and not flags[Flag.WORD] and not flags[Flag.QUOTE]:
@@ -243,7 +245,7 @@ def handle_char_quote(
 def handle_char_ordinary(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list,
-        ctx: Context = None, log=EMPTYF
+        ctx: Context = None, log=emptyf
 ) -> None:
     log("- not matching, increment + append")
     splitnext = text.nchar in SPECIAL_SPLITTERS
@@ -268,7 +270,7 @@ def handle_char_ordinary(
 def handle_char_newline(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=EMPTYF
+        compound: Count, ctx: Context = None, log=emptyf
 ) -> None:
     log("- is <LF>, disabling quote flag")
     # SO says this, but CLI says no
@@ -369,7 +371,7 @@ def handle_char_newline(
 def handle_char_whitespace(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=EMPTYF
+        compound: Count, ctx: Context = None, log=emptyf
 ) -> None:
     log("- is whitespace")
     if flags[Flag.QUOTE]:
@@ -409,7 +411,7 @@ def handle_char_whitespace(
 def handle_char_splitter(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=EMPTYF
+        compound: Count, ctx: Context = None, log=emptyf
 ) -> None:
     log("- is splitter")
     last = output[-1] if output else None
@@ -475,7 +477,7 @@ def handle_char_splitter(
 def handle_char_last(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=EMPTYF
+        compound: Count, ctx: Context = None, log=emptyf
 ) -> None:
     log("- last char")
     char = text.char
@@ -525,7 +527,10 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     while idx.value < len(text):
         text.move(idx.value)
         char = text.char
-        log("Position: (end=%04d, idx=%04d, char=%r)", last_pos, idx.value, char)
+        log(
+            "Position: (end=%04d, idx=%04d, char=%r)",
+            last_pos, idx.value, char
+        )
         log("- flags: %r", flags)
         log("- buff: %r", buff)
 

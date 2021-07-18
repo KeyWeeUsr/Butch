@@ -366,7 +366,6 @@ class Caller(TestCase):
             call(Command(cmd=CommandType.UNKNOWN, args=[
                 Argument(value=value) for value in params
             ]))
-                
 
 
 class Context(TestCase):
@@ -379,7 +378,7 @@ class Context(TestCase):
         from context import Context
         from random import randint
         known = ["cwd"]
-        kwargs = {item: randint(1,5) for item in known}
+        kwargs = {item: randint(1, 5) for item in known}
         ctx = Context(**kwargs)
         for key, val in kwargs.items():
             self.assertEqual(getattr(ctx, key), val)
@@ -935,7 +934,6 @@ class BatchFiles(TestCase):
                     mcalls[idx],
                     mock_call(out.rstrip("\n"))
                 )
-
 
     def test_delete_folder_pipe(self):
         import sys

@@ -172,7 +172,6 @@ def cd(params: list, ctx: Context) -> None:
         # linux
         chdir(environ.get("HOME"))
         # windows
-        ## do nothing
         return
 
     first = params[0]
@@ -330,7 +329,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
                 else:
                     answer = input(f"{text} ").lower()
             if answer != "y":
-                continue 
+                continue
             for file in listdir(param):
                 remove(join(path, file))
             return
@@ -362,6 +361,7 @@ def get_cmd_map():
         Command.DELETE: delete,
         Command.ERASE: delete
     }
+
 
 def get_reverse_cmd_map():
     return {

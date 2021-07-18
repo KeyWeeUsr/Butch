@@ -129,8 +129,7 @@ def main():
 
     ctx.extensions_enabled = (
         (not getattr(args, "E:OFF", None) and not args.Y)
-        and
-        (getattr(args, "E:ON", None) and args.X)
+        and (getattr(args, "E:ON", None) and args.X)
     )
     ctx.echo = not args.Q
 
