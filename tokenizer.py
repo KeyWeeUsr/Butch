@@ -509,25 +509,20 @@ def handle_char_last(
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     log = ctx.log.debug
     log("Starting tokenization")
-    from parser import percent_expansion
     output = []
 
     idx = Count()
     text = FilmBuffer(data=text)
-    text_len = len(text)
     last_pos = text.last_pos
 
     cmd_map = get_reverse_cmd_map()
     flags = defaultdict(bool)
     compound = Count()
 
-    fword = Flag.WORD
-    fqinw = Flag.QUOTE_IN_WORD
-
     buff = CharList()
     found_command = Shared()
 
-    while idx.value < text_len:
+    while idx.value < len(text):
         text.move(idx.value)
         char = text.char
         log("Position: (end=%04d, idx=%04d, char=%r)", last_pos, idx.value, char)
