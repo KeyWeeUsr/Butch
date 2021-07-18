@@ -472,6 +472,40 @@ def handle_char_splitter(
     next(pos)
 
 
+def handle_char_last(
+        pos: Count, flags: dict, text: FilmBuffer,
+        buff: CharList, output: list, found: Shared,
+        compound: Count, ctx: Context = None, log=EMPTYF
+) -> None:
+    log("- last char")
+    char = text.char
+    buff += char.replace("\r", "")
+
+    if not buff:
+        return
+
+    if char == SPECIAL_CARRET:
+        log("\t- is carret, enabling escape flag")
+        flags[Flag.ESCAPE] = True
+    elif char == QUOTE_DOUBLE:
+        log("\t- is quote, swapping quote flag")
+        flags[Flag.QUOTE] = not flags[Flag.QUOTE]
+        log("\t\t- quote: %s", flags[Flag.QUOTE])
+    # append last char because finishing
+    # and if buff is empty (single-char), then copy char to buff
+    if pos.value == 0:
+        log("\t- not found command, zero idx")
+        found.set(Command(cmd=CommandType.UNKNOWN))
+    if found:
+        log("\t- found command")
+        found.data.args = found.data.args + [
+            Argument(value=buff.data)
+        ]
+        buff.clear()
+        log("\t- appending to output: %r", found)
+        output.append(found.data)
+
+
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     log = ctx.log.debug
     log("Starting tokenization")
@@ -488,7 +522,6 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     compound = Count()
 
     fword = Flag.WORD
-    fquot = Flag.QUOTE
     fqinw = Flag.QUOTE_IN_WORD
 
     buff = CharList()
@@ -506,32 +539,11 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
 
         # last char isn't <LF>
         if char != SPECIAL_LF and idx == last_pos:
-            log("- last char")
-            buff += char.replace("\r", "")
-
-            if not buff:
-                break
-
-            if char == SPECIAL_CARRET:
-                log("\t- is carret, enabling escape flag")
-                flags[Flag.ESCAPE] = True
-            elif char == QUOTE_DOUBLE:
-                log("\t- is quote, swapping quote flag")
-                flags[fquot] = not flags[fquot]
-                log("\t\t- quote: %s", flags[fquot])
-            # append last char because finishing
-            # and if buff is empty (single-char), then copy char to buff
-            if idx == 0:
-                log("\t- not found command, zero idx")
-                found_command.set(Command(cmd=CommandType.UNKNOWN))
-            if found_command:
-                log("\t- found command")
-                found_command.data.args = found_command.data.args + [
-                    Argument(value=buff.data)
-                ]
-                buff.clear()
-                log("\t- appending to output: %r", found_command)
-                output.append(found_command.data)
+            handle_char_last(
+                pos=idx, flags=flags,
+                text=text, buff=buff, output=output,
+                found=found_command, compound=compound, log=log
+            )
             break
 
         if char == SPECIAL_CR:
