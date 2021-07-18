@@ -366,6 +366,46 @@ def handle_char_newline(
     next(pos)
 
 
+def handle_char_whitespace(
+        pos: Count, flags: dict, text: FilmBuffer,
+        buff: CharList, output: list, found: Shared,
+        compound: Count, ctx: Context = None, log=EMPTYF
+) -> None:
+    log("- is whitespace")
+    if flags[Flag.QUOTE]:
+        log("\t- is quoted")
+        buff += text.char
+        next(pos)
+        return
+
+    cmd_map = get_reverse_cmd_map()
+    if not found and buff:
+        log("\t- not found command")
+
+        # naive
+        cmd_clear = buff.data.strip().lower()
+        echo = True
+        if cmd_clear.startswith("@"):
+            log("\t\t- echo off")
+            echo = False
+            cmd_clear = cmd_clear[1:]
+        log("\t- cmd string: %r", cmd_clear)
+        found.set(Command(
+            cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
+        ))
+        buff.clear()
+    elif found:
+        log("\t- found command")
+        if not flags[Flag.QUOTE]:
+            log("\t\t- not in quote mode")
+            found.data.args = found.data.args + [
+                Argument(value=buff.data)
+            ]
+            buff.clear()
+    flags[Flag.WORD] = False
+    next(pos)
+
+
 def handle_char_splitter(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
@@ -393,6 +433,7 @@ def handle_char_splitter(
         # command not yet added, assembling now
         log("\t- found_command: %r", found)
         last = found.data
+
     join = None
     char = text.char
     nchar = text.nchar
@@ -525,37 +566,11 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             reversed(compound)
             next(idx)
         elif char in DELIM_WHITE:
-            log("- is whitespace")
-            if flags[Flag.QUOTE]:
-                log("\t- is quoted")
-                buff += char
-                next(idx)
-                continue
-            if not found_command and buff:
-                log("\t- not found command")
-
-                # naive
-                cmd_clear = buff.data.strip().lower()
-                echo = True
-                if cmd_clear.startswith("@"):
-                    log("\t\t- echo off")
-                    echo = False
-                    cmd_clear = cmd_clear[1:]
-                log("\t- cmd string: %r", cmd_clear)
-                found_command.set(Command(
-                    cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
-                ))
-                buff.clear()
-            elif found_command:
-                log("\t- found command")
-                if not flags[Flag.QUOTE]:
-                    log("\t\t- not in quote mode")
-                    found_command.data.args = found_command.data.args + [
-                        Argument(value=buff.data)
-                    ]
-                    buff.clear()
-            flags[Flag.WORD] = False
-            next(idx)
+            handle_char_whitespace(
+                pos=idx, flags=flags,
+                text=text, buff=buff, output=output,
+                found=found_command, compound=compound, log=log
+            )
         else:
             handle_char_ordinary(
                 pos=idx, flags=flags, text=text, buff=buff,
