@@ -1,3 +1,17 @@
+"""
+Abstraction of looking at a string as if via a film strip:
+
+                                 film window
+                +--------------+--------------+--------------+
+================|==============|==============|==============|=================
+                |              |              |              |
+                |   previous   |    current   |     next     |
+                |              |              |              |
+================|==============|==============|==============|=================
+                +--------------+--------------+--------------+
+"""
+
+
 class FilmBuffer:
     """
     Look on the flat text buffer/string as if it's a movie film strip with
@@ -20,16 +34,22 @@ class FilmBuffer:
         self._data_len = data_len
         self._last_pos = data_len - 1
 
+        # initialize chars and positions by the first window move
+        self.move(pos=start)
+
     @property
     def pos(self):
+        "Property: current position of the film window."
         return self._pos
 
     @property
     def last_pos(self):
+        "Property: last position of the buffer (len(data) - 1)."
         return self._last_pos
 
     @property
     def data(self):
+        "Property: raw data."
         return self._data
 
     def __len__(self):
@@ -37,17 +57,21 @@ class FilmBuffer:
 
     @property
     def pchar(self):
+        "Property: previous character / neighboring character to the left."
         return self._pchar
 
     @property
     def char(self):
+        "Property: current character."
         return self._char
 
     @property
     def nchar(self):
+        "Property: next character / neighboring character to the right."
         return self._nchar
 
     def move(self, pos: int):
+        "Move the film window by <pos> increments."
         data = self.data
         data_len = self._data_len
 

@@ -1,15 +1,24 @@
+"""
+Module that takes already parsed & tokenized Batch input and executes according
+to the provided tokens and context.
+"""
+
 from typing import Union
 from tokenizer import Command, Connector, Pipe, Redirection
 from commands import Command as CommandType, get_cmd_map
-from outputs import CommandOutput
 from context import Context
 
 
+class UnknownCommand(Exception):
+    "Exception if CommandType.UNKNOWN was passed."
+
+
 def call(cmd: CommandType, params: list, ctx: Context) -> None:
+    "Execute the underlying function based on CommandType enum. (deprecated)"
     cmd_map = get_cmd_map()
     func = cmd_map.get(cmd)
     if not func:
-        raise Exception(f"Unknown function: '{cmd}'")
+        raise UnknownCommand(f"Unknown function: '{cmd}'")
 
     ctx.history = [cmd, params]
     func(params=params, ctx=ctx)
@@ -18,6 +27,7 @@ def call(cmd: CommandType, params: list, ctx: Context) -> None:
 def new_call(
         cmd: Union[Command, Connector], ctx: Context, child: bool = False
 ) -> None:
+    "Open a Command or Connector object and execute the underlying function."
     log = ctx.log.debug
     log("Calling command %r", cmd)
 
@@ -36,14 +46,14 @@ def new_call(
             log("\t- should write collected output to: %r", None)
             # read ctx.output.stdout/stderr
             # and write to whatever provided as cmd.right
-            pass
+            log("\t\t- not yet implemented")
         obj = obj.right
 
     cmd_map = get_cmd_map()
     log("\t- function lookup by: %r", obj.cmd)
     func = cmd_map.get(obj.cmd)
     if not func:
-        raise Exception(f"Unknown function: '{cmd}'")
+        raise UnknownCommand(f"Unknown function: '{cmd}'")
 
     if not child:
         ctx.history = cmd

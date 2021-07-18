@@ -1,8 +1,17 @@
+"""
+Module holding all tokens and tokenizing functions for converting an inputted
+Batch code into a set of instructions for the interpreter to execute.
+"""
+
 from collections import defaultdict
 from enum import Enum, auto
 from context import Context
 from commands import Command as CommandType, get_reverse_cmd_map
-from grammar import *
+from grammar import (
+    SPECIAL_CR, SPECIAL_CARRET, SPECIAL_LPAREN, SPECIAL_RPAREN, SPECIAL_AMP,
+    SPECIAL_PIPE, SPECIAL_LT, SPECIAL_REDIR, SPECIAL_SPLITTERS, SPECIAL_LF,
+    DELIM_WHITE, QUOTE_DOUBLE
+)
 from counter import Count
 from filmbuffer import FilmBuffer
 from charlist import CharList
@@ -10,10 +19,11 @@ from shared import Shared
 
 
 def emptyf(*_, **__):
-    pass
+    "Empty function that does nothing."
 
 
 class Flag(Enum):
+    "Enum of tokenizer flags when parsing the Batch code."
     ESCAPE = auto()
     QUOTE = auto()
     WORD = auto()
@@ -22,6 +32,8 @@ class Flag(Enum):
 
 
 class Argument:
+    "Token holding the raw value of an argument and its properties."
+
     _value: str = ""
     _quoted: bool = False
 
@@ -31,6 +43,7 @@ class Argument:
 
     @property
     def value(self):
+        "Property: raw argument value."
         return self._value
 
     @value.setter
@@ -39,6 +52,7 @@ class Argument:
 
     @property
     def quoted(self):
+        "Property: argument value is quoted."
         return self._quoted
 
     def __repr__(self):
@@ -52,6 +66,8 @@ class Argument:
 
 
 class Command:
+    "Token holding the raw value of a command and its properties."
+
     _cmd: CommandType = None
     _name: str = ""
     _value: str = ""
@@ -59,6 +75,7 @@ class Command:
     _args: list = None
 
     def __init__(
+            # pylint: disable=dangerous-default-value
             self, cmd: CommandType, args: list = [],
             value: str = "", echo: bool = True
     ):
@@ -70,18 +87,22 @@ class Command:
 
     @property
     def cmd(self):
+        "Property: CommandType value of the Command token."
         return self._cmd
 
     @property
     def name(self):
+        "Property: raw command name."
         return self._name
 
     @property
     def value(self):
+        "TODO: seems to be unused, perhaps just cmd.value -> name replacement."
         return self._value
 
     @property
     def args(self):
+        "Property: list of Argument tokens."
         return self._args
 
     @args.setter
@@ -90,6 +111,7 @@ class Command:
 
     @property
     def echo(self):
+        "Property: whether the command should be printed out."
         return self._echo
 
     def __repr__(self):
@@ -99,6 +121,7 @@ class Command:
 
 class Connector:
     """Shouldn't be used directly, but ABC might be overkill."""
+
     _name: str = ""
     _left: Command = None
     _right: Command = None
@@ -110,14 +133,17 @@ class Connector:
 
     @property
     def name(self):
+        "Property: name of the connector (e.g. Pipe)"
         return self._name
 
     @property
     def left(self):
+        "Property: L-val of a connector char."
         return self._left
 
     @property
     def right(self):
+        "Property: R-val of a connector char."
         return self._right
 
     @right.setter
@@ -129,21 +155,28 @@ class Connector:
 
 
 class Concat(Connector):
+    "Token holding the raw value of a concatenation and its properties."
+
     def __init__(self, left: Command, right: Command = None):
         super().__init__("Concat", left=left, right=right)
 
 
 class Pipe(Connector):
+    "Token holding the raw value of a pipe and its properties."
+
     def __init__(self, left: Command, right: Command = None):
         super().__init__("Pipe", left=left, right=right)
 
 
 class RedirType(Enum):
+    "Enum to distinguish between redirection out of or into a command/file."
     INPUT = auto()
     OUTPUT = auto()
 
 
 class Redirection(Connector):
+    "Token holding the raw value of a redirection and its properties."
+
     _type: RedirType
     _append: bool = False
 
@@ -158,17 +191,19 @@ class Redirection(Connector):
 
     @property
     def type(self):
+        "Property: input or output."
         return self._type
 
     @property
     def append(self):
+        "Property: if the redirection should append or overwrite the target."
         return self._append
 
     def __repr__(self):
         direction = "?"
-        if self.type == Redir.INPUT:
+        if self.type == RedirType.INPUT:
             direction = "<"
-        elif self.type == Redir.OUTPUT:
+        elif self.type == RedirType.OUTPUT:
             direction = ">"
         if self.append:
             direction *= 2
@@ -176,13 +211,17 @@ class Redirection(Connector):
 
 
 def handle_char_cr(pos: Count, ctx: Context = None, log=emptyf) -> None:
+    # pylint: disable=unused-argument
+    "Handle a <CR> character while parsing an input line."
     log("- is <CR>")
     next(pos)
 
 
 def handle_char_carret(
+        # pylint: disable=unused-argument
         pos: Count, flags: dict, ctx: Context = None, log=emptyf
 ) -> None:
+    "Handle a ^ character while parsing an input line."
     log("- is carret, enabling escape flag")
     flags[Flag.ESCAPE] = True
     next(pos)
@@ -191,8 +230,10 @@ def handle_char_carret(
 def handle_char_quote(
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        ctx: Context = None, log=emptyf
+        log=emptyf
 ) -> None:
+    'Handle a "(double-quote) character while parsing an input line.'
+    # pylint: disable=too-many-arguments
     prev_white = text.pchar in DELIM_WHITE
     if prev_white and not flags[Flag.WORD] and not flags[Flag.QUOTE]:
         log("- is word, enabling word flag")
@@ -243,10 +284,12 @@ def handle_char_quote(
 
 
 def handle_char_ordinary(
+        # pylint: disable=too-many-arguments
         pos: Count, flags: dict, text: FilmBuffer,
-        buff: CharList, output: list,
-        ctx: Context = None, log=emptyf
+        buff: CharList, output: list, found: Shared,
+        log=emptyf
 ) -> None:
+    "Handle an ordinary character while parsing an input line."
     log("- not matching, increment + append")
     splitnext = text.nchar in SPECIAL_SPLITTERS
     idx = pos.value
@@ -261,17 +304,20 @@ def handle_char_ordinary(
     if splitnext:
         log("\t- appending to output before splitting")
         flags[Flag.WORD] = False
-        output.append(found_command.data)
-        found_command.clear()
+        output.append(found.data)
+        found.clear()
     buff += text.char
     next(pos)
 
 
 def handle_char_newline(
+        # pylint: disable=too-many-arguments
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=emptyf
+        compound: Count, log=emptyf
 ) -> None:
+    "Handle a LF character while parsing an input line."
+    # pylint: disable=too-many-statements, too-many-branches
     log("- is <LF>, disabling quote flag")
     # SO says this, but CLI says no
     # if not flags[Flag.ESCAPE]:
@@ -369,10 +415,11 @@ def handle_char_newline(
 
 
 def handle_char_whitespace(
+        # pylint: disable=too-many-arguments
         pos: Count, flags: dict, text: FilmBuffer,
-        buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=emptyf
+        buff: CharList, found: Shared, log=emptyf
 ) -> None:
+    "Handle a whitespace character while parsing an input line."
     log("- is whitespace")
     if flags[Flag.QUOTE]:
         log("\t- is quoted")
@@ -409,10 +456,11 @@ def handle_char_whitespace(
 
 
 def handle_char_splitter(
-        pos: Count, flags: dict, text: FilmBuffer,
-        buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=emptyf
+        pos: Count, text: FilmBuffer, buff: CharList,
+        output: list, found: Shared, log=emptyf
 ) -> None:
+    "Handle a command splitting character while parsing an input line."
+    # pylint: disable=too-many-arguments
     log("- is splitter")
     last = output[-1] if output else None
     if last and not isinstance(last, Command):
@@ -460,7 +508,14 @@ def handle_char_splitter(
         if nchar in SPECIAL_REDIR:
             append = True
             next(pos)
-        join = Redirection(left=last, right=None, append=append)
+        join = Redirection(
+            redir_type=(
+                RedirType.INPUT
+                if char == SPECIAL_LT
+                else RedirType.OUTPUT
+            ),
+            left=last, right=None, append=append
+        )
     # the last command is now encapsulated in a connector
     # the newest command is stored in the "right" branch
     log("\t- check output: %r", output)
@@ -476,9 +531,10 @@ def handle_char_splitter(
 
 def handle_char_last(
         pos: Count, flags: dict, text: FilmBuffer,
-        buff: CharList, output: list, found: Shared,
-        compound: Count, ctx: Context = None, log=emptyf
+        buff: CharList, output: list, found: Shared, log=emptyf
 ) -> None:
+    "Handle the last character of an input line."
+    # pylint: disable=too-many-arguments
     log("- last char")
     char = text.char
     buff += char.replace("\r", "")
@@ -509,6 +565,7 @@ def handle_char_last(
 
 
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
+    "Convert Batch as text input into tokens."
     log = ctx.log.debug
     log("Starting tokenization")
     output = []
@@ -517,7 +574,6 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     text = FilmBuffer(data=text)
     last_pos = text.last_pos
 
-    cmd_map = get_reverse_cmd_map()
     flags = defaultdict(bool)
     compound = Count()
 
@@ -534,15 +590,12 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         log("- flags: %r", flags)
         log("- buff: %r", buff)
 
-        pchar = text.pchar
-        nchar = text.nchar
-
         # last char isn't <LF>
         if char != SPECIAL_LF and idx == last_pos:
             handle_char_last(
                 pos=idx, flags=flags,
                 text=text, buff=buff, output=output,
-                found=found_command, compound=compound, log=log
+                found=found_command, log=log
             )
             break
 
@@ -564,9 +617,8 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             )
         elif char in SPECIAL_SPLITTERS:
             handle_char_splitter(
-                pos=idx, flags=flags,
-                text=text, buff=buff, output=output,
-                found=found_command, compound=compound, log=log
+                pos=idx, text=text, buff=buff, output=output,
+                found=found_command, log=log
             )
         elif char == SPECIAL_LPAREN:
             log("- is left-paren")
@@ -579,14 +631,13 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             next(idx)
         elif char in DELIM_WHITE:
             handle_char_whitespace(
-                pos=idx, flags=flags,
-                text=text, buff=buff, output=output,
-                found=found_command, compound=compound, log=log
+                pos=idx, flags=flags, text=text, buff=buff,
+                found=found_command, log=log
             )
         else:
             handle_char_ordinary(
                 pos=idx, flags=flags, text=text, buff=buff,
-                output=output, log=log
+                output=output, log=log, found=found_command
             )
 
     if debug:

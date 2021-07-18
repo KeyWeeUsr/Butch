@@ -1,3 +1,5 @@
+"Characters used for assembling a command of Batch language."
+
 # consecutive delims should be treated as one
 # no delims within a quoted string
 DELIM_SPACE = " "

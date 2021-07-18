@@ -1,9 +1,10 @@
+"Main module."
+
 import sys
 
 from argparse import ArgumentParser
 from os.path import exists
 
-from commands import Command
 from parser import parse, clear_input, parse_file
 from caller import call, new_call
 from context import get_context, Context
@@ -11,6 +12,7 @@ from tokenizer import tokenize
 
 
 def handle_input(inp: str, ctx: Context):
+    "Handle a Batch input from CLI. (deprecated)"
     inp = clear_input(inp)
     if not inp:
         return
@@ -20,17 +22,20 @@ def handle_input(inp: str, ctx: Context):
 
 
 def handle_input_new(inp: str, ctx: Context):
+    "Handle a Batch input from CLI."
     for cmd in tokenize(text=inp, ctx=ctx):
         new_call(cmd=cmd, ctx=ctx)
 
 
 def handle_file(path: str, ctx: Context):
+    "Open and handle a Batch file. (deprecated)"
     cmds = parse_file(path)
     for cmd, params in cmds:
         call(cmd=cmd, params=params, ctx=ctx)
 
 
 def handle_file_new(path: str, ctx: Context):
+    "Open and handle a Batch file."
     with open(path) as file:
         content = file.read()
     cmds = tokenize(text=content, ctx=ctx)
@@ -39,6 +44,7 @@ def handle_file_new(path: str, ctx: Context):
 
 
 def loop(ctx: Context):
+    "Main REPL loop for Batch lang."
     while True:
         prompt = ""
         if ctx.echo:
@@ -48,10 +54,12 @@ def loop(ctx: Context):
 
 
 def ctrlc_handler(*_):
+    "Handler for KeyboardInterrupt/^C exception."
     return False
 
 
 def get_cli_parser():
+    "Assemble and return Butch's CLI argument parser."
     cli = ArgumentParser(prefix_chars="/", prog="butch")
     cli.add_argument("/C", help="Run Command and then terminate", nargs="+")
     cli.add_argument(
@@ -99,6 +107,7 @@ def get_cli_parser():
 
 
 def mainloop(ctx: Context):
+    "Main loop for Butch handling text, ^C and ^D inputs."
     while True:
         try:
             loop(ctx=ctx)
@@ -111,18 +120,21 @@ def mainloop(ctx: Context):
 
 
 def handle(text: str, ctx: Context):
+    "Handle for file and text. (deprecated)"
     if exists(text):
         return handle_file(path=text, ctx=ctx)
     return handle_input(inp=text, ctx=ctx)
 
 
 def handle_new(text: str, ctx: Context):
+    "Handle for file and text."
     if exists(text):
         return handle_file_new(path=text, ctx=ctx)
     return handle_input_new(inp=text, ctx=ctx)
 
 
 def main():
+    "Entrypoint function for Butch program."
     cli = get_cli_parser()
     args = cli.parse_args()
     ctx = get_context()

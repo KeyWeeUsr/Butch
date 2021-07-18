@@ -1,3 +1,5 @@
+"Old module for parsing text into tokenized Batch for execution. (deprecated)"
+
 import re
 import sys
 from typing import Tuple, List
@@ -6,6 +8,7 @@ from context import Context
 
 
 def parse(values: str) -> Tuple[Command, list]:
+    "Parse a string into a command."
     cmd, *params = values.split(" ")
     unk = Command.UNKNOWN.name
 
@@ -21,18 +24,21 @@ def parse(values: str) -> Tuple[Command, list]:
 
 
 def parse_file(path: str) -> List[Tuple[Command, list]]:
+    "Parse a file from path into lines."
     with open(path) as file:
         lines = file.readlines()
     return [parse(line.rstrip()) for line in lines]
 
 
 def clear_input(value: str) -> str:
+    "Clear input line if it contains specific chars."
     if set(value) in (set(""), set("\n"), set("\r\n"), set("\n\r")):
         return ""
     return value
 
 
 def parse_variables(values: list, ctx: Context):
+    "Resolve passed list of variable names from provided Context."
     out = []
 
     for value in values:
@@ -68,16 +74,20 @@ def parse_variables(values: list, ctx: Context):
 
 
 def read_line(text: str) -> str:
+    "Read a line and replace 0x1A with LF."
     return text.replace("\x1a", "\n")
 
 
 def read_file(path: str) -> list:
+    "Read file from path and return lines."
     with open(path) as file:
         text = file.read()
     return read_line(text=text).splitlines()
 
 
 def percent_expansion(line: str, ctx: Context) -> str:
+    "Expand percent-encapsulated values into variables."
+    # pylint: disable=too-many-statements, too-many-branches
     tmp = ""
     idx = 0
     line_len = len(line)
@@ -111,11 +121,13 @@ def percent_expansion(line: str, ctx: Context) -> str:
                 tmp += val[0] if val else str(pos)
                 idx = next_idx + 1
                 continue
-            elif next_char == "*":
+
+            if next_char == "*":
                 tmp += " ".join(sys.argv[1:10])
                 idx = next_idx + 1
                 continue
-            elif next_char == "%":
+
+            if next_char == "%":
                 tmp += next_char
                 idx = next_idx + 1
                 continue

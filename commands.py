@@ -1,11 +1,11 @@
+"Module holding command-representing functions for their Batch names."
+
 import sys
-import json
 
 from typing import List
 from inspect import getframeinfo, currentframe
 from enum import Enum
-from ast import literal_eval
-from os import remove, listdir
+from os import remove, listdir, chdir, environ
 from os.path import abspath, isdir, exists, join
 
 from context import Context
@@ -17,6 +17,7 @@ from outputs import CommandOutput
 
 
 class Command(Enum):
+    "Enum of command types mapped to their textual representation."
     UNKNOWN = "<unknown>"
     ECHO = "echo"
     CD = "cd"
@@ -31,6 +32,7 @@ class Command(Enum):
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
+    "Batch: ECHO command."
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
     log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -41,8 +43,9 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    from parser import percent_expansion
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from parser import percent_expansion  # circular
+    from help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -56,7 +59,7 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         if first in ("on", "off"):
             ctx.echo = state_rev[first]
             return
-        elif first == "/?":
+        if first == "/?":
             print_help(cmd=Command.ECHO, file=out)
             return
 
@@ -87,11 +90,14 @@ def _delete_single_variable(key: str, ctx: Context) -> None:
 
 
 def set_cmd(params: List["Argument"], ctx: Context) -> None:
+    "Batch: SET command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+
     # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
@@ -127,11 +133,14 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
 
 
 def setlocal(params: list, ctx: Context) -> None:
+    "Batch: SETLOCAL command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+
     # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
@@ -160,13 +169,16 @@ def setlocal(params: list, ctx: Context) -> None:
         return
 
 
+# pylint: disable=invalid-name
 def cd(params: list, ctx: Context) -> None:
+    "Batch: CD command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from os import chdir, environ
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+
     params_len = len(params)
     if not params:
         # linux
@@ -187,11 +199,13 @@ def cd(params: list, ctx: Context) -> None:
 
 
 def prompt(params: list, ctx: Context) -> None:
+    "Batch: PROMPT command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -206,11 +220,13 @@ def prompt(params: list, ctx: Context) -> None:
 
 
 def title(params: list, ctx: Context) -> None:
+    "Batch: TITLE command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -226,6 +242,7 @@ def title(params: list, ctx: Context) -> None:
     sys.stdout.write(f"\x1b]2;{text}\x07")
     return
 
+    # pylint: disable=unreachable
     # Windows
     import ctypes
     kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
@@ -236,11 +253,13 @@ def title(params: list, ctx: Context) -> None:
 
 
 def pause(params: list, ctx: Context) -> None:
+    "Batch: PAUSE command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
     first = params[0] if params else ""
     if first == "/?":
         print_help(cmd=Command.PAUSE)
@@ -250,11 +269,13 @@ def pause(params: list, ctx: Context) -> None:
 
 
 def exit_cmd(params: list, ctx: Context) -> None:
+    "Batch: EXIT command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -273,11 +294,14 @@ def exit_cmd(params: list, ctx: Context) -> None:
 
 
 def delete(params: List["Argument"], ctx: Context) -> None:
+    "Batch: DEL/ERASE command."
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    from parser import percent_expansion
-    from help import print_help
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+    from parser import percent_expansion  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -306,14 +330,13 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     quiet = False
     for item in params:
         low = item.lower()
-        if "/p" == low:
+        if low == "/p":
             prompt_for_all = True
-        elif "/q" == low:
+        elif low == "/q":
             quiet = True
 
     # for multiple paths "not found" or error level setting is skipped
     for param in params:
-        import sys
         path = abspath(param)
         if not exists(path):
             continue
@@ -349,6 +372,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
 
 
 def get_cmd_map():
+    "Get mapping of CommandType into its functions for execution."
     return {
         Command.ECHO: echo,
         Command.CD: cd,
@@ -364,6 +388,7 @@ def get_cmd_map():
 
 
 def get_reverse_cmd_map():
+    "Get reverse CommandType mapping for resolving a string into CommandType."
     return {
         getattr(Command, item).value: getattr(Command, item)
         for item in dir(Command)

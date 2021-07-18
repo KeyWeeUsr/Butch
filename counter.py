@@ -1,3 +1,10 @@
+"""
+Mitigates having immutable integer in one func and the whole copy-passing
+stuff just to bump the value as well as builds on the usability of counter()
+from itertools, but preserves the current value.
+"""
+
+
 class Count:
     "Like itertools.counter(), but this one is observable, but also heavier."
 
@@ -12,6 +19,7 @@ class Count:
 
     @property
     def value(self):
+        "Property: current value."
         return self._value
 
     @value.setter
@@ -22,6 +30,7 @@ class Count:
 
     @property
     def step(self):
+        "Property: step value."
         return self._step
 
     @step.setter
@@ -39,9 +48,11 @@ class Count:
         return self._value
 
     def next(self):
+        "Move forward by one step."
         return self.__next__()
 
     def previous(self):
+        "Return back by one step."
         return self.__reversed__()
 
     def __repr__(self):

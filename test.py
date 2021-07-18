@@ -1,3 +1,9 @@
+# the value from locals will be removed, which is desired
+# pylint: disable=import-outside-toplevel
+# pylint: disable=missing-function-docstring,missing-class-docstring
+# pylint: disable=missing-module-docstring
+# pylint: disable=too-many-lines,too-many-locals
+
 from unittest import main, TestCase
 from unittest.mock import MagicMock, patch, call as mock_call
 
@@ -45,7 +51,7 @@ class BetterParser(TestCase):
             self.assertEqual(pxp(line="%*", ctx=ctx), " ".join(arg_all))
             self.assertEqual(pxp(line="%1hello%", ctx=ctx), f"{arg_one}hello")
             self.assertEqual(pxp(line="%1hello%", ctx=ctx), f"{arg_one}hello")
-        self.assertEqual(pxp(line="%%1hello%", ctx=ctx), f"%1hello")
+        self.assertEqual(pxp(line="%%1hello%", ctx=ctx), "%1hello")
         self.assertEqual(pxp(line="%", ctx=ctx), "")
         self.assertEqual(pxp(line="%%", ctx=ctx), "%")
         self.assertEqual(pxp(line="%%%", ctx=ctx), "%")
@@ -229,11 +235,8 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_empty(self):
-        from tokenizer import tokenize, Command
-        from commands import Command as CommandType
+        from tokenizer import tokenize
         from context import Context
-
-        param = "hello"
 
         for cmd in ["", "\n", "\r\n"]:
             output = tokenize(text=cmd, ctx=Context())
@@ -241,11 +244,8 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
     def test_empty_without_newline(self):
-        from tokenizer import tokenize, Command
-        from commands import Command as CommandType
+        from tokenizer import tokenize
         from context import Context
-
-        param = "hello"
 
         for cmd in ["", "\n", "\r\n"]:
             output = tokenize(text=cmd, ctx=Context())
@@ -253,11 +253,8 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
     def test_empty_multi(self):
-        from tokenizer import tokenize, Command
-        from commands import Command as CommandType
+        from tokenizer import tokenize
         from context import Context
-
-        param = "hello"
 
         for cmd in ["", "\n", "\r\n"]:
             output = tokenize(text=cmd * 3, ctx=Context())
@@ -265,11 +262,8 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
     def test_empty_multi_without_newline(self):
-        from tokenizer import tokenize, Command
-        from commands import Command as CommandType
+        from tokenizer import tokenize
         from context import Context
-
-        param = "hello"
 
         for cmd in ["", " ", "\r"]:
             output = tokenize(text=cmd * 3, ctx=Context())
@@ -347,32 +341,33 @@ class Caller(TestCase):
             echo.assert_called_once_with(params=args, ctx=ctx)
 
     def test_map_unresolved(self):
-        from caller import call
+        from caller import call, UnknownCommand
         from commands import Command
-        echo = MagicMock()
+        from context import Context
+
         params = [str(val) for val in range(3)]
 
-        with self.assertRaises(Exception):
-            call(Command.UNKNOWN, params)
+        with self.assertRaises(UnknownCommand):
+            call(Command.UNKNOWN, params, ctx=Context())
 
     def test_map_unresolved_new(self):
-        from caller import new_call as call
+        from caller import new_call, UnknownCommand
         from commands import Command as CommandType
         from tokenizer import Command, Argument
-        echo = MagicMock()
+        from context import Context
         params = [str(val) for val in range(3)]
 
-        with self.assertRaises(Exception):
-            call(Command(cmd=CommandType.UNKNOWN, args=[
+        with self.assertRaises(UnknownCommand):
+            new_call(Command(cmd=CommandType.UNKNOWN, args=[
                 Argument(value=value) for value in params
-            ]))
+            ]), ctx=Context())
 
 
-class Context(TestCase):
+class State(TestCase):
     def test_unknown_skipped(self):
         from context import Context
         with self.assertRaises(Exception):
-            Contest(unknown=123)
+            Context(unknown=123)
 
     def test_known_init(self):
         from context import Context
@@ -414,7 +409,7 @@ class Execution(TestCase):
         ctx = Context()
         args = {"params": ["nonexistingfile"], "ctx": ctx}
 
-        chdir_mock = patch("os.chdir", side_effect=FileNotFoundError())
+        chdir_mock = patch("commands.chdir", side_effect=FileNotFoundError())
         with chdir_mock as chdir, patch("commands.print") as mock:
             call(Command.CD, **args)
             chdir.assert_called_once_with(args["params"][0])
@@ -433,7 +428,7 @@ class Execution(TestCase):
         ctx = Context()
         value = "nonexistingfile"
 
-        chdir_mock = patch("os.chdir", side_effect=FileNotFoundError())
+        chdir_mock = patch("commands.chdir", side_effect=FileNotFoundError())
         with chdir_mock as chdir, patch("commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
@@ -447,14 +442,14 @@ class Execution(TestCase):
         from commands import Command
         from caller import call
         from context import Context
-        from constants import PATH_NOT_FOUND
 
         ctx = Context()
         args = {"params": ["existing"], "ctx": ctx}
 
-        with patch("os.chdir") as chdir, patch("commands.print") as mock:
+        with patch("commands.chdir") as chdir, patch("commands.print") as mock:
             call(Command.CD, **args)
             chdir.assert_called_once_with(args["params"][0])
+            mock.assert_not_called()
 
         self.assertEqual(ctx.error_level, 0)
 
@@ -463,16 +458,16 @@ class Execution(TestCase):
         from tokenizer import Command, Argument
         from caller import new_call as call
         from context import Context
-        from constants import PATH_NOT_FOUND
 
         ctx = Context()
         value = "existing"
 
-        with patch("os.chdir") as chdir, patch("commands.print") as mock:
+        with patch("commands.chdir") as chdir, patch("commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
             ]), ctx=ctx)
             chdir.assert_called_once_with(value)
+            mock.assert_not_called()
 
         self.assertEqual(ctx.error_level, 0)
 
@@ -492,7 +487,7 @@ class Execution(TestCase):
 
     def test_set_dumpall_new(self):
         from commands import Command as CommandType
-        from tokenizer import Command, Argument
+        from tokenizer import Command
         from caller import new_call as call
         from context import Context
 
@@ -598,7 +593,7 @@ class BatchFiles(TestCase):
         with open(join(folder, out_name)) as file:
             output = file.readlines()
 
-        with patch("os.chdir") as cdr, patch("builtins.print") as stdout:
+        with patch("commands.chdir") as cdr, patch("builtins.print") as stdout:
             ctx = Context()
             handle_new(text=join(folder, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
@@ -910,7 +905,7 @@ class BatchFiles(TestCase):
                 )
 
     def test_delete_file_syntax(self):
-        from os.path import join, dirname, abspath, exists
+        from os.path import join, dirname, abspath
 
         script_name = "delete_file_syntax.bat"
         out_name = f"{script_name}.out"
@@ -936,7 +931,6 @@ class BatchFiles(TestCase):
                 )
 
     def test_delete_folder_pipe(self):
-        import sys
         from os import mkdir, rmdir, listdir
         from shutil import rmtree
         from os.path import join, dirname, abspath, exists

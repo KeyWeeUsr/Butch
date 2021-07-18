@@ -1,3 +1,5 @@
+"Module for global or local (command) state related classes and functions."
+
 import sys
 import logging
 from os import getcwd, environ
@@ -29,6 +31,12 @@ PROMPT_DRIVE_NETWORK = "$M"
 
 
 class Context:
+    """
+    Holds the state in-between the commands and the overall, global state
+    of the Batch language interpreter.
+    """
+    # pylint: disable=too-many-instance-attributes
+
     _cwd: str = None
     _variables: dict = None
     _error_level: int = 0
@@ -69,14 +77,17 @@ class Context:
 
     @property
     def log(self):
+        "Property: reference to the Butch's logger."
         return self.__logger
 
     @property
     def cwd(self):
+        "Property: current working directory."
         return self._cwd
 
     @property
     def error_level(self):
+        "Property: current error level of a script."
         return self._error_level
 
     @error_level.setter
@@ -85,6 +96,7 @@ class Context:
 
     @property
     def piped(self):
+        "Property: flag whether the previous command was piped."
         return self._piped
 
     @piped.setter
@@ -93,6 +105,7 @@ class Context:
 
     @property
     def collect_output(self):
+        "Property: flag whether to collect output to a pipe or redirection."
         return self._collect_output
 
     @collect_output.setter
@@ -101,6 +114,7 @@ class Context:
 
     @property
     def output(self):
+        "Property: stored output / passed input if piped or redirected."
         return self._output
 
     @output.setter
@@ -109,6 +123,7 @@ class Context:
 
     @property
     def extensions_enabled(self):
+        "Property: Batch extensions flag."
         return self._extensions_enabled
 
     @extensions_enabled.setter
@@ -117,6 +132,7 @@ class Context:
 
     @property
     def history_enabled(self):
+        "Property: flag if executed commands should be collected."
         return self._history_enabled
 
     @history_enabled.setter
@@ -125,6 +141,7 @@ class Context:
 
     @property
     def delayed_expansion_enabled(self):
+        "Property: flag whether to expand variables with ! (exc.mark)."
         return self._delayed_expansion_enabled
 
     @delayed_expansion_enabled.setter
@@ -133,25 +150,32 @@ class Context:
 
     @property
     def dynamic_variables(self):
+        "Property: list of dynamic variables' names."
         return self._dynamic_variables
 
     @property
     def variables(self):
+        "Property: all stored variables in the context. (not dynamic)"
         return self._variables
 
+    # pylint: disable=unused-argument
     def get_variable(self, key, delayed=False):
+        "Get a value of variable from the context."
         if self.extensions_enabled and key in self.dynamic_variables:
             return self._get_dynamic_variable(key)
         return self.variables.get(key)
 
     def set_variable(self, key, value):
+        "Create a variable in the context."
         self._variables[key] = value
 
     def delete_variable(self, key):
+        "Delete a variable in the context."
         self._variables[key] = ""
 
     @property
     def history(self):
+        "Property: list of previously executed commands."
         return self._history
 
     @history.setter
@@ -162,6 +186,7 @@ class Context:
 
     @property
     def echo(self) -> bool:
+        "Property: printing/echo."
         return self._echo
 
     @echo.setter
@@ -170,6 +195,7 @@ class Context:
 
     @property
     def prompt(self) -> bool:
+        "Property: current prompt string."
         return self._prompt
 
     @prompt.setter
@@ -177,7 +203,8 @@ class Context:
         self._prompt = value
         self.set_variable("prompt", value)
 
-    def _get_default_variables(self):
+    @staticmethod
+    def _get_default_variables():
         return {
             "allusersprofile": None,
             "appdata": None,
@@ -212,24 +239,27 @@ class Context:
         }
 
     def _get_dynamic_variable(self, name: str):
+        "Create and return a dynamic value for dynamic variable."
+        # pylint: disable=too-many-return-statements
         if name == "cd":
             return getcwd()
-        elif name == "date":
+        if name == "date":
             return strftime("%x")
-        elif name == "time":
+        if name == "time":
             return strftime("%X")
-        elif name == "random":
+        if name == "random":
             return str(randint(0, 32767))
-        elif name == "errorlevel":
+        if name == "errorlevel":
             return str(self.error_level)
-        elif name == "cmdextversion":
+        if name == "cmdextversion":
             return "2"
-        elif name == "cmdcmdline":
+        if name == "cmdcmdline":
             # TODO: point to main.py, check after pyinstaller
             return sys.executable
         return None
 
     def resolve_prompt(self) -> str:
+        "Resolve a prompt string from the context."
         prompt = self.prompt
         if PROMPT_SYMBOL not in prompt:
             return prompt
@@ -253,6 +283,7 @@ class Context:
 
     @staticmethod
     def get_logger():
+        "Create a basic logger and return it."
         logger = logging.getLogger(__name__)
         level = logging.INFO
         if environ.get("DEBUG"):
@@ -262,5 +293,6 @@ class Context:
 
 
 def get_context() -> dict:
+    "Get a new Context instance with current working directory set."
     cwd = getcwd().replace("/", "\\")
     return Context(cwd=cwd)
