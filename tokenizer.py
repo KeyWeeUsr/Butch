@@ -366,6 +366,71 @@ def handle_char_newline(
     next(pos)
 
 
+def handle_char_splitter(
+        pos: Count, flags: dict, text: FilmBuffer,
+        buff: CharList, output: list, found: Shared,
+        compound: Count, ctx: Context = None, log=EMPTYF
+) -> None:
+    log("- is splitter")
+    last = output[-1] if output else None
+    if last and not isinstance(last, Command):
+        log("\t- left isn't command, assuming splitter")
+        log("\t- assuming argument leftovers in buffer")
+
+        # cmd1 [arg ...] | cmd2 [arg ...] | cmd3 [arg ...]
+        # \---parse---> P(P(1 | 2) | 3)
+        #
+        # P----(L)---P--(L)---1
+        #  \          \
+        #   \          \(R)---2
+        #    \
+        #     \(R)------------3
+        if buff:
+            last.right.args = last.right.args + [
+                Argument(value=buff.data)
+            ]
+    elif found:
+        # command not yet added, assembling now
+        log("\t- found_command: %r", found)
+        last = found.data
+    join = None
+    char = text.char
+    nchar = text.nchar
+    if char == SPECIAL_PIPE:
+        log("\t- is pipe")
+        if nchar == SPECIAL_PIPE:
+            log("\t\t- is double-pipe (OR)")
+            join = Concat(left=last)
+            next(pos)
+        else:
+            log("\t\t- is normal pipe")
+            join = Pipe(left=last)
+    elif char == SPECIAL_AMP:
+        log("\t- is amp")
+        join = Concat(left=last)
+        if nchar == SPECIAL_AMP:
+            log("\t\t- is &&")
+            next(pos)
+    elif char in SPECIAL_REDIR:
+        log("\t- is redirection")
+        append = False
+        if nchar in SPECIAL_REDIR:
+            append = True
+            next(pos)
+        join = Redirection(left=last, right=None, append=append)
+    # the last command is now encapsulated in a connector
+    # the newest command is stored in the "right" branch
+    log("\t- check output: %r", output)
+    if output:
+        log("\t- attaching command to connector")
+        output[-1] = join
+    else:
+        log("\t- creating new item: %r", join)
+        output.append(join)
+    found.clear()
+    next(pos)
+
+
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     log = ctx.log.debug
     log("Starting tokenization")
@@ -445,62 +510,11 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 found=found_command, compound=compound, log=log
             )
         elif char in SPECIAL_SPLITTERS:
-            log("- is splitter")
-            last = output[-1] if output else None
-            if last and not isinstance(last, Command):
-                log("\t- left isn't command, assuming splitter")
-                log("\t- assuming argument leftovers in buffer")
-
-                # cmd1 [arg ...] | cmd2 [arg ...] | cmd3 [arg ...]
-                # \---parse---> P(P(1 | 2) | 3)
-                #
-                # P----(L)---P--(L)---1
-                #  \          \
-                #   \          \(R)---2
-                #    \
-                #     \(R)------------3
-                if buff:
-                    last.right.args = last.right.args + [
-                        Argument(value=buff.data)
-                    ]
-            elif found_command:
-                # command not yet added, assembling now
-                log("\t- found_command: %r", found_command)
-                last = found_command.data
-            join = None
-            if char == SPECIAL_PIPE:
-                log("\t- is pipe")
-                if nchar == SPECIAL_PIPE:
-                    log("\t\t- is double-pipe (OR)")
-                    join = Concat(left=last)
-                    next(idx)
-                else:
-                    log("\t\t- is normal pipe")
-                    join = Pipe(left=last)
-            elif char == SPECIAL_AMP:
-                log("\t- is amp")
-                join = Concat(left=last)
-                if nchar == SPECIAL_AMP:
-                    log("\t\t- is &&")
-                    next(idx)
-            elif char in SPECIAL_REDIR:
-                log("\t- is redirection")
-                append = False
-                if nchar in SPECIAL_REDIR:
-                    append = True
-                    next(idx)
-                join = Redirection(left=last, right=None, append=append)
-            # the last command is now encapsulated in a connector
-            # the newest command is stored in the "right" branch
-            log("\t- check output: %r", output)
-            if output:
-                log("\t- attaching command to connector")
-                output[-1] = join
-            else:
-                log("\t- creating new item: %r", join)
-                output.append(join)
-            found_command.clear()
-            next(idx)
+            handle_char_splitter(
+                pos=idx, flags=flags,
+                text=text, buff=buff, output=output,
+                found=found_command, compound=compound, log=log
+            )
         elif char == SPECIAL_LPAREN:
             log("- is left-paren")
             next(compound)
