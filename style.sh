@@ -1,22 +1,21 @@
-#!/bin/sh -ex
+#!/bin/sh -x
 pycodestyle \
     --ignore=W503 --show-source --statistics --count --max-line-length=79 \
     --indent-size=4 .
 
 pylint \
     caller.py charlist.py commands.py constants.py context.py counter.py \
-    filmbuffer.py grammar.py help.py main.py outputs.py parser.py shared.py \
+    filmbuffer.py grammar.py help.py main.py outputs.py shared.py \
     test.py tokenizer.py \
     --jobs=0 \
     --max-line-length=79 \
     --single-line-if-stmt=n \
     --single-line-class-stmt=n \
     --indent-after-paren=4 \
-    --expected-line-ending-format=LF
-    --logging-format-style=old
+    --expected-line-ending-format=LF \
+    --logging-format-style=old \
     --init-import=yes \
     --indent-string='    ' \
-    --allow-global-unused-variables=n \
     --check-str-concat-over-line-jumps=n \
     --check-quote-consistency=y \
     --import-graph=imports.gv \
@@ -28,10 +27,26 @@ pylint \
     --attr-naming-style=snake_case \
     --class-naming-style=PascalCase \
     --class-attribute-naming-style=snake_case \
-    --class-const-naming-style=UPPER_CASE
+    --class-const-naming-style=UPPER_CASE \
     --const-naming-style=UPPER_CASE \
     --function-naming-style=snake_case \
     --inlinevar-naming-style=snake_case \
     --method-naming-style=snake_case \
     --module-naming-style=snake_case \
     --variable-naming-style=snake_case
+
+# WPS412 wtf???
+# I005 double-wtf?
+# I004 it's called readability...
+# WPS336 straight-forward nonsense unless customizable per package/module
+# WPS305 "f strings implicitly rely on the context around them"
+# - crap... so do functions as well as string.format() can be used as template
+flake8 \
+    --inline-quotes=double \
+    --inline-quotes=double \
+    --multiline-quotes='"""' \
+    --docstring-quotes='"' \
+    --avoid-escape \
+    --ignore C812,WPS421,WPS326,I005,I004,WPS336,WPS305 \
+    --max-module-members=10 \
+    .

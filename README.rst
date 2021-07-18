@@ -66,6 +66,8 @@ Commands
 
   *pending:* pretty much everything except the basic value add + clear
 
+  - [ ] case-insensitive access, but case-sensitive output
+
 - [ ] `SETLOCAL <https://ss64.com/nt/setlocal.html>`__
 - [ ] `SHIFT <https://ss64.com/nt/shift.html>`__
 - [ ] `START <https://ss64.com/nt/start.html>`__

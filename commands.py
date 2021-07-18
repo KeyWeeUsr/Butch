@@ -2,7 +2,7 @@
 
 import sys
 
-from typing import List
+from typing import List, Tuple
 from inspect import getframeinfo, currentframe
 from enum import Enum
 from os import remove, listdir, chdir, environ
@@ -14,6 +14,7 @@ from constants import (
     SURE, DELETE
 )
 from outputs import CommandOutput
+from expansion import percent_expansion
 
 
 class Command(Enum):
@@ -29,6 +30,7 @@ class Command(Enum):
     SETLOCAL = "setlocal"
     DELETE = "del"
     ERASE = "erase"
+    HELP = "help"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -44,7 +46,6 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         out = ctx.output.stdout
 
     # pylint: disable=import-outside-toplevel
-    from parser import percent_expansion  # circular
     from help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
@@ -70,14 +71,37 @@ def echo(params: List["Argument"], ctx: Context) -> None:
     print(*params, file=out)
 
 
+def help_cmd(params: List["Argument"], ctx: Context) -> None:
+    """Batch: HELP command."""
+    this = getframeinfo(currentframe()).function
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
+    cmd_map = get_reverse_cmd_map()
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    if not params:
+        print_help(cmd=Command.HELP, file=out)
+
+    print_help(cmd=cmd_map.get(params[0].lower(), Command.UNKNOWN), file=out)
+
+
 def _print_all_variables(ctx: Context) -> None:
     for key, val in ctx.variables.items():
-        # TODO: case-sensitive key should be printed
         print(f"{key}={val}", file=sys.stdout)
 
 
 def _print_single_variable(key: str, ctx: Context) -> None:
-    # TODO: case-sensitive key should be printed
     value = ctx.get_variable(key)
     if not value:
         print(ENV_VAR_UNDEFINED, file=sys.stdout)
@@ -98,7 +122,6 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
     # pylint: disable=import-outside-toplevel
     from help import print_help  # circular
 
-    # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
         _print_all_variables(ctx=ctx)
@@ -129,7 +152,7 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
 
     left = left.lower()
     ctx.log.debug("\t- single variable create: %r, %r", left, right)
-    ctx.set_variable(key=left, value=right)
+    ctx.set_variable(key=left, value_to_set=right)
 
 
 def setlocal(params: list, ctx: Context) -> None:
@@ -141,7 +164,6 @@ def setlocal(params: list, ctx: Context) -> None:
     # pylint: disable=import-outside-toplevel
     from help import print_help  # circular
 
-    # TODO: stored as case-sensitive, access by insensitive
     params_len = len(params)
     if not params_len:
         # copy all variables to new session, restore old state with endlocal
@@ -186,6 +208,7 @@ def cd(params: list, ctx: Context) -> None:
         # windows
         return
 
+    params = [param.value for param in params]
     first = params[0]
     if params_len == 1 and first == "/?":
         print_help(cmd=Command.CD)
@@ -245,7 +268,7 @@ def title(params: list, ctx: Context) -> None:
     # pylint: disable=unreachable
     # Windows
     import ctypes
-    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel32.SetConsoleTitleW(text)
     error = ctypes.get_last_error()
     if error:
@@ -278,9 +301,10 @@ def exit_cmd(params: list, ctx: Context) -> None:
     from help import print_help  # circular
     params_len = len(params)
     if not params_len:
-        print()
+        sys.exit(0)
         return
 
+    params = [param.value for param in params]
     first = params[0]
     if first == "/?":
         print_help(cmd=Command.EXIT)
@@ -301,7 +325,6 @@ def delete(params: List["Argument"], ctx: Context) -> None:
 
     # pylint: disable=import-outside-toplevel
     from help import print_help  # circular
-    from parser import percent_expansion  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -320,7 +343,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
             return
         path = abspath(first)
         if not exists(path):
-            os_path = path.replace('/', '\\')
+            os_path = path.replace("/", "\\")
             print(f"Could Not Find {os_path}")
             ctx.error_level = 0
             return
@@ -341,7 +364,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
         if not exists(path):
             continue
 
-        os_path = path.replace('/', '\\')
+        os_path = path.replace("/", "\\")
         if isdir(param):
             answer = ""
             if prompt_for_all or not quiet:
@@ -383,7 +406,8 @@ def get_cmd_map():
         Command.EXIT: exit_cmd,
         Command.SETLOCAL: setlocal,
         Command.DELETE: delete,
-        Command.ERASE: delete
+        Command.ERASE: delete,
+        Command.HELP: help_cmd
     }
 
 
@@ -395,3 +419,19 @@ def get_reverse_cmd_map():
         if isinstance(getattr(Command, item), Command)
         and item != Command.UNKNOWN.name
     }
+
+
+def parse(values: str) -> Tuple[Command, list]:
+    "Parse a string into a command."
+    cmd, *params = values.split(" ")
+    unk = Command.UNKNOWN.name
+
+    cmds = {
+        getattr(Command, item).value: getattr(Command, item)
+        for item in dir(Command)
+        if isinstance(getattr(Command, item), Command) and item != unk
+    }
+
+    if cmd in cmds:
+        return (cmds[cmd], params)
+    return (Command.UNKNOWN, [cmd])

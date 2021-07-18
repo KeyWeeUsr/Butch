@@ -5,23 +5,12 @@ to the provided tokens and context.
 
 from typing import Union
 from tokenizer import Command, Connector, Pipe, Redirection
-from commands import Command as CommandType, get_cmd_map
+from commands import get_cmd_map
 from context import Context
 
 
 class UnknownCommand(Exception):
     "Exception if CommandType.UNKNOWN was passed."
-
-
-def call(cmd: CommandType, params: list, ctx: Context) -> None:
-    "Execute the underlying function based on CommandType enum. (deprecated)"
-    cmd_map = get_cmd_map()
-    func = cmd_map.get(cmd)
-    if not func:
-        raise UnknownCommand(f"Unknown function: '{cmd}'")
-
-    ctx.history = [cmd, params]
-    func(params=params, ctx=ctx)
 
 
 def new_call(
@@ -57,17 +46,4 @@ def new_call(
 
     if not child:
         ctx.history = cmd
-    new_cmds = (
-        CommandType.SET, CommandType.ECHO,
-        CommandType.DELETE, CommandType.ERASE
-    )
-    if obj.cmd not in new_cmds:
-        values = []
-        for item in obj.args:
-            if item.quoted:
-                values.append(repr(item.value))
-            else:
-                values.append(item.value)
-        func(params=values, ctx=ctx)
-        return
     func(params=obj.args, ctx=ctx)

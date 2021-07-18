@@ -22,6 +22,13 @@ def emptyf(*_, **__):
     "Empty function that does nothing."
 
 
+def clear_input(value: str) -> str:
+    "Clear input line if it contains specific chars."
+    if set(value) in (set(""), set("\n"), set("\r\n"), set("\n\r"), set(" ")):
+        return ""
+    return value
+
+
 class Flag(Enum):
     "Enum of tokenizer flags when parsing the Batch code."
     ESCAPE = auto()
@@ -59,7 +66,7 @@ class Argument:
         val = self._value
         if self.quoted:
             val = repr(val)
-        return f'<Argument: {val!r}, q={int(self.quoted)}>'
+        return f"<Argument: {val!r}, q={int(self.quoted)}>"
 
     def __eq__(self, other):
         return self.value == other.value
@@ -151,7 +158,7 @@ class Connector:
         self._right = value
 
     def __repr__(self):
-        return f'<{self.name}: [{self.left}, {self.right}]>'
+        return f"<{self.name}: [{self.left}, {self.right}]>"
 
 
 class Concat(Connector):
@@ -207,7 +214,7 @@ class Redirection(Connector):
             direction = ">"
         if self.append:
             direction *= 2
-        return f'<{self.name}: {self.left} {direction} {self.right}>'
+        return f"<{self.name}: {self.left} {direction} {self.right}>"
 
 
 def handle_char_cr(pos: Count, ctx: Context = None, log=emptyf) -> None:
@@ -534,12 +541,12 @@ def handle_char_last(
         buff: CharList, output: list, found: Shared, log=emptyf
 ) -> None:
     "Handle the last character of an input line."
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-statements,too-many-branches
     log("- last char")
     char = text.char
     buff += char.replace("\r", "")
 
-    if not buff:
+    if not buff or not clear_input(buff.data):
         return
 
     if char == SPECIAL_CARRET:
@@ -554,14 +561,80 @@ def handle_char_last(
     if pos.value == 0:
         log("\t- not found command, zero idx")
         found.set(Command(cmd=CommandType.UNKNOWN))
-    if found:
-        log("\t- found command")
-        found.data.args = found.data.args + [
-            Argument(value=buff.data)
-        ]
+
+    cmd_map = get_reverse_cmd_map()
+    if pos.value == text.last_pos and buff:  # buff check for whitespace
+        if not found:
+            cmd_clear = buff.data.strip().lower()
+            echo = True
+            if cmd_clear.startswith("@"):
+                log("\t- echo off")
+                echo = False
+                cmd_clear = cmd_clear[1:]
+            log("\t- cmd string: %r", cmd_clear)
+            found.set(Command(
+                cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN),
+                echo=echo
+            ))
+            buff.clear()
+        if buff:
+            found.data.args = found.data.args + [
+                Argument(value=buff.data)
+            ]
         buff.clear()
-        log("\t- appending to output: %r", found)
-        output.append(found.data)
+        if not output:
+            log("\t- appending to output: %r", found)
+            output.append(found.data)
+        else:
+            log("\t\t- output present, check if connector")
+            last = output[-1]
+            if isinstance(last, Connector) and not last.right:
+                log("\t\t\t- is connector w/ empty r-val")
+                log("\t\t\t\t- insert: %r", found)
+                output[-1].right = found.data
+                found.clear()
+            else:
+                log(
+                    "\t\t\t- not connector, appending: %r",
+                    found
+                )
+                output.append(found.data)
+                found.clear()
+    if pos.value != text.last_pos and buff:  # buff check for whitespace
+        log("\t\t- not last char, %r", buff)
+        if not found:
+            found.set(Command(cmd=CommandType.UNKNOWN))
+        if flags[Flag.UNFINISHED_LINE]:
+            found.data.args[-1].value = (
+                found.data.args[-1].value + buff.data
+            )
+            flags[Flag.UNFINISHED_LINE] = False
+        else:
+            found.data.args = found.data.args + [
+                Argument(value=buff.data)
+            ]
+
+            if not output:
+                log("\t\t- appending to output: %r", found)
+                output.append(found.data)
+            else:
+                log("\t\t- output present, check if connector")
+                last = output[-1]
+                if isinstance(last, Connector) and not last.right:
+                    log("\t\t\t- is connector w/ empty r-val")
+                    log("\t\t\t\t- insert: %r", found)
+                    output[-1].right = found.data
+                    found.clear()
+                else:
+                    log(
+                        "\t\t\t- not connector, appending: %r",
+                        found
+                    )
+                    output.append(found.data)
+                    found.clear()
+
+        buff.clear()
+        found.clear()
 
 
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
@@ -571,7 +644,8 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     output = []
 
     idx = Count()
-    text = FilmBuffer(data=text)
+    # replace 0x1A with LF
+    text = FilmBuffer(data=text.replace("\x1a", "\n"))
     last_pos = text.last_pos
 
     flags = defaultdict(bool)

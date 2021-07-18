@@ -1,12 +1,12 @@
-"Module for global or local (command) state related classes and functions."
+"""Module for global or local (command) state related classes and functions."""
 
 import sys
-import logging
-from os import getcwd, environ
+from os import getcwd
 from time import strftime
 from random import randint
 
 from outputs import CommandOutput
+from logger import get_logger
 
 PROMPT_SYMBOL = "$"
 PROMPT_AMP = "$A"
@@ -28,6 +28,7 @@ PROMPT_CRLF = "$_"
 PROMPT_DOLLAR = "$$"
 PROMPT_PUSHD_STACK_PLUS = "$+"
 PROMPT_DRIVE_NETWORK = "$M"
+DYNAMIC_RAND_MAX = 32767
 
 
 class Context:
@@ -41,15 +42,15 @@ class Context:
     _variables: dict = None
     _error_level: int = 0
     _extensions_enabled: bool = True
-    _delayed_expansion_enabled: bool = False
+    _delayed_expansion_enabled: bool
     _dynamic_variables: list = [
         "cd", "date", "time", "random", "errorlevel",
         "cmdextversion", "cmdcmdline"
     ]
     _history: list = None
-    _history_enabled: bool = True
-    _echo: bool = True
-    _prompt: str = ""
+    _history_enabled: bool
+    _echo: bool
+    _prompt: str
     _output: CommandOutput = None
     _collect_output: bool = False
     _piped: bool = False
@@ -58,9 +59,12 @@ class Context:
     def __init__(self, **kwargs):
         self._variables = self._get_default_variables()
         self._history = []
-        self.__logger = self.get_logger()
+        self.__logger = get_logger()
         self._prompt = self._variables.get("prompt", "")
         self._cwd = getcwd()
+        self._echo = True
+        self._delayed_expansion_enabled = False
+        self._history_enabled = True
 
         for key, val in kwargs.items():
             if key not in dir(Context):
@@ -77,17 +81,32 @@ class Context:
 
     @property
     def log(self):
-        "Property: reference to the Butch's logger."
+        """
+        Property.
+
+        Returns:
+            reference to the Butch's logger.
+        """
         return self.__logger
 
     @property
     def cwd(self):
-        "Property: current working directory."
+        """
+        Property.
+
+        Returns:
+            current working directory.
+        """
         return self._cwd
 
     @property
     def error_level(self):
-        "Property: current error level of a script."
+        """
+        Property.
+
+        Returns:
+            current error level of a script.
+        """
         return self._error_level
 
     @error_level.setter
@@ -96,7 +115,12 @@ class Context:
 
     @property
     def piped(self):
-        "Property: flag whether the previous command was piped."
+        """
+        Property.
+
+        Returns:
+            flag whether the previous command was piped.
+        """
         return self._piped
 
     @piped.setter
@@ -105,7 +129,12 @@ class Context:
 
     @property
     def collect_output(self):
-        "Property: flag whether to collect output to a pipe or redirection."
+        """
+        Property.
+
+        Returns:
+            flag whether to collect output to pipe or redirection.
+        """
         return self._collect_output
 
     @collect_output.setter
@@ -114,7 +143,12 @@ class Context:
 
     @property
     def output(self):
-        "Property: stored output / passed input if piped or redirected."
+        """
+        Property.
+
+        Returns:
+            stored output / passed input if piped or redirected.
+        """
         return self._output
 
     @output.setter
@@ -123,7 +157,12 @@ class Context:
 
     @property
     def extensions_enabled(self):
-        "Property: Batch extensions flag."
+        """
+        Property.
+
+        Returns:
+            Batch extensions flag.
+        """
         return self._extensions_enabled
 
     @extensions_enabled.setter
@@ -132,79 +171,135 @@ class Context:
 
     @property
     def history_enabled(self):
-        "Property: flag if executed commands should be collected."
+        """
+        Property.
+
+        Returns:
+            flag if executed commands should be collected.
+        """
         return self._history_enabled
 
     @history_enabled.setter
-    def history_enabled(self, value):
-        self._history_enabled = value
+    def history_enabled(self, enabled):
+        self._history_enabled = enabled
 
     @property
     def delayed_expansion_enabled(self):
-        "Property: flag whether to expand variables with ! (exc.mark)."
+        """
+        Property.
+
+        Returns:
+            flag whether to expand variables with ! (exc.mark).
+        """
         return self._delayed_expansion_enabled
 
     @delayed_expansion_enabled.setter
-    def delayed_expansion_enabled(self, value):
-        self._delayed_expansion_enabled = value
+    def delayed_expansion_enabled(self, enabled):
+        self._delayed_expansion_enabled = enabled
 
     @property
     def dynamic_variables(self):
-        "Property: list of dynamic variables' names."
+        """
+        Property.
+
+        Returns:
+            list of dynamic variables' names.
+        """
         return self._dynamic_variables
 
     @property
     def variables(self):
-        "Property: all stored variables in the context. (not dynamic)"
+        """
+        Property.
+
+        Returns:
+            all stored variables in the context except dynamic
+        """
         return self._variables
 
     # pylint: disable=unused-argument
     def get_variable(self, key, delayed=False):
-        "Get a value of variable from the context."
+        """
+        Get a value of variable from the context.
+
+        Args:
+            key: variable name
+            delayed: whether to expand by "!"
+
+        Returns:
+            value of a variable as string
+        """
         if self.extensions_enabled and key in self.dynamic_variables:
             return self._get_dynamic_variable(key)
         return self.variables.get(key)
 
-    def set_variable(self, key, value):
-        "Create a variable in the context."
-        self._variables[key] = value
+    def set_variable(self, key, value_to_set):
+        """
+        Create a variable in the context.
+
+        Args:
+            key: variable name
+            value_to_set: same as the name
+        """
+        self._variables[key] = value_to_set
 
     def delete_variable(self, key):
-        "Delete a variable in the context."
+        """
+        Delete a variable in the context.
+
+        Args:
+            key: variable name
+        """
         self._variables[key] = ""
 
     @property
     def history(self):
-        "Property: list of previously executed commands."
+        """
+        Property.
+
+        Returns:
+            list of previously executed commands.
+        """
         return self._history
 
     @history.setter
-    def history(self, value):
+    def history(self, value_to_append):
+        # TODO: convert to function
         if not self.history_enabled:
             return
-        self._history.append(value)
+        self._history.append(value_to_append)
 
     @property
     def echo(self) -> bool:
-        "Property: printing/echo."
+        """
+        Property.
+
+        Returns:
+            boolean if echo is turned on
+        """
         return self._echo
 
     @echo.setter
-    def echo(self, value: bool):
-        self._echo = value
+    def echo(self, echo_on: bool):
+        self._echo = echo_on
 
     @property
     def prompt(self) -> bool:
-        "Property: current prompt string."
+        """
+        Property.
+
+        Returns:
+            current prompt string
+        """
         return self._prompt
 
     @prompt.setter
-    def prompt(self, value: str):
-        self._prompt = value
-        self.set_variable("prompt", value)
+    def prompt(self, prompt_text: str):
+        self._prompt = prompt_text
+        self.set_variable("prompt", prompt_text)
 
     @staticmethod
-    def _get_default_variables():
+    def _get_default_variables():  # noqa: WPS602, WPS605
         return {
             "allusersprofile": None,
             "appdata": None,
@@ -238,8 +333,16 @@ class Context:
             "windir": None
         }
 
-    def _get_dynamic_variable(self, name: str):
-        "Create and return a dynamic value for dynamic variable."
+    def _get_dynamic_variable(self, name: str) -> str:  # noqa: WPS212
+        """
+        Create and return a dynamic value for dynamic variable.
+
+        Args:
+            name: key name of a dynamic variable
+
+        Returns:
+            str: value of a dynamic variable
+        """
         # pylint: disable=too-many-return-statements
         if name == "cd":
             return getcwd()
@@ -248,18 +351,22 @@ class Context:
         if name == "time":
             return strftime("%X")
         if name == "random":
-            return str(randint(0, 32767))
+            return str(randint(0, DYNAMIC_RAND_MAX))  # noqa: S311
         if name == "errorlevel":
             return str(self.error_level)
         if name == "cmdextversion":
             return "2"
         if name == "cmdcmdline":
-            # TODO: point to main.py, check after pyinstaller
-            return sys.executable
-        return None
+            return sys.argv[0]
+        return ""
 
     def resolve_prompt(self) -> str:
-        "Resolve a prompt string from the context."
+        """
+        Resolve a prompt string from the context.
+
+        Returns:
+            str: prompt string
+        """
         prompt = self.prompt
         if PROMPT_SYMBOL not in prompt:
             return prompt
@@ -278,21 +385,15 @@ class Context:
 
             if flag == PROMPT_DRIVE_PATH:
                 out += self.cwd
-                continue
         return out
-
-    @staticmethod
-    def get_logger():
-        "Create a basic logger and return it."
-        logger = logging.getLogger(__name__)
-        level = logging.INFO
-        if environ.get("DEBUG"):
-            level = logging.DEBUG
-        logging.basicConfig(level=level, force=True)
-        return logger
 
 
 def get_context() -> dict:
-    "Get a new Context instance with current working directory set."
+    """
+    Get a new Context instance with current working directory set.
+
+    Returns:
+        context.Context
+    """
     cwd = getcwd().replace("/", "\\")
     return Context(cwd=cwd)
