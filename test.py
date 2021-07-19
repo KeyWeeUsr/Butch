@@ -6,7 +6,7 @@
 
 from unittest import main, TestCase
 from unittest.mock import patch, call as mock_call
-from os.path import join, dirname, abspath
+from os.path import join, dirname, abspath, exists, sep as path_separator
 BATCH_FOLDER = join(dirname(abspath(__file__)), "batch")
 
 
@@ -756,7 +756,6 @@ class BatchFiles(TestCase):
     def test_delete_file(self):
         import sys
         from os import remove
-        from os.path import exists
 
         script_name = "delete_file.bat"
         out_name = f"{script_name}.out"
@@ -817,7 +816,6 @@ class BatchFiles(TestCase):
     def test_delete_folder_pipe(self):
         from os import mkdir, rmdir, listdir
         from shutil import rmtree
-        from os.path import exists
 
         script_name = "delete_folder_files.bat"
         out_name = f"{script_name}.out"
@@ -859,6 +857,81 @@ class BatchFiles(TestCase):
             self.assertTrue(exists(tmp_folder))
             self.assertEqual(listdir(tmp_folder), [])
             rmdir(tmp_folder)
+
+    def test_mkdir_nonexisting(self):
+        import sys
+
+        script_name = "mkdir_nonexisting.bat"
+        out_name = f"{script_name}.out"
+        folder = BATCH_FOLDER
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = []
+            for line in file.readlines():
+                clean = line.strip()
+                if not clean:
+                    continue
+                output.append(clean)
+
+        stdout_mock = patch("builtins.print")
+        with patch("commands.makedirs") as mdrs, stdout_mock as stdout:
+            ctx = Context()
+
+            self.assertFalse(exists("new-folder"))
+            handle_new(text=join(folder, script_name), ctx=ctx)
+
+            mdrs.assert_called_once()
+            self.assertFalse(exists("new-folder"))
+
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
+                )
+
+    def test_mkdir_tree(self):
+        import sys
+
+        script_name = "mkdir_tree.bat"
+        out_name = f"{script_name}.out"
+        folder = BATCH_FOLDER
+
+        from context import Context
+        from main import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = []
+            for line in file.readlines():
+                clean = line.strip()
+                if not clean:
+                    continue
+                output.append(clean)
+
+        stdout_mock = patch("builtins.print")
+        tree = join("new-folder", "with", "sub", "folders")
+        with patch("commands.makedirs") as mdrs, stdout_mock as stdout:
+            ctx = Context()
+
+            self.assertFalse(exists(tree))
+            handle_new(text=join(folder, script_name), ctx=ctx)
+
+            mdrs.assert_called_once()
+            self.assertFalse(exists(tree))
+
+            mcalls = stdout.mock_calls
+            self.assertEqual(len(mcalls), len(output))
+
+            for idx, out in enumerate(output):
+                self.assertEqual(
+                    mcalls[idx],
+                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
+                )
 
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"

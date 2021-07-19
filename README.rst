@@ -50,7 +50,8 @@ Commands
 - [ ] `FTYPE <https://ss64.com/nt/ftype.html>`__
 - [ ] `GOTO <https://ss64.com/nt/goto.html>`__
 - [ ] `IF <https://ss64.com/nt/if.html>`__
-- [ ] `MD <https://ss64.com/nt/md.html>`__
+- [X] `MD <https://ss64.com/nt/md.html>`__
+- [X] `MKDIR <https://ss64.com/nt/md.html>`__
 - [ ] `MKLINK <https://ss64.com/nt/mklink.html>`__
 - [ ] `MOVE <https://ss64.com/nt/move.html>`__
 - [ ] `PATH <https://ss64.com/nt/path.html>`__

@@ -5,13 +5,13 @@ import sys
 from typing import List, Tuple
 from inspect import getframeinfo, currentframe
 from enum import Enum
-from os import remove, listdir, chdir, environ
+from os import remove, listdir, chdir, environ, makedirs
 from os.path import abspath, isdir, exists, join
 
 from context import Context
 from constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
-    SURE, DELETE
+    SURE, DELETE, PATH_EXISTS
 )
 from outputs import CommandOutput
 from expansion import percent_expansion
@@ -31,6 +31,8 @@ class Command(Enum):
     DELETE = "del"
     ERASE = "erase"
     HELP = "help"
+    MKDIR = "mkdir"
+    MD = "md"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -394,6 +396,54 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     ctx.piped = False
 
 
+def create_folder(params: List["Argument"], ctx: Context) -> None:
+    "Batch: MKDIR/MD command."
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        # do this also for piped input as mkdir does not care about pipes
+        # echo hello | mkdir -> syntax incorrect
+        print(SYNTAX_INCORRECT)
+        ctx.error_level = 1
+        return
+
+    if params_len == 1:
+        first = params[0]
+        if first.lower() == "/?":
+            print_help(cmd=Command.MKDIR)
+            return
+        first = first.replace("\\", "/")
+        path = abspath(first)
+        try:
+            makedirs(path)
+        except FileExistsError:
+            print(PATH_EXISTS.format(first))
+            ctx.error_level = 1
+        return
+
+    failed = False
+    for param in params:
+        path = abspath(param.replace("\\", "/"))
+
+        try:
+            makedirs(param)
+        except FileExistsError:
+            print(PATH_EXISTS.format(param))
+            failed = True
+
+    ctx.error_level = failed
+    ctx.piped = False
+
+
 def get_cmd_map():
     "Get mapping of CommandType into its functions for execution."
     return {
@@ -407,7 +457,9 @@ def get_cmd_map():
         Command.SETLOCAL: setlocal,
         Command.DELETE: delete,
         Command.ERASE: delete,
-        Command.HELP: help_cmd
+        Command.HELP: help_cmd,
+        Command.MKDIR: create_folder,
+        Command.MD: create_folder
     }
 
 
