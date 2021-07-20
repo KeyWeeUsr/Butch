@@ -39,7 +39,27 @@ Commands
   - [ ] ``/S`` delete specified files from all subdirectories
   - [ ] ``/A`` selects files to delete based on attributes
 
-- [ ] `DIR <https://ss64.com/nt/dir.html>`__
+- [X] `DIR <https://ss64.com/nt/dir.html>`__
+
+  *pending:*
+
+  - [ ] Volume drive lookup
+  - [ ] Volume label on drive
+  - [ ] ``/A``
+  - [ ] ``/B``
+  - [ ] ``/C``
+  - [ ] ``/D``
+  - [ ] ``/L``
+  - [ ] ``/N``
+  - [ ] ``/O``
+  - [ ] ``/P``
+  - [ ] ``/Q``
+  - [ ] ``/S``
+  - [ ] ``/T``
+  - [ ] ``/W``
+  - [ ] ``/X``
+  - [ ] ``DIRCMD`` env variable preset
+
 - [X] `ECHO <https://ss64.com/nt/echo.html>`__
 - [ ] `ENDLOCAL <https://ss64.com/nt/endlocal.html>`__
 - [X] `ERASE <https://ss64.com/nt/erase.html>`__

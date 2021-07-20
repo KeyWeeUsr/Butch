@@ -1,12 +1,15 @@
 "Module holding command-representing functions for their Batch names."
 
 import sys
+from locale import getlocale, setlocale, LC_NUMERIC, LC_CTYPE
 
 from typing import List, Tuple
 from inspect import getframeinfo, currentframe
+from datetime import datetime
 from enum import Enum
-from os import remove, listdir, chdir, environ, makedirs
+from os import remove, listdir, chdir, environ, makedirs, stat, statvfs, getcwd
 from os.path import abspath, isdir, exists, join
+from collections import defaultdict
 
 from context import Context
 from constants import (
@@ -445,8 +448,79 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
     ctx.piped = False
 
 
-def list_folder(*_, **__):
-    pass
+def _get_listdir_lines(folder: str, ctx: Context) -> list:
+    files = listdir()
+    files.sort()
+
+    files = [".", ".."] + files
+
+    tmp = []
+    count = defaultdict(int)
+
+    old_locale = getlocale(LC_NUMERIC)
+    setlocale(LC_NUMERIC, getlocale(LC_CTYPE))
+    for item in files:
+        raw = stat(item)
+        date = datetime.fromtimestamp(raw.st_ctime)
+        time = date.strftime("%X")
+        date = date.strftime("%x")
+        is_dir = isdir(item)
+        dir_text = "<DIR>".ljust(14) if is_dir else ""
+        size = raw.st_size
+
+        if is_dir:
+            count["total_size"] += size
+            size = ""
+        else:
+            size = "{0:n}".format(size).rjust(14)
+
+        count["folders" if is_dir else "files"] += 1
+        tmp.append(f"{date}  {time}    {dir_text}  {size} {item}")
+
+    prefix = [
+        " Volume in drive <NYI> has no label.",
+        " Volume Serial Number is <NYI>",
+        "",
+        f" Directory of {ctx.cwd}",
+        ""
+    ]
+
+    free_bytes = statvfs(folder)
+    free_bytes = "{0:n}".format(
+        free_bytes.f_frsize * free_bytes.f_bavail
+    ).rjust(14)
+    file_count = str(count["files"]).rjust(17)
+    folder_count = str(count["folders"]).rjust(18)
+    used_bytes = "{0:n}".format(count['total_size']).rjust(14)
+    suffix = [
+        f"{file_count} File(s){used_bytes} bytes",
+        f"{folder_count} Dir(s){free_bytes} bytes free",
+    ]
+    setlocale(LC_NUMERIC, old_locale)
+    return prefix + tmp + suffix
+
+
+def list_folder(params: List["Argument"], ctx: Context) -> None:
+    "Batch: DIR command."
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    # pylint: disable=import-outside-toplevel
+    from help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        # show current directory list
+        lines = _get_listdir_lines(folder=getcwd(), ctx=ctx)
+        print("\n".join(lines))
+        ctx.error_level = 0
+        return
+
+    raise NotImplementedError()
 
 
 def get_cmd_map():
