@@ -33,6 +33,7 @@ class Command(Enum):
     HELP = "help"
     MKDIR = "mkdir"
     MD = "md"
+    DIR = "dir"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -444,6 +445,10 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
     ctx.piped = False
 
 
+def list_folder(*_, **__):
+    pass
+
+
 def get_cmd_map():
     "Get mapping of CommandType into its functions for execution."
     return {
@@ -459,7 +464,8 @@ def get_cmd_map():
         Command.ERASE: delete,
         Command.HELP: help_cmd,
         Command.MKDIR: create_folder,
-        Command.MD: create_folder
+        Command.MD: create_folder,
+        Command.DIR: list_folder
     }
 
 
