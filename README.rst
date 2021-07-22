@@ -1,14 +1,68 @@
 .. -*- fill-column: 79; mode: rst; eval: (flyspell-mode) -*-
 
-==========================
-Butch - the Batch emulator
-==========================
+==================================
+Butch - The free Batch interpreter
+==================================
 
 .. |butch| replace:: Butch Coolidge
 .. _butch: https://pulpfiction.fandom.com/wiki/Butch_Coolidge
 
 Named after the famous Pulp Fiction boxer |butch|_ from Tennessee.
 
+**********
+How to run
+**********
+
+Installation
+============
+
+.. code::
+
+   pip install butch
+
+Post-Installation
+-----------------
+
+.. |sitepkgs| replace:: ``site.getsitepackages()``
+.. _sitepkgs: https://docs.python.org/3/library/site.html#site.getsitepackages
+
+Make sure to run the test suite after the installation to verify everything
+works as it should. The test suite is included in the package itself, so it
+should be located in the first ``site-packages`` folder found via |sitepkgs|_.
+
+.. code::
+
+   python $(python -c "import site;print(site.getsitepackages()[0])")/butch/test.py
+
+Development
+-----------
+
+Get the latest version:
+
+.. code::
+
+   pip install https://github.com/KeyWeeUsr/butch/zipball/master
+
+Running
+=======
+
+Butch is available as a standalone executable as well as a Python module,
+therefore it can be invoked by any of these commands if installed properly::
+
+   butch
+   python -m butch
+
+which will launch the REPL (console) directly.
+
+Use ``butch /C "echo Hello, Batch"`` for interpreting a Batch command from a
+string or use ``butch /C hello.bat`` to run Batch from a file.
+
+Use ``/K`` switch instead of ``/C`` to jump into the console after a command or
+a file finishes.
+
+Use ``butch /h`` to display help for other switches.
+
+********
 Features
 ********
 
@@ -126,11 +180,30 @@ Syntax
 - [ ] Command concatenation (``||``)
 - [ ] Recognize Windows path separator in path input (``\``)
 
+Console
+=======
+
+.. |ANSI| replace:: ANSI
+.. _ANSI: https://en.wikipedia.org/wiki/ANSI_character_set
+
+.. |UCS2| replace:: Unicode UCS-2 LE
+.. _USC2: https://en.wikipedia.org/wiki/Universal_Coded_Character_Set
+
+- [ ] ``/?`` as a proper help page trigger
+- [ ] ``/T`` for foreground/background colors
+- [ ] ``/A`` for printing only |ANSI|_ (which is most likely just 1252)
+- [ ] ``/U`` for printing Unicode (|USC2|_)
+- [ ] ``/D`` registry with autorun commands (.bashrc, kind of) + ignore
+- [ ] ``/E:ON|OFF``, ``/X``, ``/Y`` enable/disable command extensions
+- [ ] ``/S`` quote stripping from commands
+- [ ] ``/V:ON|OFF`` delayed expansion
+
+****
 TODO
 ****
 
 - [ ] `Ensure <https://github.com/kislyuk/ensure>`__ for dynamic type checking
 - [ ] `Mypy <https://github.com/python/mypy>`__ for static type checking
-- [ ] Documentation
-- [ ] PyPI package
+- [/] Documentation
+- [/] PyPI package
 - [ ] Library interface for programmatic emulation
