@@ -8,3 +8,5 @@ output/**
 *.tmp
 *.gv
 *.egg-info
+build
+dist
