@@ -12,6 +12,13 @@ KWARGS = dict(
     exclude_package_data={
         "": ["*.pyc"]
     },
+    extras_require={
+        "dev": [
+            "pycodestyle>=2.7.0",
+            "pylint>=2.9.3",
+            "wemake-python-styleguide>=0.15.3"
+        ]
+    },
     entry_points={
         "console_scripts": [
             "butch = butch.__main__:main"
