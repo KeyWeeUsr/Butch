@@ -5,9 +5,9 @@ import sys
 from argparse import ArgumentParser, Namespace
 from os.path import exists
 
-from caller import new_call
-from context import Context, get_context
-from tokenizer import tokenize
+from butch.caller import new_call
+from butch.context import Context, get_context
+from butch.tokenizer import tokenize
 
 
 def handle_input_new(inp: str, ctx: Context):

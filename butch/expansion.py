@@ -1,5 +1,5 @@
 import sys
-from context import Context
+from butch.context import Context
 
 
 def percent_expansion(line: str, ctx: Context) -> str:

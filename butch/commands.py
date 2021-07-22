@@ -11,13 +11,13 @@ from os import remove, listdir, chdir, environ, makedirs, stat, statvfs, getcwd
 from os.path import abspath, isdir, exists, join
 from collections import defaultdict
 
-from context import Context
-from constants import (
+from butch.context import Context
+from butch.constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
     SURE, DELETE, PATH_EXISTS
 )
-from outputs import CommandOutput
-from expansion import percent_expansion
+from butch.outputs import CommandOutput
+from butch.expansion import percent_expansion
 
 
 class Command(Enum):
@@ -52,7 +52,7 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         out = ctx.output.stdout
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -91,7 +91,7 @@ def help_cmd(params: List["Argument"], ctx: Context) -> None:
 
     cmd_map = get_reverse_cmd_map()
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -126,7 +126,7 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
 
     params_len = len(params)
     if not params_len:
@@ -168,7 +168,7 @@ def setlocal(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
 
     params_len = len(params)
     if not params_len:
@@ -205,7 +205,7 @@ def cd(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
 
     params_len = len(params)
     if not params:
@@ -234,7 +234,7 @@ def prompt(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -255,7 +255,7 @@ def title(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -288,7 +288,7 @@ def pause(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     first = params[0] if params else ""
     if first == "/?":
         print_help(cmd=Command.PAUSE)
@@ -304,7 +304,7 @@ def exit_cmd(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params_len = len(params)
     if not params_len:
         sys.exit(0)
@@ -330,7 +330,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -406,7 +406,7 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -506,7 +506,7 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     # pylint: disable=import-outside-toplevel
-    from help import print_help  # circular
+    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params

@@ -5,8 +5,8 @@ from os import getcwd
 from time import strftime
 from random import randint
 
-from outputs import CommandOutput
-from logger import get_logger
+from butch.outputs import CommandOutput
+from butch.logger import get_logger
 
 PROMPT_SYMBOL = "$"
 PROMPT_AMP = "$A"

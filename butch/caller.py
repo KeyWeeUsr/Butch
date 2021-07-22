@@ -4,9 +4,9 @@ to the provided tokens and context.
 """
 
 from typing import Union
-from tokenizer import Command, Connector, Pipe, Redirection
-from commands import get_cmd_map
-from context import Context
+from butch.tokenizer import Command, Connector, Pipe, Redirection
+from butch.commands import get_cmd_map
+from butch.context import Context
 
 
 class UnknownCommand(Exception):

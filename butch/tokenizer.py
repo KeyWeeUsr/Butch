@@ -5,17 +5,18 @@ Batch code into a set of instructions for the interpreter to execute.
 
 from collections import defaultdict
 from enum import Enum, auto
-from context import Context
-from commands import Command as CommandType, get_reverse_cmd_map
-from grammar import (
+
+from butch.context import Context
+from butch.commands import Command as CommandType, get_reverse_cmd_map
+from butch.grammar import (
     SPECIAL_CR, SPECIAL_CARRET, SPECIAL_LPAREN, SPECIAL_RPAREN, SPECIAL_AMP,
     SPECIAL_PIPE, SPECIAL_LT, SPECIAL_REDIR, SPECIAL_SPLITTERS, SPECIAL_LF,
     DELIM_WHITE, QUOTE_DOUBLE
 )
-from counter import Count
-from filmbuffer import FilmBuffer
-from charlist import CharList
-from shared import Shared
+from butch.counter import Count
+from butch.filmbuffer import FilmBuffer
+from butch.charlist import CharList
+from butch.shared import Shared
 
 
 def emptyf(*_, **__):

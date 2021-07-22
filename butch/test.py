@@ -12,8 +12,8 @@ BATCH_FOLDER = join(dirname(abspath(__file__)), "batch")
 
 class BetterParser(TestCase):
     def test_percent_expansion(self):
-        from expansion import percent_expansion as pxp
-        from context import Context
+        from butch.expansion import percent_expansion as pxp
+        from butch.context import Context
 
         ctx = Context()
         ctx.set_variable("hello", "value")
@@ -50,45 +50,45 @@ class BetterParser(TestCase):
 
 class Tokenizer(TestCase):
     def test_remove_carriage_return(self):
-        from tokenizer import tokenize
-        from context import Context
+        from butch.tokenizer import tokenize
+        from butch.context import Context
         self.assertEqual(tokenize(text="\r", ctx=Context()), [])
 
     def test_carret_toggle_escape(self):
-        from tokenizer import tokenize, Flag
-        from context import Context
+        from butch.tokenizer import tokenize, Flag
+        from butch.context import Context
         flags = dict(tokenize(text="^", ctx=Context(), debug=True))
         self.assertTrue(flags[Flag.ESCAPE])
 
     def test_quote_double_toggle(self):
-        from tokenizer import tokenize, Flag
-        from context import Context
+        from butch.tokenizer import tokenize, Flag
+        from butch.context import Context
         flags = dict(tokenize(text='"', ctx=Context(), debug=True))
         self.assertTrue(flags[Flag.QUOTE])
 
     def test_quote_double_untoggle(self):
-        from tokenizer import tokenize, Flag
-        from context import Context
+        from butch.tokenizer import tokenize, Flag
+        from butch.context import Context
         flags = dict(tokenize(text='""', ctx=Context(), debug=True))
         self.assertFalse(flags[Flag.QUOTE])
 
     def test_lf_untoggle_quote(self):
-        from tokenizer import tokenize, Flag
-        from context import Context
+        from butch.tokenizer import tokenize, Flag
+        from butch.context import Context
         flags = dict(tokenize(text='"\n', ctx=Context(), debug=True))
         self.assertFalse(flags[Flag.QUOTE])
 
     def test_quote_flag_strip_escaped_lf(self):
-        from tokenizer import tokenize, Flag
-        from context import Context
+        from butch.tokenizer import tokenize, Flag
+        from butch.context import Context
         flags = dict(tokenize(text='"^\n', ctx=Context(), debug=True))
         self.assertFalse(flags[Flag.QUOTE])
         self.assertEqual(tokenize(text='"^\n', ctx=Context(), debug=False), [])
 
     def test_unknown(self):
-        from tokenizer import tokenize, Command
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command
+        from butch.commands import Command as CommandType
+        from butch.context import Context
         cmd = "-\n"
 
         output = tokenize(text=cmd, ctx=Context())
@@ -100,9 +100,9 @@ class Tokenizer(TestCase):
         self.assertTrue(com.echo)
 
     def test_unknown_without_newline(self):
-        from tokenizer import tokenize, Command
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command
+        from butch.commands import Command as CommandType
+        from butch.context import Context
         cmd = "-"
 
         output = tokenize(text=cmd, ctx=Context())
@@ -114,9 +114,9 @@ class Tokenizer(TestCase):
         self.assertTrue(com.echo)
 
     def test_echo(self):
-        from tokenizer import tokenize, Command, Argument
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command, Argument
+        from butch.commands import Command as CommandType
+        from butch.context import Context
 
         param = "hello"
         cmd = f"echo {param}\n"
@@ -131,9 +131,9 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_echo_without_newline(self):
-        from tokenizer import tokenize, Command, Argument
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command, Argument
+        from butch.commands import Command as CommandType
+        from butch.context import Context
 
         param = "hello"
         cmd = f"echo {param}"
@@ -148,9 +148,9 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_cd(self):
-        from tokenizer import tokenize, Command, Argument
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command, Argument
+        from butch.commands import Command as CommandType
+        from butch.context import Context
 
         param = "hello"
         cmd = f"cd {param}\n"
@@ -165,9 +165,9 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_cd_without_newline(self):
-        from tokenizer import tokenize, Command, Argument
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command, Argument
+        from butch.commands import Command as CommandType
+        from butch.context import Context
 
         param = "hello"
         cmd = f"cd {param}"
@@ -182,9 +182,9 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_set(self):
-        from tokenizer import tokenize, Command, Argument
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command, Argument
+        from butch.commands import Command as CommandType
+        from butch.context import Context
 
         param = "hello"
         cmd = f"set {param}\n"
@@ -199,9 +199,9 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_set_without_newline(self):
-        from tokenizer import tokenize, Command, Argument
-        from commands import Command as CommandType
-        from context import Context
+        from butch.tokenizer import tokenize, Command, Argument
+        from butch.commands import Command as CommandType
+        from butch.context import Context
 
         param = "hello"
         cmd = f"set {param}"
@@ -216,8 +216,8 @@ class Tokenizer(TestCase):
         self.assertEqual(com.args, [Argument(value=param)])
 
     def test_empty(self):
-        from tokenizer import tokenize
-        from context import Context
+        from butch.tokenizer import tokenize
+        from butch.context import Context
 
         for cmd in ["", "\n", "\r\n"]:
             output = tokenize(text=cmd, ctx=Context())
@@ -225,8 +225,8 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
     def test_empty_without_newline(self):
-        from tokenizer import tokenize
-        from context import Context
+        from butch.tokenizer import tokenize
+        from butch.context import Context
 
         for cmd in ["", "\n", "\r\n"]:
             output = tokenize(text=cmd, ctx=Context())
@@ -234,8 +234,8 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
     def test_empty_multi(self):
-        from tokenizer import tokenize
-        from context import Context
+        from butch.tokenizer import tokenize
+        from butch.context import Context
 
         for cmd in ["", "\n", "\r\n"]:
             output = tokenize(text=cmd * 3, ctx=Context())
@@ -243,8 +243,8 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
     def test_empty_multi_without_newline(self):
-        from tokenizer import tokenize
-        from context import Context
+        from butch.tokenizer import tokenize
+        from butch.context import Context
 
         for cmd in ["", " ", "\r"]:
             output = tokenize(text=cmd * 3, ctx=Context())
@@ -254,24 +254,24 @@ class Tokenizer(TestCase):
 
 class Parser(TestCase):
     def test_unknown(self):
-        from commands import Command, parse
+        from butch.commands import Command, parse
         cmd = "-"
         self.assertEqual(parse(cmd), (Command.UNKNOWN, [cmd]))
 
     def test_echo(self):
-        from commands import Command, parse
+        from butch.commands import Command, parse
         params = ["hello"]
         cmd = f"echo {params[0]}"
         self.assertEqual(parse(cmd), (Command.ECHO, params))
 
     def test_cd(self):
-        from commands import Command, parse
+        from butch.commands import Command, parse
         params = ["hello"]
         cmd = f"cd {params[0]}"
         self.assertEqual(parse(cmd), (Command.CD, params))
 
     def test_set(self):
-        from commands import Command, parse
+        from butch.commands import Command, parse
         params = ["hello"]
         cmd = f"set {params[0]}"
         self.assertEqual(parse(cmd), (Command.SET, params))
@@ -279,16 +279,16 @@ class Parser(TestCase):
 
 class Caller(TestCase):
     def test_map_resolve_new(self):
-        from caller import new_call as call
-        from context import Context
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
 
         params = [str(val) for val in range(3)]
         args = [Argument(value=value) for value in params]
 
         ctx = Context()
-        with patch("commands.echo") as echo:
+        with patch("butch.commands.echo") as echo:
             self.assertEqual(call(cmd=Command(
                 cmd=CommandType.ECHO,
                 args=args
@@ -296,10 +296,10 @@ class Caller(TestCase):
             echo.assert_called_once_with(params=args, ctx=ctx)
 
     def test_map_unresolved_new(self):
-        from caller import new_call, UnknownCommand
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from context import Context
+        from butch.caller import new_call, UnknownCommand
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.context import Context
         params = [str(val) for val in range(3)]
 
         with self.assertRaises(UnknownCommand):
@@ -310,12 +310,12 @@ class Caller(TestCase):
 
 class State(TestCase):
     def test_unknown_skipped(self):
-        from context import Context
+        from butch.context import Context
         with self.assertRaises(Exception):
             Context(unknown=123)
 
     def test_known_init(self):
-        from context import Context
+        from butch.context import Context
         from random import randint
         known = ["cwd"]
         kwargs = {item: randint(1, 5) for item in known}
@@ -327,15 +327,15 @@ class State(TestCase):
 class Execution(TestCase):
     def test_echo_new(self):
         import sys
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from caller import new_call as call
-        from context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
 
         ctx = Context()
         values = ["a", "b", "c"]
 
-        with patch("commands.print") as mock:
+        with patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.ECHO, args=[
                 Argument(value=value)
                 for value in values
@@ -346,17 +346,17 @@ class Execution(TestCase):
 
     def test_cd_nonexisting_new(self):
         import sys
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from caller import new_call as call
-        from context import Context
-        from constants import PATH_NOT_FOUND
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
+        from butch.constants import PATH_NOT_FOUND
 
         ctx = Context()
         value = "nonexistingfile"
 
-        chdir_mock = patch("commands.chdir", side_effect=FileNotFoundError())
-        with chdir_mock as chdir, patch("commands.print") as mock:
+        chdir_mock = patch("butch.commands.chdir", side_effect=FileNotFoundError())
+        with chdir_mock as chdir, patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
             ]), ctx=ctx)
@@ -366,15 +366,15 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 1)
 
     def test_cd_existing_new(self):
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from caller import new_call as call
-        from context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
 
         ctx = Context()
         value = "existing"
 
-        with patch("commands.chdir") as chdir, patch("commands.print") as mock:
+        with patch("butch.commands.chdir") as chdir, patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
             ]), ctx=ctx)
@@ -384,29 +384,29 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_dumpall_new(self):
-        from commands import Command as CommandType
-        from tokenizer import Command
-        from caller import new_call as call
-        from context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command
+        from butch.caller import new_call as call
+        from butch.context import Context
 
         ctx = Context()
 
-        with patch("commands._print_all_variables") as mock:
+        with patch("butch.commands._print_all_variables") as mock:
             call(cmd=Command(cmd=CommandType.SET, args=[]), ctx=ctx)
             mock.assert_called_once_with(ctx=ctx)
 
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_dumpsingle_new(self):
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from caller import new_call as call
-        from context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
 
         ctx = Context()
         value = "hello"
 
-        with patch("commands._print_single_variable") as mock:
+        with patch("butch.commands._print_single_variable") as mock:
             call(cmd=Command(cmd=CommandType.SET, args=[
                 Argument(value=value)
             ]), ctx=ctx)
@@ -415,15 +415,15 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_unset_new(self):
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from caller import new_call as call
-        from context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
 
         ctx = Context()
         value = "hello"
 
-        with patch("commands._delete_single_variable") as mock:
+        with patch("butch.commands._delete_single_variable") as mock:
             call(cmd=Command(cmd=CommandType.SET, args=[
                 Argument(value=f"{value}=")
             ]), ctx=ctx)
@@ -432,16 +432,16 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_setsingle_new(self):
-        from commands import Command as CommandType
-        from tokenizer import Command, Argument
-        from caller import new_call as call
-        from context import Context
+        from butch.commands import Command as CommandType
+        from butch.tokenizer import Command, Argument
+        from butch.caller import new_call as call
+        from butch.context import Context
 
         ctx = Context()
         value = "123"
         key = "hello"
 
-        with patch("context.Context.set_variable") as mock:
+        with patch("butch.context.Context.set_variable") as mock:
             call(cmd=Command(cmd=CommandType.SET, args=[
                 Argument(value=f"{key}={value}")
             ]), ctx=ctx)
@@ -458,8 +458,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -483,13 +483,13 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
 
-        with patch("commands.chdir") as cdr, patch("builtins.print") as stdout:
+        with patch("butch.commands.chdir") as cdr, patch("builtins.print") as stdout:
             ctx = Context()
             handle_new(text=join(folder, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
@@ -509,8 +509,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -534,8 +534,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -559,8 +559,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -585,8 +585,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -610,8 +610,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -635,8 +635,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -660,8 +660,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -685,8 +685,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -710,8 +710,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -735,8 +735,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -761,8 +761,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -794,8 +794,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -822,9 +822,9 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
         tmp_folder = join("/tmp", "butch-tmp")
 
-        from context import Context
-        from constants import SURE
-        from main import handle_new
+        from butch.context import Context
+        from butch.constants import SURE
+        from butch.main import handle_new
 
         with open(join(folder, script_name)) as file:
             script = file.readlines()
@@ -865,8 +865,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = []
@@ -877,7 +877,7 @@ class BatchFiles(TestCase):
                 output.append(clean)
 
         stdout_mock = patch("builtins.print")
-        with patch("commands.makedirs") as mdrs, stdout_mock as stdout:
+        with patch("butch.commands.makedirs") as mdrs, stdout_mock as stdout:
             ctx = Context()
 
             self.assertFalse(exists("new-folder"))
@@ -902,8 +902,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = []
@@ -915,7 +915,7 @@ class BatchFiles(TestCase):
 
         stdout_mock = patch("builtins.print")
         tree = join("new-folder", "with", "sub", "folders")
-        with patch("commands.makedirs") as mdrs, stdout_mock as stdout:
+        with patch("butch.commands.makedirs") as mdrs, stdout_mock as stdout:
             ctx = Context()
 
             self.assertFalse(exists(tree))
@@ -938,8 +938,8 @@ class BatchFiles(TestCase):
         out_name = f"{script_name}.out"
         folder = BATCH_FOLDER
 
-        from context import Context
-        from main import handle_new
+        from butch.context import Context
+        from butch.main import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()

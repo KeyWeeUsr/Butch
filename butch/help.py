@@ -5,7 +5,7 @@ to STDOUT (or other provided buffer, if any).
 
 import sys
 from os.path import abspath, dirname, join
-from commands import Command
+from butch.commands import Command
 
 
 def print_help(cmd: Command, file=sys.stdout):
