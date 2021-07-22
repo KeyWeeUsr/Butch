@@ -5,6 +5,7 @@ NAME = "butch"
 KWARGS = dict(
     name=NAME,
     version=get_version(),
+    description="The free Batch interpreter",
     packages=find_packages(),
     package_data={
         "": ["*.txt", "*.bat", "*.out"]
@@ -13,6 +14,9 @@ KWARGS = dict(
     exclude_package_data={
         "": ["*.pyc"]
     },
+    setup_requires=[
+        "wheel"
+    ],
     extras_require={
         "dev": [
             "pycodestyle>=2.7.0",
@@ -29,4 +33,6 @@ KWARGS = dict(
 
 
 if __name__ == "__main__":
+    with open("README.rst") as file:
+        KWARGS["long_description"] = file.read()
     setup(**KWARGS)
