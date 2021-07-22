@@ -75,6 +75,9 @@ KWARGS = dict(
             "pycodestyle>=2.7.0",
             "pylint>=2.9.3",
             "wemake-python-styleguide>=0.15.3"
+        ],
+        "release": [
+            "setuptools", "wheel", "twine"
         ]
     },
     entry_points={
