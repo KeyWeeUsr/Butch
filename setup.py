@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
 from butch import get_version
 
+NAME = "butch"
 KWARGS = dict(
-    name="butch",
+    name=NAME,
     version=get_version(),
     packages=find_packages(),
     package_data={
@@ -21,7 +22,7 @@ KWARGS = dict(
     },
     entry_points={
         "console_scripts": [
-            "butch = butch.__main__:main"
+            f"{NAME} = {NAME}.__main__:main"
         ]
     }
 )
