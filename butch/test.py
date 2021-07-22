@@ -459,7 +459,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -484,7 +484,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -510,7 +510,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -535,7 +535,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -560,7 +560,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -586,7 +586,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -611,7 +611,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -636,7 +636,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -661,7 +661,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -686,7 +686,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -711,7 +711,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -736,7 +736,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -762,7 +762,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -795,7 +795,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
@@ -824,7 +824,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.constants import SURE
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, script_name)) as file:
             script = file.readlines()
@@ -866,7 +866,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = []
@@ -903,7 +903,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = []
@@ -939,7 +939,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.main import handle_new
+        from butch.__main__ import handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()

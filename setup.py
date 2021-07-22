@@ -11,6 +11,11 @@ KWARGS = dict(
     include_package_data=True,
     exclude_package_data={
         "": ["*.pyc"]
+    },
+    entry_points={
+        "console_scripts": [
+            "butch = butch.__main__:main"
+        ]
     }
 )
 
