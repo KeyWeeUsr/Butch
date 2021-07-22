@@ -205,5 +205,5 @@ TODO
 - [ ] `Ensure <https://github.com/kislyuk/ensure>`__ for dynamic type checking
 - [ ] `Mypy <https://github.com/python/mypy>`__ for static type checking
 - [/] Documentation
-- [/] PyPI package
+- [X] PyPI package
 - [ ] Library interface for programmatic emulation
