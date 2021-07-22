@@ -187,12 +187,12 @@ Console
 .. _ANSI: https://en.wikipedia.org/wiki/ANSI_character_set
 
 .. |UCS2| replace:: Unicode UCS-2 LE
-.. _USC2: https://en.wikipedia.org/wiki/Universal_Coded_Character_Set
+.. _UCS2: https://en.wikipedia.org/wiki/Universal_Coded_Character_Set
 
 - [ ] ``/?`` as a proper help page trigger
 - [ ] ``/T`` for foreground/background colors
 - [ ] ``/A`` for printing only |ANSI|_ (which is most likely just 1252)
-- [ ] ``/U`` for printing Unicode (|USC2|_)
+- [ ] ``/U`` for printing Unicode (|UCS2|_)
 - [ ] ``/D`` registry with autorun commands (.bashrc, kind of) + ignore
 - [ ] ``/E:ON|OFF``, ``/X``, ``/Y`` enable/disable command extensions
 - [ ] ``/S`` quote stripping from commands
