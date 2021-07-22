@@ -6,6 +6,59 @@ KWARGS = dict(
     name=NAME,
     version=get_version(),
     description="The free Batch interpreter",
+    author="Peter Badida",
+    author_email="keyweeusr@gmail.com",
+    url="https://github.com/KeyWeeUsr/Butch",
+    download="https://github.com/KeyWeeUsr/Butch/releases",
+    classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        # "Development Status :: 3 - Alpha",
+        # "Development Status :: 4 - Beta",
+        # "Development Status :: 5 - Production/Stable",
+        # "Development Status :: 6 - Mature",
+
+        "Environment :: Console",
+
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: End Users/Desktop",
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: System Administrators",
+
+        "Natural Language :: English",
+        "Natural Language :: Slovak",
+
+        "Operating System :: OS Independent",
+
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: Implementation :: CPython",
+
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Code Generators",
+        "Topic :: Software Development :: Interpreters",
+
+        "Topic :: System",
+        "Topic :: System :: Emulators",
+        "Topic :: System :: Shells",
+        "Topic :: System :: System Shells",
+        "Topic :: Terminals",
+        "Topic :: Terminals :: Terminal Emulators/X Terminals",
+        "Topic :: Utilities",
+        "Typing :: Typed"
+    ],
+    keywords=[
+        "batch", "butch", "cmd", "shell", "interpreter", "console", "bat",
+        "windows", "batchscript", "batch-script", "batchfile", "batch-file",
+        "free", "foss"
+    ],
+    python_requires='>=3.6',
     packages=find_packages(),
     package_data={
         "": ["*.txt", "*.bat", "*.out"]
