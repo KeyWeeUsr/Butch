@@ -77,7 +77,7 @@ KWARGS = dict(
             "wemake-python-styleguide>=0.15.3"
         ],
         "release": [
-            "setuptools", "wheel", "twine"
+            "setuptools", "wheel", "twine", "readme_renderer"
         ]
     },
     entry_points={
