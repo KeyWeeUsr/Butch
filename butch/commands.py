@@ -424,7 +424,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
             if prompt_for_all or not quiet:
                 text = f"{os_path}\\*, {SURE}"
                 if ctx.piped:
-                    answer = ctx.output.stdout.read(1).decode("utf-8")
+                    answer = ctx.output.stdout.read(1)
                     print(f"{text} {answer}")
                 else:
                     answer = input(f"{text} ").lower()
@@ -437,7 +437,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
             answer = ""
             text = f"{os_path}, {DELETE}"
             if ctx.piped:
-                answer = ctx.output.stdout.read(1).decode("utf-8")
+                answer = ctx.output.stdout.read(1)
                 print(f"{text} {answer}")
             else:
                 answer = input(text).lower()
@@ -618,7 +618,7 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
                 continue
             text = f"{param}, {SURE}"
             if ctx.piped:
-                answer = ctx.output.stdout.read(1).decode("utf-8")
+                answer = ctx.output.stdout.read(1)
                 print(f"{text} {answer}")
             else:
                 answer = input(f"{text} ").lower() if not quiet else "y"

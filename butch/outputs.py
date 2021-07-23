@@ -1,19 +1,19 @@
 "Module for output containers if simple print() or return isn't enough."
-from io import BytesIO
+from io import StringIO
 
 
 class CommandOutput:
     "Container for STDOUT and STDERR buffers for piping and redirection."
 
-    _stdout: BytesIO = None
-    _stderr: BytesIO = None
+    _stdout: StringIO = None
+    _stderr: StringIO = None
 
     def __init__(self, stdout: bool = True, stderr: bool = False):
         # ask to allocate, don't provide custom though
         if stdout:
-            self._stdout = BytesIO()
+            self._stdout = StringIO()
         if stderr:
-            self._stderr = BytesIO()
+            self._stderr = StringIO()
 
     @property
     def stdout(self):

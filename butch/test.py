@@ -933,6 +933,41 @@ class BatchFiles(TestCase):
                     mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
                 )
 
+    def test_redir_newfile(self):
+        import sys
+        from os import remove
+
+        script_name = "redir_echo_newfile.bat"
+        out_name = f"{script_name}.out"
+        folder = BATCH_FOLDER
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        with open(join(folder, out_name)) as file:
+            output = file.readlines()
+
+        filename = "new-file.txt"
+        with patch("builtins.print") as stdout:
+            ctx = Context()
+
+            if exists(filename):
+                remove(filename)
+            self.assertFalse(exists(filename))
+            handle_new(text=join(folder, script_name), ctx=ctx)
+
+            self.assertTrue(exists(filename))
+
+            mcalls = stdout.mock_calls
+            # the echo to the file is +1
+            self.assertEqual(len(mcalls), 2)
+            self.assertEqual(len(output), 1)
+
+            self.assertEqual(
+                mcalls[1],
+                mock_call(*output[0].rstrip("\n").split(" "), file=sys.stdout)
+            )
+
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"
         out_name = f"{script_name}.out"

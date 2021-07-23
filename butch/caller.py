@@ -32,10 +32,20 @@ def new_call(
         ctx.collect_output = False
         ctx.piped = isinstance(obj, Pipe)
         if isinstance(obj, Redirection):
-            log("\t- should write collected output to: %r", None)
+            log("\t- should write collected output to: %r", obj.right)
             # read ctx.output.stdout/stderr
             # and write to whatever provided as cmd.right
-            log("\t\t- not yet implemented")
+            path = obj.right.value.replace("\\", "/")
+            log("\t\t- writing collected stdout to %r", path)
+            with open(path, "w") as file:
+                out = ctx.output.stdout
+                out.seek(0)
+                while True:
+                    item = out.read(512)
+                    if not item:
+                        break
+                    file.write(item)
+            return
         obj = obj.right
 
     cmd_map = get_cmd_map()

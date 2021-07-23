@@ -176,7 +176,16 @@ Syntax
   - [ ] some individual commands don't pull ctx.output and related parts
   - [ ] generic command I/O handling as a decorator/class?
 
-- [ ] Redirection to files (``<``, ``<<``, ``>>``, ``>``)
+- [ ] I/O Redirection
+
+  *pending:*
+
+  - [X] ``>`` create new file
+  - [ ] ``>>`` append to existing file or create if missing
+  - [ ] ``<`` read file to STDIN
+
+  https://ss64.com/nt/syntax-redirection.html
+
 - [ ] Redirection to special (``nul``)
 - [ ] Command concatenation (``&``)
 - [ ] Command concatenation (``&&``)

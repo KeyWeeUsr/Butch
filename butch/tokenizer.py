@@ -75,6 +75,33 @@ class Argument:
         return self.value == other.value
 
 
+class File:
+    "Token holding the raw value of filename for redirection."
+
+    _value: str = ""
+
+    def __init__(self, value: str = ""):
+        self._value = value
+
+    @property
+    def value(self):
+        "Property: raw argument value."
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+
+    def __repr__(self):
+        val = self._value
+        return f"<File: {val!r}>"
+
+    def __eq__(self, other):
+        if not isinstance(other, File):
+            return False
+        return self.value == other.value
+
+
 class Command:
     "Token holding the raw value of a command and its properties."
 
@@ -383,16 +410,22 @@ def handle_char_newline(
     if pos.value != text.last_pos and buff:  # buff check for whitespace
         log("\t\t- not last char, %r", buff)
         if not found:
-            found.set(Command(cmd=CommandType.UNKNOWN))
+            if output and isinstance(output[-1], Redirection):
+                found.set(File())
+            else:
+                found.set(Command(cmd=CommandType.UNKNOWN))
         if flags[Flag.UNFINISHED_LINE]:
             found.data.args[-1].value = (
                 found.data.args[-1].value + buff.data
             )
             flags[Flag.UNFINISHED_LINE] = False
         else:
-            found.data.args = found.data.args + [
-                Argument(value=buff.data)
-            ]
+            if not isinstance(found.data, File):
+                found.data.args = found.data.args + [
+                    Argument(value=buff.data)
+                ]
+            else:
+                found.data.value = buff.data
 
             if not output:
                 log("\t\t- appending to output: %r", found)
