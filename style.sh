@@ -1,10 +1,10 @@
-#!/bin/sh -x
+#!/bin/sh
 pycodestyle \
     --ignore=W503 --show-source --statistics --count --max-line-length=79 \
     --indent-size=4 .
 
 pylint \
-    butch/*.py
+    butch/*.py \
     --jobs=0 \
     --max-line-length=79 \
     --single-line-if-stmt=n \
@@ -39,12 +39,15 @@ pylint \
 # WPS336 straight-forward nonsense unless customizable per package/module
 # WPS305 "f strings implicitly rely on the context around them"
 # - crap... so do functions as well as string.format() can be used as template
-flake8 \
+COUNT=$(flake8 \
     --inline-quotes=double \
     --inline-quotes=double \
     --multiline-quotes='"""' \
     --docstring-quotes='"' \
     --avoid-escape \
-    --ignore C812,WPS421,WPS326,I005,I004,WPS336,WPS305 \
+    --ignore C812,WPS421,WPS326,I005,I004,WPS336,WPS305,WPS306,WPS327 \
     --max-module-members=10 \
-    .
+    . |grep -v WPS412 | tee /dev/stderr | wc -l)
+TOTAL=$(find . -name '*.py' -type f -exec cat {} + | wc -l)
+PERC=$(python -c "print($COUNT / $TOTAL * 100)")
+echo "$COUNT / $(find . -name '*.py' -type f -exec cat {} + | wc -l) ($PERC)"

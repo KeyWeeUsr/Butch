@@ -22,7 +22,11 @@ from butch.expansion import percent_expansion
 
 
 class Command(Enum):
-    "Enum of command types mapped to their textual representation."
+    """
+    Enum of command types mapped to their textual representation.
+
+    # noqa: WPS115
+    """
     UNKNOWN = "<unknown>"
     ECHO = "echo"
     CD = "cd"
@@ -540,7 +544,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
     ).rjust(14)
     file_count = str(count["files"]).rjust(17)
     folder_count = str(count["folders"]).rjust(18)
-    used_bytes = "{0:n}".format(count['total_size']).rjust(14)
+    used_bytes = "{0:n}".format(count["total_size"]).rjust(14)
     suffix = [
         f"{file_count} File(s){used_bytes} bytes",
         f"{folder_count} Dir(s){free_bytes} bytes free",
@@ -633,7 +637,12 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
 
 
 def get_cmd_map():
-    "Get mapping of CommandType into its functions for execution."
+    """
+    Get mapping of CommandType into its functions for execution.
+
+    Returns:
+        dict with mapping Command enum to a function it should call
+    """
     return {
         Command.ECHO: echo,
         Command.CD: cd,
@@ -657,26 +666,46 @@ def get_cmd_map():
 
 
 def get_reverse_cmd_map():
-    "Get reverse CommandType mapping for resolving a string into CommandType."
-    return {
-        getattr(Command, item).value: getattr(Command, item)
-        for item in dir(Command)
-        if isinstance(getattr(Command, item), Command)
-        and item != Command.UNKNOWN.name
-    }
+    """
+    Get reverse mapping for CommandType.
+
+    Returns:
+        dictionary with CommandType name: CommantType instance pairs
+    """
+    rev_cmd_map = {}
+    for attr_name in dir(Command):
+        resolved = getattr(Command, attr_name)
+        if not isinstance(resolved, Command):
+            continue
+        if attr_name == Command.UNKNOWN.name:
+            continue
+        rev_cmd_map[resolved.value] = resolved
+    return rev_cmd_map
 
 
-def parse(values: str) -> Tuple[Command, list]:
-    "Parse a string into a command."
-    cmd, *params = values.split(" ")
-    unk = Command.UNKNOWN.name
+def parse(cmd_and_args: str) -> Tuple[Command, list]:
+    """
+    Parse a string into a command.
 
-    cmds = {
-        getattr(Command, item).value: getattr(Command, item)
-        for item in dir(Command)
-        if isinstance(getattr(Command, item), Command) and item != unk
-    }
+    Args:
+        cmd_and_args (str): isolated cmd string, e.g. "echo Hello, World"
 
-    if cmd in cmds:
-        return (cmds[cmd], params)
-    return (Command.UNKNOWN, [cmd])
+    Returns:
+        tuple with Command and its params in a list
+    """
+    cmd, *cmd_params = cmd_and_args.split(" ")
+    unk = Command.UNKNOWN
+
+    cmds = {}
+    for attr_name in dir(Command):
+        resolved = getattr(Command, attr_name)
+        if attr_name == unk.name:
+            continue
+        if not isinstance(resolved, Command):
+            continue
+        cmds[resolved.value] = resolved
+
+    found = cmds.get(cmd, unk)
+    if found == unk:
+        cmd_params = [cmd]
+    return (found, cmd_params)

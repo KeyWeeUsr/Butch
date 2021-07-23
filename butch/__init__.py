@@ -1,8 +1,11 @@
-"""
-Module primarily storing values for setup.py.
-"""
+"""Module primarily storing values for setup.py."""
 
 
 def get_version():
-    # pylint: disable=missing-function-docstring
+    """
+    Get current version of package.
+
+    Returns:
+        version string in https://semver.org/ style
+    """
     return "0.0.1"

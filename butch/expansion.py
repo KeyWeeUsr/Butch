@@ -1,20 +1,30 @@
-"""
-Module for handling % and ! expansion into variables.
-"""
+"""Module for handling % and ! expansion into variables."""
 
 import sys
+
 from butch.context import Context
+
+PERCENT = "%"
 
 
 def percent_expansion(line: str, ctx: Context) -> str:
-    "Expand percent-encapsulated values into variables."
+    """
+    Expand percent-encapsulated values into variables.
+
+    Args:
+        line (str): string value to expand
+        ctx (Context): Context instance
+
+    Returns:
+        string with expanded values
+    """
     # pylint: disable=too-many-statements, too-many-branches
     tmp = ""
     idx = 0
     line_len = len(line)
     while idx < line_len:
         char = line[idx]
-        if char != "%":
+        if char != PERCENT:
             tmp += char
             idx += 1
             continue
@@ -22,11 +32,11 @@ def percent_expansion(line: str, ctx: Context) -> str:
         if line_len == 1:
             break
 
-        next_perc = line.find("%", idx + 1)
+        next_perc = line.find(PERCENT, idx + 1)
         # %%
         if idx == next_perc:
             if idx + 1 != line_len:
-                tmp += "%"
+                tmp += PERCENT
             idx += 1
             continue
 
@@ -37,9 +47,9 @@ def percent_expansion(line: str, ctx: Context) -> str:
             next_char = line[next_idx]
             if next_char.isdigit():
                 pos = int(line[next_idx])
-                val = sys.argv[pos:pos + 1]
+                argvs = sys.argv[pos:pos + 1]
                 # value or position/number
-                tmp += val[0] if val else str(pos)
+                tmp += argvs[0] if argvs else str(pos)
                 idx = next_idx + 1
                 continue
 
@@ -48,7 +58,7 @@ def percent_expansion(line: str, ctx: Context) -> str:
                 idx = next_idx + 1
                 continue
 
-            if next_char == "%":
+            if next_char == PERCENT:
                 tmp += next_char
                 idx = next_idx + 1
                 continue
@@ -67,13 +77,13 @@ def percent_expansion(line: str, ctx: Context) -> str:
 
         # escaped %, as %% -> %
         if next_perc and perc_range == 1:
-            tmp += "%"
+            tmp += PERCENT
             idx = idx_ahead
             continue
         if next_perc and not perc_range:
             idx += 1
             if idx != line_len:
-                tmp += "%"
+                tmp += PERCENT
             continue
-    ctx.log.debug("percent expansion result: %r", tmp)
+    ctx.log.debug("percent expansion result: %r", tmp)  # noqa: WPS323
     return tmp

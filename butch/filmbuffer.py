@@ -1,5 +1,5 @@
 """
-Abstraction of looking at a string as if via a film strip:
+Abstraction of looking at a string as if via a film strip.
 
                                  film window
                 +--------------+--------------+--------------+
@@ -14,25 +14,31 @@ Abstraction of looking at a string as if via a film strip:
 
 class FilmBuffer:
     """
-    Look on the flat text buffer/string as if it's a movie film strip with
-    two neighboring film windows.
+    Look on the flat text buffer/string as if it's a movie film strip.
+
+    Film strip with two neighboring film windows for quick look-ahead and
+    look-before access.
     """
 
-    _data: str = ""
-    _data_len: int = 0
-    _pos: int = 0
-    _last_pos: int = 0
+    _data: str
+    _data_len: int
+    _pos: int
+    _last_pos: int
 
     # previous, current and next
-    _pchar: str = ""
-    _char: str = ""
-    _nchar: str = ""
+    _pchar: str
+    _char: str
+    _nchar: str
 
     def __init__(self, data: str, start: int = 0):
         self._data = data
         data_len = len(data)
         self._data_len = data_len
         self._last_pos = data_len - 1
+        self._pchar = ""
+        self._char = ""
+        self._nchar = ""
+        self._pos = 0
 
         # initialize chars and positions by the first window move
         self.move(pos=start)
@@ -71,8 +77,13 @@ class FilmBuffer:
         return self._nchar
 
     def move(self, pos: int):
-        "Move the film window by <pos> increments."
-        data = self.data
+        """
+        Move the film window by <pos> increments.
+
+        Args:
+            pos (int): index for the center film window
+        """
+        str_data = self.data
         data_len = self._data_len
 
         if not data_len:
@@ -80,12 +91,12 @@ class FilmBuffer:
 
         self._pchar = ""
         if 0 <= pos - 1 < data_len:
-            self._pchar = data[pos - 1]
+            self._pchar = str_data[pos - 1]
 
         self._char = ""
         if 0 <= pos < data_len:
-            self._char = data[pos]
+            self._char = str_data[pos]
 
         self._nchar = ""
         if 0 <= pos + 1 < data_len:
-            self._nchar = data[pos + 1]
+            self._nchar = str_data[pos + 1]

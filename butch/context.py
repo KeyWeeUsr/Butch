@@ -1,13 +1,15 @@
 """Module for global or local (command) state related classes and functions."""
 
 import sys
+from logging import RootLogger
 from os import getcwd
-from time import strftime
 from random import randint
+from time import strftime
 
-from butch.outputs import CommandOutput
 from butch.logger import get_logger
+from butch.outputs import CommandOutput
 
+PROMPT_KEY = "prompt"
 PROMPT_SYMBOL = "$"
 PROMPT_AMP = "$A"
 PROMPT_PIPE = "$B"
@@ -31,52 +33,93 @@ PROMPT_DRIVE_NETWORK = "$M"
 DYNAMIC_RAND_MAX = 32767
 
 
-class Context:
+class BadContextKey(Exception):
+    """Raised when incorrect keyword argument is specified for Context."""
+
+
+class Context:  # noqa: WPS214,WPS338
     """
-    Holds the state in-between the commands and the overall, global state
-    of the Batch language interpreter.
+    Holds the state for the interpreter.
+
+    The in-between command state and the overall, global state of the language
+    interpreter.
     """
+
     # pylint: disable=too-many-instance-attributes
 
-    _cwd: str = None
-    _variables: dict = None
-    _error_level: int = 0
-    _extensions_enabled: bool = True
+    _cwd: str
+    _variables: dict
+    _error_level: int
+    _extensions_enabled: bool
     _delayed_expansion_enabled: bool
     _dynamic_variables: list = [
-        "cd", "date", "time", "random", "errorlevel",
-        "cmdextversion", "cmdcmdline"
+        "cd",
+        "cmdcmdline",
+        "cmdextversion",
+        "date",
+        "errorlevel",
+        "random",
+        "time"
     ]
-    _history: list = None
+    _history: list
     _history_enabled: bool
     _echo: bool
     _prompt: str
-    _output: CommandOutput = None
-    _collect_output: bool = False
-    _piped: bool = False
-    __logger = None
+    _output: CommandOutput
+    _collect_output: bool
+    _piped: bool
+    _logger: RootLogger
 
     def __init__(self, **kwargs):
-        self._variables = self._get_default_variables()
-        self._history = []
-        self.__logger = get_logger()
-        self._prompt = self._variables.get("prompt", "")
-        self._cwd = getcwd()
-        self._echo = True
-        self._delayed_expansion_enabled = False
-        self._history_enabled = True
+        """
+        Initialize Context with default and dynamic properties.
 
-        for key, val in kwargs.items():
+        Args:
+            kwargs: pairs to attempt to setattr() into properties
+
+        Raises:
+            BadContextKey: disallow setting custom properties from __init__
+        """
+        self._collect_output = False
+        self._cwd = None
+        self._cwd = getcwd()
+        self._delayed_expansion_enabled = False
+        self._echo = True
+        self._error_level = 0
+        self._extensions_enabled = True
+        self._history = []
+        self._history_enabled = True
+        self._logger = get_logger()
+        self._output = None
+        self._piped = False
+        self._variables = self._get_default_variables()
+
+        # dynamic
+        self._prompt = self._variables.get(PROMPT_KEY, "")
+
+        for key, kwarg in kwargs.items():
             if key not in dir(Context):
-                raise Exception(f"Bad key: '{key}' (ignored)")
-            setattr(self, f"_{key}", val)
+                raise BadContextKey(f"Bad key: '{key}' (ignored)")
+            setattr(self, f"_{key}", kwarg)
 
     def __repr__(self):
-        keys = [
-            "cwd", "variables", "error_level", "extensions_enabled",
-            "dynamic_variables", "history", "echo", "prompt",
-            "delayed_expansion_enabled", "history_enabled"
-        ]
+        """Stringify the context.
+
+        Returns:
+            dict-like style of specific context properties
+        """
+        keys = (
+            "cwd",
+            "delayed_expansion_enabled",
+            "dynamic_variables",
+            "echo",
+            "error_level",
+            "extensions_enabled",
+            "history",
+            "history_enabled",
+            PROMPT_KEY,
+            "variables"
+        )
         return str({key: getattr(self, key) for key in keys})
 
     @property
@@ -87,7 +130,7 @@ class Context:
         Returns:
             reference to the Butch's logger.
         """
-        return self.__logger
+        return self._logger
 
     @property
     def cwd(self):
@@ -110,8 +153,8 @@ class Context:
         return self._error_level
 
     @error_level.setter
-    def error_level(self, value):
-        self._error_level = value
+    def error_level(self, level):
+        self._error_level = level
 
     @property
     def piped(self):
@@ -124,8 +167,8 @@ class Context:
         return self._piped
 
     @piped.setter
-    def piped(self, value):
-        self._piped = value
+    def piped(self, enabled):
+        self._piped = enabled
 
     @property
     def collect_output(self):
@@ -138,8 +181,8 @@ class Context:
         return self._collect_output
 
     @collect_output.setter
-    def collect_output(self, value):
-        self._collect_output = value
+    def collect_output(self, collected):
+        self._collect_output = collected
 
     @property
     def output(self):
@@ -152,8 +195,8 @@ class Context:
         return self._output
 
     @output.setter
-    def output(self, value):
-        self._output = value
+    def output(self, out):
+        self._output = out
 
     @property
     def extensions_enabled(self):
@@ -166,8 +209,8 @@ class Context:
         return self._extensions_enabled
 
     @extensions_enabled.setter
-    def extensions_enabled(self, value):
-        self._extensions_enabled = value
+    def extensions_enabled(self, enabled):
+        self._extensions_enabled = enabled
 
     @property
     def history_enabled(self):
@@ -296,7 +339,7 @@ class Context:
     @prompt.setter
     def prompt(self, prompt_text: str):
         self._prompt = prompt_text
-        self.set_variable("prompt", prompt_text)
+        self.set_variable(PROMPT_KEY, prompt_text)
 
     @staticmethod
     def _get_default_variables():  # noqa: WPS602, WPS605
@@ -321,7 +364,7 @@ class Context:
             "processor_level": None,
             "processor_revision": None,
             "programfiles": None,
-            "prompt": f"{PROMPT_DRIVE_PATH}{PROMPT_GREATER}",
+            PROMPT_KEY: f"{PROMPT_DRIVE_PATH}{PROMPT_GREATER}",
             "sessionname": None,
             "systemdrive": None,
             "systemroot": None,
