@@ -355,7 +355,9 @@ class Execution(TestCase):
         ctx = Context()
         value = "nonexistingfile"
 
-        chdir_mock = patch("butch.commands.chdir", side_effect=FileNotFoundError())
+        chdir_mock = patch(
+            "butch.commands.chdir", side_effect=FileNotFoundError()
+        )
         with chdir_mock as chdir, patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
@@ -374,7 +376,8 @@ class Execution(TestCase):
         ctx = Context()
         value = "existing"
 
-        with patch("butch.commands.chdir") as chdir, patch("butch.commands.print") as mock:
+        chdir_mock = patch("butch.commands.chdir")
+        with chdir_mock as chdir, patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
             ]), ctx=ctx)
@@ -489,7 +492,8 @@ class BatchFiles(TestCase):
         with open(join(folder, out_name)) as file:
             output = file.readlines()
 
-        with patch("butch.commands.chdir") as cdr, patch("builtins.print") as stdout:
+        chdir_mock = patch("butch.commands.chdir")
+        with chdir_mock as cdr, patch("builtins.print") as stdout:
             ctx = Context()
             handle_new(text=join(folder, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
