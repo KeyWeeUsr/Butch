@@ -569,6 +569,9 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
         ctx.error_level = 0
         return
 
+    if params_len == 1 and params[0].lower() == "/?":
+        print_help(cmd=Command.DIR)
+        return
     raise NotImplementedError()
 
 
