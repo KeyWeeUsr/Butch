@@ -4,9 +4,7 @@ pycodestyle \
     --indent-size=4 .
 
 pylint \
-    caller.py charlist.py commands.py constants.py context.py counter.py \
-    filmbuffer.py grammar.py help.py main.py outputs.py shared.py \
-    test.py tokenizer.py \
+    butch/*.py
     --jobs=0 \
     --max-line-length=79 \
     --single-line-if-stmt=n \
