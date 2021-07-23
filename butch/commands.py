@@ -10,11 +10,12 @@ from enum import Enum
 from os import remove, listdir, chdir, environ, makedirs, stat, statvfs, getcwd
 from os.path import abspath, isdir, exists, join
 from collections import defaultdict
+from shutil import rmtree
 
 from butch.context import Context
 from butch.constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
-    SURE, DELETE, PATH_EXISTS
+    SURE, DELETE, PATH_EXISTS, DIR_INVALID, DIR_NONEMPTY
 )
 from butch.outputs import CommandOutput
 from butch.expansion import percent_expansion
@@ -39,6 +40,8 @@ class Command(Enum):
     DIR = "dir"
     CLS = "cls"
     DATE = "date"
+    RMDIR = "rmdir"
+    RD = "rd"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -568,6 +571,62 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
     raise NotImplementedError()
 
 
+def remove_folder(params: List["Argument"], ctx: Context) -> None:
+    "Batch: RMDIR command."
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        print(SYNTAX_INCORRECT)
+        ctx.error_level = 0
+        return
+
+    is_help = False
+    ignore_files = False
+    quiet = False
+    out = []
+    while params:
+        item = params.pop(0).lower()
+        if item == "/?":
+            is_help = True
+        elif item == "/s":
+            ignore_files = True
+        elif item == "/q":
+            quiet = True
+        else:
+            out.append(item)
+
+    if is_help:
+        print_help(cmd=Command.RMDIR)
+        return
+
+    for param in out:
+        if not isdir(param):
+            print(DIR_INVALID)
+            continue
+        if listdir(param):
+            if not ignore_files:
+                print(DIR_NONEMPTY)
+                continue
+            text = f"{param}, {SURE}"
+            if ctx.piped:
+                answer = ctx.output.stdout.read(1).decode("utf-8")
+                print(f"{text} {answer}")
+            else:
+                answer = input(f"{text} ").lower() if not quiet else "y"
+            if answer != "y":
+                continue
+        rmtree(param)
+
+
 def get_cmd_map():
     "Get mapping of CommandType into its functions for execution."
     return {
@@ -586,7 +645,9 @@ def get_cmd_map():
         Command.MD: create_folder,
         Command.DIR: list_folder,
         Command.CLS: clear_screen,
-        Command.DATE: date
+        Command.DATE: date,
+        Command.RMDIR: remove_folder,
+        Command.RD: remove_folder
     }
 
 

@@ -136,10 +136,10 @@ Commands
 - [ ] `POPD <https://ss64.com/nt/popd.html>`__
 - [X] `PROMPT <https://ss64.com/nt/prompt.html>`__
 - [ ] `PUSHD <https://ss64.com/nt/pushd.html>`__
-- [ ] `RD <https://ss64.com/nt/rd.html>`__
+- [X] `RD <https://ss64.com/nt/rd.html>`__
 - [ ] `REM <https://ss64.com/nt/rem.html>`__
 - [ ] `REN <https://ss64.com/nt/ren.html>`__
-- [ ] `RMDIR <https://ss64.com/nt/rmdir.html>`__
+- [X] `RMDIR <https://ss64.com/nt/rmdir.html>`__
 - [ ] `SET <https://ss64.com/nt/set.html>`__
 
   *pending:* pretty much everything except the basic value add + clear
