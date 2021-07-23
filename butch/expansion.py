@@ -1,3 +1,7 @@
+"""
+Module for handling % and ! expansion into variables.
+"""
+
 import sys
 from butch.context import Context
 

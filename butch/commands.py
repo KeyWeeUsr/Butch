@@ -497,6 +497,7 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
 
 
 def _get_listdir_lines(folder: str, ctx: Context) -> list:
+    # pylint: disable=too-many-locals
     files = listdir()
     files.sort()
 
@@ -509,9 +510,9 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
     setlocale(LC_NUMERIC, getlocale(LC_CTYPE))
     for item in files:
         raw = stat(item)
-        date = datetime.fromtimestamp(raw.st_ctime)
-        time = date.strftime("%X")
-        date = date.strftime("%x")
+        cdate = datetime.fromtimestamp(raw.st_ctime)
+        time = cdate.strftime("%X")
+        cdate = cdate.strftime("%x")
         is_dir = isdir(item)
         dir_text = "<DIR>".ljust(14) if is_dir else ""
         size = raw.st_size
@@ -573,6 +574,7 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
 
 def remove_folder(params: List["Argument"], ctx: Context) -> None:
     "Batch: RMDIR command."
+    # pylint: disable=too-many-branches
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 

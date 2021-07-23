@@ -6,7 +6,7 @@
 
 from unittest import main, TestCase
 from unittest.mock import patch, call as mock_call
-from os.path import join, dirname, abspath, exists, sep as path_separator
+from os.path import join, dirname, abspath, exists
 BATCH_FOLDER = join(dirname(abspath(__file__)), "batch")
 
 
