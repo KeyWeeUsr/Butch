@@ -70,6 +70,8 @@ class Argument:
         return f"<Argument: {val!r}, q={int(self.quoted)}>"
 
     def __eq__(self, other):
+        if not isinstance(other, Argument):
+            return False
         return self.value == other.value
 
 

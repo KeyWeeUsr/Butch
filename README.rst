@@ -81,7 +81,7 @@ Commands
   - [ ] ``/D`` change current drive + path
 
 - [X] `CHDIR <https://ss64.com/nt/chdir.html>`__
-- [ ] `CLS <https://ss64.com/nt/cls.html>`__
+- [X] `CLS <https://ss64.com/nt/cls.html>`__
 - [ ] `COLOR <https://ss64.com/nt/color.html>`__
 - [ ] `COPY <https://ss64.com/nt/copy.html>`__
 - [ ] `DATE <https://ss64.com/nt/date.html>`__

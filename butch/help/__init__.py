@@ -11,5 +11,5 @@ from butch.commands import Command
 def print_help(cmd: Command, file=sys.stdout):
     "Open a help file for passed Command and print it."
     folder = dirname(abspath(__file__))
-    with open(join(folder, "help", f"{cmd.value.lower()}.txt")) as fdes:
+    with open(join(folder, f"{cmd.value.lower()}.txt")) as fdes:
         print(fdes.read(), file=file)

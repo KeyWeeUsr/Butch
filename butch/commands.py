@@ -37,6 +37,7 @@ class Command(Enum):
     MKDIR = "mkdir"
     MD = "md"
     DIR = "dir"
+    CLS = "cls"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -290,11 +291,28 @@ def pause(params: list, ctx: Context) -> None:
     # pylint: disable=import-outside-toplevel
     from butch.help import print_help  # circular
     first = params[0] if params else ""
-    if first == "/?":
+    if first.value == "/?":
         print_help(cmd=Command.PAUSE)
         return
 
     input(PAUSE_TEXT)
+
+
+def clear_screen(params: list, ctx: Context) -> None:
+    "Batch: CLS command."
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    first = params[0] if params else ""
+    if first.value == "/?":
+        print("here")
+        print_help(cmd=Command.CLS)
+        return
+
+    print("\033c" if "DEBUG" not in environ else "<clear>")
 
 
 def exit_cmd(params: list, ctx: Context) -> None:
@@ -539,7 +557,8 @@ def get_cmd_map():
         Command.HELP: help_cmd,
         Command.MKDIR: create_folder,
         Command.MD: create_folder,
-        Command.DIR: list_folder
+        Command.DIR: list_folder,
+        Command.CLS: clear_screen
     }
 
 
