@@ -72,6 +72,7 @@ KWARGS = dict(
     ],
     extras_require={
         "dev": [
+            "coverage>=5.5",
             "pycodestyle>=2.7.0",
             "pylint>=2.9.3",
             "wemake-python-styleguide>=0.15.3"
