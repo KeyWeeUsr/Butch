@@ -38,6 +38,7 @@ class Command(Enum):
     MD = "md"
     DIR = "dir"
     CLS = "cls"
+    DATE = "date"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -280,6 +281,32 @@ def title(params: list, ctx: Context) -> None:
     error = ctypes.get_last_error()
     if error:
         raise ctypes.WinError(error)
+
+
+def date(params: list, ctx: Context) -> None:
+    "Batch: DATE command."
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    ctx.error_level = 0
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    first = params[0].value if params else ""
+    if first == "/?":
+        print_help(cmd=Command.DATE)
+        return
+
+    now = datetime.now()
+    if first.upper() == "/T":
+        # should match the locale format
+        print(now.strftime("%x"))
+        return
+
+    now = now.strftime("%a %x")
+    print(f"The current date is: {now}")
+    print("Enter the new date: (mm-dd-yy)")
+    print("Setting the date is not implemented, use /T", file=sys.stderr)
+    input()
 
 
 def pause(params: list, ctx: Context) -> None:
@@ -558,7 +585,8 @@ def get_cmd_map():
         Command.MKDIR: create_folder,
         Command.MD: create_folder,
         Command.DIR: list_folder,
-        Command.CLS: clear_screen
+        Command.CLS: clear_screen,
+        Command.DATE: date
     }
 
 

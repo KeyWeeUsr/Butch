@@ -84,7 +84,12 @@ Commands
 - [X] `CLS <https://ss64.com/nt/cls.html>`__
 - [ ] `COLOR <https://ss64.com/nt/color.html>`__
 - [ ] `COPY <https://ss64.com/nt/copy.html>`__
-- [ ] `DATE <https://ss64.com/nt/date.html>`__
+- [X] `DATE <https://ss64.com/nt/date.html>`__
+
+  *pending:*
+
+  - [ ] set the system date when called without arguments
+
 - [X] `DEL <https://ss64.com/nt/del.html>`__
 
   *pending:*
@@ -118,8 +123,6 @@ Commands
 - [ ] `ENDLOCAL <https://ss64.com/nt/endlocal.html>`__
 - [X] `ERASE <https://ss64.com/nt/erase.html>`__
 - [X] `EXIT <https://ss64.com/nt/exit.html>`__
-- [ ] `FOR <https://ss64.com/nt/for.html>`__
-- [ ] `FOR <https://ss64.com/nt/for.html>`__
 - [ ] `FOR <https://ss64.com/nt/for.html>`__
 - [ ] `FTYPE <https://ss64.com/nt/ftype.html>`__
 - [ ] `GOTO <https://ss64.com/nt/goto.html>`__
