@@ -4,8 +4,11 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=too-many-lines,too-many-locals
 
+import sys
+from io import StringIO
+from typing import Callable
 from unittest import main, TestCase
-from unittest.mock import patch, call as mock_call
+from unittest.mock import patch, call as mock_call, _CallList
 from os.path import join, dirname, abspath, exists
 BATCH_FOLDER = join(dirname(abspath(__file__)), "batch")
 
@@ -453,369 +456,210 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
 
+def default_output_splitter(text: str) -> list:
+    return text.rstrip("\n").split(" ")
+
+
+def assert_bat_output_match(
+        batch_path: str, mock_calls: _CallList,
+        splitter: Callable = default_output_splitter,
+        concat: bool = False, file_buff: StringIO = None
+) -> bool:
+    with open(join(BATCH_FOLDER, f"{batch_path}.out")) as file:
+        output = file.readlines()
+    assert len(mock_calls) == len(output), (mock_calls, output)
+
+    pipe_text = "<pipe> "
+    for idx, out in enumerate(output):
+        buff = sys.stdout
+        if out.startswith(pipe_text):
+            out = out[len(pipe_text):]
+            buff = file_buff
+        text = splitter(out)
+
+        left = mock_calls[idx]
+        if concat:
+            right = mock_call(" ".join(text), file=buff)
+        else:
+            right = mock_call(*text, file=buff)
+        assert left == right, (left, right)
+
+
 class BatchFiles(TestCase):
-    def test_hello_new(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_hello_new(self, stdout):
         script_name = "hello.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls)
+        self.assertEqual(ctx.error_level, 0)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context()
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
-                )
-
-    def test_cd_existing_new(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_cd_existing_new(self, stdout):
         script_name = "cd_existing.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
-        chdir_mock = patch("butch.commands.chdir")
-        with chdir_mock as cdr, patch("builtins.print") as stdout:
+        with patch("butch.commands.chdir") as cdr:
             ctx = Context()
-            handle_new(text=join(folder, script_name), ctx=ctx)
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
+            assert_bat_output_match(script_name, stdout.mock_calls)
+            self.assertEqual(ctx.error_level, 0)
 
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
-                )
-
-    def test_cd_nonexisting_new(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_cd_nonexisting_new(self, stdout):
         script_name = "cd_nonexisting.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
         with patch("builtins.print") as stdout:
             ctx = Context()
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            assert_bat_output_match(
+                script_name, stdout.mock_calls,
+                concat=True
+            )
+            self.assertEqual(ctx.error_level, 1)
 
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_join_new(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_join_new(self, stdout):
         script_name = "set_join.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls)
+        self.assertEqual(ctx.error_level, 0)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context()
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_echo_quote(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_echo_quote(self, stdout):
         script_name = "hello_quote.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            ctx.log.debug("->, %s", stdout.mock_calls)
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote(self, stdout):
         script_name = "set_quote.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote_2(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote_2(self, stdout):
         script_name = "set_quote_2.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote_3(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote_3(self, stdout):
         script_name = "set_quote_3.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote_4(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote_4(self, stdout):
         script_name = "set_quote_4.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote_5(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote_5(self, stdout):
         script_name = "set_quote_5.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote_6(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote_6(self, stdout):
         script_name = "set_quote_6.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_set_quote_7(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_set_quote_7(self, stdout):
         script_name = "set_quote_7.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_delete_file(self):
-        import sys
+    @patch("builtins.print")
+    def test_delete_file(self, stdout):
         from os import remove
 
         script_name = "delete_file.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
+        ctx = Context(history_enabled=False)
+        tmp = script_name.replace(".bat", ".tmp")
 
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            tmp = script_name.replace(".bat", ".tmp")
+        if exists(tmp):
+            remove(tmp)
+        with open(tmp, "w") as file:
+            file.write(".")
 
-            if exists(tmp):
-                remove(tmp)
-            with open(tmp, "w") as file:
-                file.write(".")
-            self.assertTrue(exists(tmp))
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        self.assertFalse(exists(tmp))
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-            handle_new(text=join(folder, script_name), ctx=ctx)
-            self.assertFalse(exists(tmp))
-
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"), file=sys.stdout)
-                )
-
-    def test_delete_file_syntax(self):
+    @patch("builtins.print")
+    def test_delete_file_syntax(self, stdout):
         script_name = "delete_file_syntax.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
-        with patch("builtins.print") as stdout:
-            ctx = Context(history_enabled=False)
-            handle_new(text=join(folder, script_name), ctx=ctx)
-
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(out.rstrip("\n"))
-                )
+        ctx = Context(history_enabled=False)
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
     def test_delete_folder_pipe(self):
         from os import mkdir, rmdir, listdir
@@ -862,115 +706,69 @@ class BatchFiles(TestCase):
             self.assertEqual(listdir(tmp_folder), [])
             rmdir(tmp_folder)
 
-    def test_mkdir_nonexisting(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_mkdir_nonexisting(self, stdout):
         script_name = "mkdir_nonexisting.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = []
-            for line in file.readlines():
-                clean = line.strip()
-                if not clean:
-                    continue
-                output.append(clean)
-
-        stdout_mock = patch("builtins.print")
-        with patch("butch.commands.makedirs") as mdrs, stdout_mock as stdout:
+        with patch("butch.commands.makedirs") as mdrs:
             ctx = Context()
 
             self.assertFalse(exists("new-folder"))
-            handle_new(text=join(folder, script_name), ctx=ctx)
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
 
             mdrs.assert_called_once()
             self.assertFalse(exists("new-folder"))
+            assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
-                )
-
-    def test_mkdir_tree(self):
-        import sys
-
+    @patch("builtins.print")
+    def test_mkdir_tree(self, stdout):
         script_name = "mkdir_tree.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = []
-            for line in file.readlines():
-                clean = line.strip()
-                if not clean:
-                    continue
-                output.append(clean)
-
-        stdout_mock = patch("builtins.print")
         tree = join("new-folder", "with", "sub", "folders")
-        with patch("butch.commands.makedirs") as mdrs, stdout_mock as stdout:
+        with patch("butch.commands.makedirs") as mdrs:
             ctx = Context()
 
             self.assertFalse(exists(tree))
-            handle_new(text=join(folder, script_name), ctx=ctx)
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
 
             mdrs.assert_called_once()
             self.assertFalse(exists(tree))
+            assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
-            mcalls = stdout.mock_calls
-            self.assertEqual(len(mcalls), len(output))
-
-            for idx, out in enumerate(output):
-                self.assertEqual(
-                    mcalls[idx],
-                    mock_call(*out.rstrip("\n").split(" "), file=sys.stdout)
-                )
-
-    def test_redir_newfile(self):
-        import sys
+    @patch("builtins.print")
+    def test_redir_newfile(self, stdout):
         from os import remove
 
         script_name = "redir_echo_newfile.bat"
-        out_name = f"{script_name}.out"
-        folder = BATCH_FOLDER
 
         from butch.context import Context
+        from butch.outputs import CommandOutput
         from butch.__main__ import handle_new
 
-        with open(join(folder, out_name)) as file:
-            output = file.readlines()
-
         filename = "new-file.txt"
-        with patch("builtins.print") as stdout:
-            ctx = Context()
+        ctx = Context()
 
-            if exists(filename):
-                remove(filename)
-            self.assertFalse(exists(filename))
-            handle_new(text=join(folder, script_name), ctx=ctx)
+        if exists(filename):
+            remove(filename)
+        self.assertFalse(exists(filename))
 
+        cmd_out = CommandOutput()
+        with patch("butch.commands.CommandOutput") as out_mock:
+            out_mock.return_value = cmd_out
+
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
             self.assertTrue(exists(filename))
             remove(filename)
 
-            mcalls = stdout.mock_calls
-            # the echo to the file is +1
-            self.assertEqual(len(mcalls), 2)
-            self.assertEqual(len(output), 1)
-
-            self.assertEqual(
-                mcalls[1],
-                mock_call(*output[0].rstrip("\n").split(" "), file=sys.stdout)
+            assert_bat_output_match(
+                script_name, stdout.mock_calls, concat=True,
+                file_buff=cmd_out.stdout
             )
 
     def ignore_test_set_join_expansion(self):

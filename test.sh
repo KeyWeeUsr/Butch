@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 PKG="butch"
 coverage run \
     --branch \
