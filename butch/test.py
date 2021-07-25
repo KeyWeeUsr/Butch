@@ -961,6 +961,7 @@ class BatchFiles(TestCase):
             handle_new(text=join(folder, script_name), ctx=ctx)
 
             self.assertTrue(exists(filename))
+            remove(filename)
 
             mcalls = stdout.mock_calls
             # the echo to the file is +1
