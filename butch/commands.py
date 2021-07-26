@@ -142,25 +142,25 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
             print(file.read(), file=out)
             return
 
-    for idx, path in enumerate(params):
-        print(path, file=out)
+    for idx, item_path in enumerate(params):
+        print(item_path, file=out)
 
-        if isdir(path):
+        if isdir(item_path):
             print(ACCESS_DENIED, file=out)
-            print(ERROR_PROCESSING.format(path), file=out)
+            print(ERROR_PROCESSING.format(item_path), file=out)
             ctx.error_level = 1
             continue
 
-        if not exists(path):
+        if not exists(item_path):
             print(FILE_NOT_FOUND, file=out)
-            print(ERROR_PROCESSING.format(path), file=out)
+            print(ERROR_PROCESSING.format(item_path), file=out)
             ctx.error_level = 1
             continue
 
         for _ in range(2):
             print("\n", file=out)
 
-        with open(path) as file:
+        with open(item_path) as file:
             # TODO: big files chunking
             print(file.read(), file=out)
         # no trailing newline after files
@@ -168,7 +168,7 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
             print("\n", file=out)
 
 
-def path(params: List["Argument"], ctx: Context) -> None:
+def path_cmd(params: List["Argument"], ctx: Context) -> None:
     """
     Batch: PATH command.
 
@@ -200,9 +200,11 @@ def path(params: List["Argument"], ctx: Context) -> None:
     if first == "/?":
         print_help(cmd=Command.PATH, file=out)
         return
-    elif first == ";":
+
+    if first == ";":
         ctx.delete_variable(key="PATH")
         return
+
     ctx.set_variable(key="PATH", value_to_set=" ".join(params))
 
 
@@ -267,7 +269,7 @@ def popd(params: List["Argument"], ctx: Context) -> None:
 
     first = params[0].lower() if params else ""
     if first == "/?":
-        print_help(cmd=Command.PODP, file=out)
+        print_help(cmd=Command.POPD, file=out)
         return
 
     try:
@@ -594,9 +596,9 @@ def delete(params: List["Argument"], ctx: Context) -> None:
         if first.lower() == "/?":
             print_help(cmd=Command.DELETE)
             return
-        path = abspath(first)
-        if not exists(path):
-            os_path = path.replace("/", "\\")
+        file_path = abspath(first)
+        if not exists(file_path):
+            os_path = file_path.replace("/", "\\")
             print(f"Could Not Find {os_path}")
             ctx.error_level = 0
             return
@@ -673,9 +675,9 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
             print_help(cmd=Command.MKDIR)
             return
         first = first.replace("\\", "/")
-        path = abspath(first)
+        dir_path = abspath(first)
         try:
-            makedirs(path)
+            makedirs(dir_path)
         except FileExistsError:
             print(PATH_EXISTS.format(first))
             ctx.error_level = 1
@@ -683,8 +685,6 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
 
     failed = False
     for param in params:
-        path = abspath(param.replace("\\", "/"))
-
         try:
             makedirs(param)
         except FileExistsError:
@@ -882,7 +882,7 @@ def get_cmd_map():
         Command.RMDIR: remove_folder,
         Command.RD: remove_folder,
         Command.TYPE: type_cmd,
-        Command.PATH: path,
+        Command.PATH: path_cmd,
         Command.REM: rem_comment,
         Command.PUSHD: pushd,
         Command.POPD: popd
