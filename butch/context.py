@@ -47,7 +47,7 @@ class Context:  # noqa: WPS214,WPS338
     interpreter.
     """
 
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes,too-many-public-methods
 
     _cwd: str
     _variables: dict
@@ -208,13 +208,16 @@ class Context:  # noqa: WPS214,WPS338
 
     @property
     def pushd_history(self):
+        """Get full pushd history."""
         return self._pushd_history
 
     def push_folder(self, path: str) -> None:
+        """Add new path to pushd history for popd retrieval."""
         self._pushd_history.append(abspath(path))
         self.cwd = path
 
     def pop_folder(self) -> str:
+        """Pop the latest folder from pushd history and return it."""
         return self._pushd_history.pop(0)
 
     @property
