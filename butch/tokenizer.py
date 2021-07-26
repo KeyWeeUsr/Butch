@@ -413,7 +413,18 @@ def handle_char_newline(
             if output and isinstance(output[-1], Redirection):
                 found.set(File())
             else:
-                found.set(Command(cmd=CommandType.UNKNOWN))
+                # naive
+                cmd_clear = buff.data.strip().lower()
+                echo = True
+                if cmd_clear.startswith("@"):
+                    log("\t\t- echo off")
+                    echo = False
+                    cmd_clear = cmd_clear[1:]
+                log("\t- cmd string: %r", cmd_clear)
+                found.set(Command(
+                    cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
+                ))
+                buff.clear()
         if flags[Flag.UNFINISHED_LINE]:
             found.data.args[-1].value = (
                 found.data.args[-1].value + buff.data
@@ -421,9 +432,10 @@ def handle_char_newline(
             flags[Flag.UNFINISHED_LINE] = False
         else:
             if not isinstance(found.data, File):
-                found.data.args = found.data.args + [
-                    Argument(value=buff.data)
-                ]
+                if buff.data:
+                    found.data.args = found.data.args + [
+                        Argument(value=buff.data)
+                    ]
             else:
                 found.data.value = buff.data
 

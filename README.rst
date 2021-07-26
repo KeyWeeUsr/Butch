@@ -131,7 +131,7 @@ Commands
 - [X] `MKDIR <https://ss64.com/nt/md.html>`__
 - [ ] `MKLINK <https://ss64.com/nt/mklink.html>`__
 - [ ] `MOVE <https://ss64.com/nt/move.html>`__
-- [ ] `PATH <https://ss64.com/nt/path.html>`__
+- [X] `PATH <https://ss64.com/nt/path.html>`__
 - [X] `PAUSE <https://ss64.com/nt/pause.html>`__
 - [ ] `POPD <https://ss64.com/nt/popd.html>`__
 - [X] `PROMPT <https://ss64.com/nt/prompt.html>`__

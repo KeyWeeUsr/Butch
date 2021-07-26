@@ -48,10 +48,15 @@ class Command(Enum):
     RMDIR = "rmdir"
     RD = "rd"
     TYPE = "type"
+    PATH = "path"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
-    "Batch: ECHO command."
+    """
+    Batch: ECHO command.
+
+    Must NOT set error level to 0.
+    """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
     log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -86,7 +91,6 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         return
 
     print(*params, file=out)
-    ctx.error_level = 0
 
 
 def type_cmd(params: List["Argument"], ctx: Context) -> None:
@@ -146,6 +150,44 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
         # no trailing newline after files
         if idx != params_len - 1:
             print("\n", file=out)
+
+
+def path(params: List["Argument"], ctx: Context) -> None:
+    """
+    Batch: PATH command.
+
+    Must NOT set errorlevel.
+    """
+    this = getframeinfo(currentframe()).function
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        print(f"PATH={ctx.get_variable('PATH') or '(null)'}", file=sys.stdout)
+        return
+
+    first = params[0].lower()
+    if first == "/?":
+        print_help(cmd=Command.PATH, file=out)
+        return
+    elif first == ";":
+        ctx.delete_variable(key="PATH")
+        return
+    ctx.set_variable(key="PATH", value_to_set=" ".join(params))
 
 
 def help_cmd(params: List["Argument"], ctx: Context) -> None:
@@ -724,7 +766,8 @@ def get_cmd_map():
         Command.DATE: date,
         Command.RMDIR: remove_folder,
         Command.RD: remove_folder,
-        Command.TYPE: type_cmd
+        Command.TYPE: type_cmd,
+        Command.PATH: path
     }
 
 

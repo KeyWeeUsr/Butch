@@ -530,7 +530,7 @@ class BatchFiles(TestCase):
                 script_name, stdout.mock_calls,
                 concat=True
             )
-            self.assertEqual(ctx.error_level, 0)
+            self.assertEqual(ctx.error_level, 1)
 
     @patch("builtins.print")
     def test_set_join_new(self, stdout):
@@ -858,7 +858,7 @@ class BatchFiles(TestCase):
             self.assertTrue(exists(path))
         remove(first)
         rmdir(second)
-        self.assertEqual(ctx.error_level, 0)
+        self.assertEqual(ctx.error_level, 1)
 
         def preserve_lf(text):
             parts = text.rstrip("\n").split(" ")
@@ -899,6 +899,42 @@ class BatchFiles(TestCase):
                 script_name, stdout.mock_calls, concat=True,
                 file_buff=cmd_out.stdout
             )
+
+    @patch("builtins.print")
+    def test_path_set(self, stdout):
+        script_name = "path_set.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
+
+    @patch("builtins.print")
+    def test_path_unset(self, stdout):
+        script_name = "path_unset.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
+
+    @patch("builtins.print")
+    def test_path_append(self, stdout):
+        script_name = "path_append.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
 
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"
