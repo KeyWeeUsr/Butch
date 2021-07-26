@@ -8,6 +8,6 @@ coverage run \
         --failfast \
         --catch \
         --start-directory $PKG \
-        --top-level-directory $PKG
+        --top-level-directory $PKG $*
 
 coverage report --show-missing
