@@ -16,7 +16,7 @@ from butch.context import Context
 from butch.constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
     SURE, DELETE, PATH_EXISTS, DIR_INVALID, DIR_NONEMPTY, ACCESS_DENIED,
-    ERROR_PROCESSING
+    ERROR_PROCESSING, FILE_NOT_FOUND
 )
 from butch.outputs import CommandOutput
 from butch.expansion import percent_expansion
@@ -49,6 +49,7 @@ class Command(Enum):
     RD = "rd"
     TYPE = "type"
     PATH = "path"
+    REM = "rem"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -123,10 +124,17 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
         if first == "/?":
             print_help(cmd=Command.ECHO, file=out)
             return
+
         if isdir(first):
             print(ACCESS_DENIED, file=out)
             ctx.error_level = 1
             return
+
+        if not exists(first):
+            print(FILE_NOT_FOUND, file=out)
+            ctx.error_level = 1
+            return
+
         with open(first) as file:
             # TODO: big files chunking
             print(file.read(), file=out)
@@ -137,6 +145,12 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
 
         if isdir(path):
             print(ACCESS_DENIED, file=out)
+            print(ERROR_PROCESSING.format(path), file=out)
+            ctx.error_level = 1
+            continue
+
+        if not exists(path):
+            print(FILE_NOT_FOUND, file=out)
             print(ERROR_PROCESSING.format(path), file=out)
             ctx.error_level = 1
             continue
@@ -740,6 +754,27 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
         rmtree(param)
 
 
+def rem_comment(params: list, ctx: Context) -> None:
+    """
+    Batch: REM command.
+
+    Must NOT modify errorlevel.
+    """
+    this = getframeinfo(currentframe()).function
+    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+
+    params_len = len(params)
+    if not params_len:
+        return
+
+    params = [param.value for param in params]
+    if params_len == 1 and params[0] == "/?":
+        print_help(cmd=Command.REM)
+
+
 def get_cmd_map():
     """
     Get mapping of CommandType into its functions for execution.
@@ -767,7 +802,8 @@ def get_cmd_map():
         Command.RMDIR: remove_folder,
         Command.RD: remove_folder,
         Command.TYPE: type_cmd,
-        Command.PATH: path
+        Command.PATH: path,
+        Command.REM: rem_comment
     }
 
 

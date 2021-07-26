@@ -137,7 +137,7 @@ Commands
 - [X] `PROMPT <https://ss64.com/nt/prompt.html>`__
 - [ ] `PUSHD <https://ss64.com/nt/pushd.html>`__
 - [X] `RD <https://ss64.com/nt/rd.html>`__
-- [ ] `REM <https://ss64.com/nt/rem.html>`__
+- [X] `REM <https://ss64.com/nt/rem.html>`__
 - [ ] `REN <https://ss64.com/nt/ren.html>`__
 - [X] `RMDIR <https://ss64.com/nt/rmdir.html>`__
 - [ ] `SET <https://ss64.com/nt/set.html>`__

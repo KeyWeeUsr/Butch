@@ -1,6 +1,7 @@
 """All commonly used strings in the commands and other language parts."""
 
 PATH_NOT_FOUND = "The system cannot find the path specified."
+FILE_NOT_FOUND = "The system cannot find the file specified."
 PAUSE_TEXT = "Press any key to continue . . . "
 ENV_VAR_UNDEFINED = "Environment variable name not defined"
 SYNTAX_INCORRECT = "The syntax of the command is incorrect."

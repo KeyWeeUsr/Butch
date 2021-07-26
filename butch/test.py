@@ -8,7 +8,7 @@ import sys
 from io import StringIO
 from typing import Callable
 from unittest import main, TestCase
-from unittest.mock import patch, call as mock_call, _CallList
+from unittest.mock import patch, call as mock_call, _CallList, MagicMock
 from os.path import join, dirname, abspath, exists
 BATCH_FOLDER = join(dirname(abspath(__file__)), "batch")
 
@@ -935,6 +935,18 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 0)
+
+    @patch("builtins.print")
+    def test_rem_comment(self, stdout):
+        script_name = "rem_comment.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 1)
 
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"
