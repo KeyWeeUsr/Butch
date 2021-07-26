@@ -151,7 +151,7 @@ Commands
 - [ ] `START <https://ss64.com/nt/start.html>`__
 - [ ] `TIME <https://ss64.com/nt/time.html>`__
 - [X] `TITLE <https://ss64.com/nt/title.html>`__
-- [ ] `TYPE <https://ss64.com/nt/type.html>`__
+- [X] `TYPE <https://ss64.com/nt/type.html>`__
 - [ ] `VER <https://ss64.com/nt/ver.html>`__
 - [ ] `VERIFY <https://ss64.com/nt/verify.html>`__
 - [ ] `VOL <https://ss64.com/nt/vol.html>`__

@@ -467,7 +467,11 @@ def assert_bat_output_match(
 ) -> bool:
     with open(join(BATCH_FOLDER, f"{batch_path}.out")) as file:
         output = file.readlines()
-    assert len(mock_calls) == len(output), (mock_calls, output)
+    mock_call_len = len(mock_calls)
+    output_len = len(output)
+    assert mock_call_len == output_len, (
+        mock_calls, output, mock_call_len, output_len
+    )
 
     pipe_text = "<pipe> "
     for idx, out in enumerate(output):
@@ -526,7 +530,7 @@ class BatchFiles(TestCase):
                 script_name, stdout.mock_calls,
                 concat=True
             )
-            self.assertEqual(ctx.error_level, 1)
+            self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
     def test_set_join_new(self, stdout):
@@ -740,6 +744,131 @@ class BatchFiles(TestCase):
             mdrs.assert_called_once()
             self.assertFalse(exists(tree))
             assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @patch("builtins.print")
+    def test_type_file(self, stdout):
+        from os import remove
+
+        script_name = "type_print.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        filename = "new-file.txt"
+        ctx = Context()
+
+        if exists(filename):
+            remove(filename)
+
+        with open(filename, "w") as file:
+            file.write("hello type")
+
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        self.assertTrue(exists(filename))
+        remove(filename)
+
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @patch("builtins.print")
+    def test_type_folder(self, stdout):
+        from os import rmdir, mkdir
+
+        script_name = "type_print_folder.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        filename = "new-folder"
+        ctx = Context()
+
+        if exists(filename):
+            rmdir(filename)
+        mkdir(filename)
+
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        self.assertTrue(exists(filename))
+        rmdir(filename)
+
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @patch("builtins.print")
+    def test_type_multifile(self, stdout):
+        from os import remove
+
+        script_name = "type_print_multiple.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        first = "new-file.txt"
+        second = "new-file-2.txt"
+        paths = (first, second)
+        ctx = Context()
+
+        for path in paths:
+            if exists(path):
+                remove(path)
+
+        with open(first, "w") as file:
+            file.write("hello type")
+
+        with open(second, "w") as file:
+            file.write("hello multiple")
+
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        for path in paths:
+            self.assertTrue(exists(path))
+            remove(path)
+
+        def preserve_lf(text):
+            parts = text.rstrip("\n").split(" ")
+            parts = [word or "\n" for word in parts]
+            return parts
+
+        assert_bat_output_match(
+            script_name, stdout.mock_calls, concat=True,
+            splitter=preserve_lf
+        )
+
+    @patch("builtins.print")
+    def test_type_multifile_halffail(self, stdout):
+        from os import remove, mkdir, rmdir
+
+        script_name = "type_print_multiple_halffail.bat"
+
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        first = "new-file.txt"
+        second = "new-folder"
+        paths = (first, second)
+        ctx = Context()
+
+        if exists(first):
+            remove(first)
+        if exists(second):
+            rmdir(second)
+
+        with open(first, "w") as file:
+            file.write("hello type")
+        mkdir(second)
+
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        for path in paths:
+            self.assertTrue(exists(path))
+        remove(first)
+        rmdir(second)
+        self.assertEqual(ctx.error_level, 0)
+
+        def preserve_lf(text):
+            parts = text.rstrip("\n").split(" ")
+            parts = [word or "\n" for word in parts]
+            return parts
+
+        assert_bat_output_match(
+            script_name, stdout.mock_calls, concat=True,
+            splitter=preserve_lf
+        )
 
     @patch("builtins.print")
     def test_redir_newfile(self, stdout):

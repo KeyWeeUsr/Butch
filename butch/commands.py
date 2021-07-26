@@ -15,7 +15,8 @@ from shutil import rmtree
 from butch.context import Context
 from butch.constants import (
     PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
-    SURE, DELETE, PATH_EXISTS, DIR_INVALID, DIR_NONEMPTY
+    SURE, DELETE, PATH_EXISTS, DIR_INVALID, DIR_NONEMPTY, ACCESS_DENIED,
+    ERROR_PROCESSING
 )
 from butch.outputs import CommandOutput
 from butch.expansion import percent_expansion
@@ -46,6 +47,7 @@ class Command(Enum):
     DATE = "date"
     RMDIR = "rmdir"
     RD = "rd"
+    TYPE = "type"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -84,6 +86,66 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         return
 
     print(*params, file=out)
+    ctx.error_level = 0
+
+
+def type_cmd(params: List["Argument"], ctx: Context) -> None:
+    """Batch: TYPE command."""
+    this = getframeinfo(currentframe()).function
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        print(SYNTAX_INCORRECT, file=sys.stdout)
+        ctx.error_level = 1
+        return
+
+    if params_len == 1:
+        first = params[0].lower()
+        if first == "/?":
+            print_help(cmd=Command.ECHO, file=out)
+            return
+        if isdir(first):
+            print(ACCESS_DENIED, file=out)
+            ctx.error_level = 1
+            return
+        with open(first) as file:
+            # TODO: big files chunking
+            print(file.read(), file=out)
+            return
+
+    for idx, path in enumerate(params):
+        print(path, file=out)
+
+        if isdir(path):
+            print(ACCESS_DENIED, file=out)
+            print(ERROR_PROCESSING.format(path), file=out)
+            ctx.error_level = 1
+            continue
+
+        for _ in range(2):
+            print("\n", file=out)
+
+        with open(path) as file:
+            # TODO: big files chunking
+            print(file.read(), file=out)
+        # no trailing newline after files
+        if idx != params_len - 1:
+            print("\n", file=out)
 
 
 def help_cmd(params: List["Argument"], ctx: Context) -> None:
@@ -661,7 +723,8 @@ def get_cmd_map():
         Command.CLS: clear_screen,
         Command.DATE: date,
         Command.RMDIR: remove_folder,
-        Command.RD: remove_folder
+        Command.RD: remove_folder,
+        Command.TYPE: type_cmd
     }
 
 
