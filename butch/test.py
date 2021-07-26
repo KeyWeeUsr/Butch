@@ -8,7 +8,7 @@ import sys
 from io import StringIO
 from typing import Callable
 from unittest import main, TestCase
-from unittest.mock import patch, call as mock_call, _CallList, MagicMock
+from unittest.mock import patch, call as mock_call, _CallList
 from os.path import join, dirname, abspath, exists
 BATCH_FOLDER = join(dirname(abspath(__file__)), "batch")
 
@@ -329,7 +329,6 @@ class State(TestCase):
 
 class Execution(TestCase):
     def test_echo_new(self):
-        import sys
         from butch.commands import Command as CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
@@ -348,7 +347,6 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_cd_nonexisting_new(self):
-        import sys
         from butch.commands import Command as CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
@@ -490,6 +488,8 @@ def assert_bat_output_match(
 
 
 class BatchFiles(TestCase):
+    # pylint: disable=too-many-public-methods
+
     @patch("builtins.print")
     def test_hello_new(self, stdout):
         script_name = "hello.bat"
@@ -523,14 +523,13 @@ class BatchFiles(TestCase):
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with patch("builtins.print") as stdout:
-            ctx = Context()
-            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
-            assert_bat_output_match(
-                script_name, stdout.mock_calls,
-                concat=True
-            )
-            self.assertEqual(ctx.error_level, 1)
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(
+            script_name, stdout.mock_calls,
+            concat=True
+        )
+        self.assertEqual(ctx.error_level, 1)
 
     @patch("builtins.print")
     def test_set_join_new(self, stdout):
@@ -556,8 +555,9 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 0)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote(self, stdout):
+    def test_set_quote(stdout):
         script_name = "set_quote.bat"
 
         from butch.context import Context
@@ -567,8 +567,9 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote_2(self, stdout):
+    def test_set_quote_2(stdout):
         script_name = "set_quote_2.bat"
 
         from butch.context import Context
@@ -578,8 +579,9 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote_3(self, stdout):
+    def test_set_quote_3(stdout):
         script_name = "set_quote_3.bat"
 
         from butch.context import Context
@@ -589,8 +591,9 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote_4(self, stdout):
+    def test_set_quote_4(stdout):
         script_name = "set_quote_4.bat"
 
         from butch.context import Context
@@ -600,8 +603,9 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote_5(self, stdout):
+    def test_set_quote_5(stdout):
         script_name = "set_quote_5.bat"
 
         from butch.context import Context
@@ -611,8 +615,9 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote_6(self, stdout):
+    def test_set_quote_6(stdout):
         script_name = "set_quote_6.bat"
 
         from butch.context import Context
@@ -622,8 +627,9 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_quote_7(self, stdout):
+    def test_set_quote_7(stdout):
         script_name = "set_quote_7.bat"
 
         from butch.context import Context
@@ -654,8 +660,9 @@ class BatchFiles(TestCase):
         self.assertFalse(exists(tmp))
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_delete_file_syntax(self, stdout):
+    def test_delete_file_syntax(stdout):
         script_name = "delete_file_syntax.bat"
 
         from butch.context import Context
