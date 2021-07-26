@@ -528,7 +528,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
             size = "{0:n}".format(size).rjust(14)
 
         count["folders" if is_dir else "files"] += 1
-        tmp.append(f"{date}  {time}    {dir_text}  {size} {item}")
+        tmp.append(f"{cdate}  {time}    {dir_text}  {size} {item}")
 
     prefix = [
         " Volume in drive <NYI> has no label.",
