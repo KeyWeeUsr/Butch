@@ -717,15 +717,15 @@ class BatchFiles(TestCase):
         from butch.context import Context
         from butch.__main__ import handle_new
 
+        ctx = Context()
+        self.assertFalse(exists("new-folder"))
+
         with patch("butch.commands.makedirs") as mdrs:
-            ctx = Context()
-
-            self.assertFalse(exists("new-folder"))
             handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
-
             mdrs.assert_called_once()
-            self.assertFalse(exists("new-folder"))
-            assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+        self.assertFalse(exists("new-folder"))
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
     @patch("builtins.print")
     def test_mkdir_tree(self, stdout):
@@ -735,15 +735,15 @@ class BatchFiles(TestCase):
         from butch.__main__ import handle_new
 
         tree = join("new-folder", "with", "sub", "folders")
+        ctx = Context()
+        self.assertFalse(exists(tree))
+
         with patch("butch.commands.makedirs") as mdrs:
-            ctx = Context()
-
-            self.assertFalse(exists(tree))
             handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
-
             mdrs.assert_called_once()
-            self.assertFalse(exists(tree))
-            assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+        self.assertFalse(exists(tree))
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
     @patch("builtins.print")
     def test_type_file(self, stdout):
