@@ -50,6 +50,7 @@ class Command(Enum):
     TYPE = "type"
     PATH = "path"
     REM = "rem"
+    PUSHD = "pushd"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -204,6 +205,45 @@ def path(params: List["Argument"], ctx: Context) -> None:
     ctx.set_variable(key="PATH", value_to_set=" ".join(params))
 
 
+def pushd(params: List["Argument"], ctx: Context) -> None:
+    """
+    Batch: PUSHD command.
+    """
+    this = getframeinfo(currentframe()).function
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+    params_len = len(params)
+
+    if not params_len:
+        return
+
+    first = params[0].lower()
+    if first == "/?":
+        print_help(cmd=Command.PUSHD, file=out)
+        return
+
+    path = " ".join(params)
+    try:
+        chdir(path)
+        ctx.push_folder(path=path)
+    except FileNotFoundError:
+        ctx.error_level = 1
+        print(PATH_NOT_FOUND, file=sys.stdout)
+
+
 def help_cmd(params: List["Argument"], ctx: Context) -> None:
     """Batch: HELP command."""
     this = getframeinfo(currentframe()).function
@@ -341,7 +381,10 @@ def cd(params: list, ctx: Context) -> None:
         # windows
         return
 
-    params = [param.value for param in params]
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
     first = params[0]
     if params_len == 1 and first == "/?":
         print_help(cmd=Command.CD)
@@ -803,7 +846,8 @@ def get_cmd_map():
         Command.RD: remove_folder,
         Command.TYPE: type_cmd,
         Command.PATH: path,
-        Command.REM: rem_comment
+        Command.REM: rem_comment,
+        Command.PUSHD: pushd
     }
 
 

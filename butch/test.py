@@ -948,6 +948,30 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 1)
 
+    @patch("builtins.print")
+    def test_pushd_tmp(self, stdout):
+        script_name = "pushd_tmp.bat"
+
+        from os import getcwd, chdir
+        from shutil import rmtree
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        original = getcwd()
+        tmpdir = ctx.get_variable("temp")
+        folder = join(tmpdir, "some-temp-file-name")
+
+        if exists(folder):
+            rmtree(folder)
+
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
+
+        rmtree(folder)
+        chdir(original)
+
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"
         out_name = f"{script_name}.out"

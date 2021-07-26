@@ -5,6 +5,7 @@ from logging import RootLogger
 from os import getcwd
 from random import randint
 from time import strftime
+from tempfile import gettempdir
 
 from butch.logger import get_logger
 from butch.outputs import CommandOutput
@@ -63,6 +64,7 @@ class Context:  # noqa: WPS214,WPS338
     ]
     _history: list
     _history_enabled: bool
+    _pushd_history: list
     _echo: bool
     _prompt: str
     _output: CommandOutput
@@ -81,7 +83,6 @@ class Context:  # noqa: WPS214,WPS338
             BadContextKey: disallow setting custom properties from __init__
         """
         self._collect_output = False
-        self._cwd = None
         self._cwd = getcwd()
         self._delayed_expansion_enabled = False
         self._echo = True
@@ -89,6 +90,7 @@ class Context:  # noqa: WPS214,WPS338
         self._extensions_enabled = True
         self._history = []
         self._history_enabled = True
+        self._pushd_history = []
         self._logger = get_logger()
         self._output = None
         self._piped = False
@@ -197,6 +199,12 @@ class Context:  # noqa: WPS214,WPS338
     @output.setter
     def output(self, out):
         self._output = out
+
+    def push_folder(self, path: str) -> None:
+        self._pushd_history.append(path)
+
+    def pop_folder(self) -> str:
+        return self._pushd_history.pop()
 
     @property
     def extensions_enabled(self):
@@ -368,7 +376,7 @@ class Context:  # noqa: WPS214,WPS338
             "sessionname": None,
             "systemdrive": None,
             "systemroot": None,
-            "temp": None,
+            "temp": gettempdir(),
             "tmp": None,
             "userdomain": None,
             "username": None,

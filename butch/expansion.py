@@ -71,7 +71,10 @@ def percent_expansion(line: str, ctx: Context) -> str:
         idx_ahead = next_perc + 1
         perc_range = next_perc - idx
         if next_perc and perc_range > 1 and " " not in line[idx:idx_ahead]:
-            tmp += ctx.get_variable(key=line[next_idx:next_perc])
+            key = line[next_idx:next_perc]
+            found_value = ctx.get_variable(key=key)
+            if found_value:
+                tmp += found_value
             idx = idx_ahead
             continue
 
