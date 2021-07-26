@@ -1,8 +1,10 @@
-from setuptools import setup, find_packages
+"""Package installation script."""
+from setuptools import find_packages, setup
+
 from butch import get_version
 
 NAME = "butch"
-KWARGS = dict(
+KWARGS = dict(  # noqa: C408
     name=NAME,
     version=get_version(),
     description="The free Batch interpreter",
@@ -54,11 +56,22 @@ KWARGS = dict(
         "Typing :: Typed"
     ],
     keywords=[
-        "batch", "butch", "cmd", "shell", "interpreter", "console", "bat",
-        "windows", "batchscript", "batch-script", "batchfile", "batch-file",
-        "free", "foss"
+        "batch",
+        "butch",
+        "cmd",
+        "shell",
+        "interpreter",
+        "console",
+        "bat",
+        "windows",
+        "batchscript",
+        "batch-script",
+        "batchfile",
+        "batch-file",
+        "free",
+        "foss"
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
     packages=find_packages(),
     package_data={
         "": ["*.txt", "*.bat", "*.out"]
@@ -90,6 +103,6 @@ KWARGS = dict(
 
 
 if __name__ == "__main__":
-    with open("README.rst") as file:
-        KWARGS["long_description"] = file.read()
+    with open("README.rst") as readme:
+        KWARGS["long_description"] = readme.read()
     setup(**KWARGS)
