@@ -359,7 +359,7 @@ class Execution(TestCase):
         value = "nonexistingfile"
 
         chdir_mock = patch(
-            "butch.commands.chdir", side_effect=FileNotFoundError()
+            "butch.context.chdir", side_effect=FileNotFoundError()
         )
         with chdir_mock as chdir, patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
@@ -379,7 +379,7 @@ class Execution(TestCase):
         ctx = Context()
         value = "existing"
 
-        chdir_mock = patch("butch.commands.chdir")
+        chdir_mock = patch("butch.context.chdir")
         with chdir_mock as chdir, patch("butch.commands.print") as mock:
             call(cmd=Command(cmd=CommandType.CD, args=[
                 Argument(value=value)
@@ -509,7 +509,7 @@ class BatchFiles(TestCase):
         from butch.context import Context
         from butch.__main__ import handle_new
 
-        with patch("butch.commands.chdir") as cdr:
+        with patch("butch.context.chdir") as cdr:
             ctx = Context()
             handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
@@ -970,6 +970,57 @@ class BatchFiles(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
         rmtree(folder)
+        chdir(original)
+
+    @patch("builtins.print")
+    def test_popd(self, stdout):
+        script_name = "popd.bat"
+
+        from os import getcwd, chdir
+        from shutil import rmtree
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        original = getcwd()
+        tmpdir = ctx.get_variable("temp")
+        folder = join(tmpdir, "butch-tmp-folder")
+
+        if exists(folder):
+            rmtree(folder)
+
+        self.assertFalse(exists(folder))
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
+        self.assertTrue(exists(folder))
+
+        rmtree(folder)
+        chdir(original)
+
+    @patch("builtins.print")
+    def test_popd_removed(self, stdout):
+        script_name = "popd_removed.bat"
+
+        from os import getcwd, chdir
+        from shutil import rmtree
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        original = getcwd()
+        tmpdir = ctx.get_variable("temp")
+        folder = join(tmpdir, "butch-tmp-folder")
+
+        if exists(folder):
+            rmtree(folder)
+        self.assertFalse(exists(folder))
+
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
+
+        self.assertFalse(exists(folder))
         chdir(original)
 
     def ignore_test_set_join_expansion(self):

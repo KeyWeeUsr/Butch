@@ -2,7 +2,8 @@
 
 import sys
 from logging import RootLogger
-from os import getcwd
+from os import getcwd, chdir
+from os.path import abspath
 from random import randint
 from time import strftime
 from tempfile import gettempdir
@@ -144,6 +145,11 @@ class Context:  # noqa: WPS214,WPS338
         """
         return self._cwd
 
+    @cwd.setter
+    def cwd(self, new_cwd: str):
+        chdir(new_cwd)
+        self._cwd = getcwd()
+
     @property
     def error_level(self):
         """
@@ -200,11 +206,16 @@ class Context:  # noqa: WPS214,WPS338
     def output(self, out):
         self._output = out
 
+    @property
+    def pushd_history(self):
+        return self._pushd_history
+
     def push_folder(self, path: str) -> None:
-        self._pushd_history.append(path)
+        self._pushd_history.append(abspath(path))
+        self.cwd = path
 
     def pop_folder(self) -> str:
-        return self._pushd_history.pop()
+        return self._pushd_history.pop(0)
 
     @property
     def extensions_enabled(self):
@@ -435,7 +446,7 @@ class Context:  # noqa: WPS214,WPS338
                 continue
 
             if flag == PROMPT_DRIVE_PATH:
-                out += self.cwd
+                out += self.cwd.replace("\\", "/")
         return out
 
 

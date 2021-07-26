@@ -7,7 +7,7 @@ from typing import List, Tuple
 from inspect import getframeinfo, currentframe
 from datetime import datetime
 from enum import Enum
-from os import remove, listdir, chdir, environ, makedirs, stat, statvfs, getcwd
+from os import remove, listdir, environ, makedirs, stat, statvfs, getcwd
 from os.path import abspath, isdir, exists, join
 from collections import defaultdict
 from shutil import rmtree
@@ -51,6 +51,7 @@ class Command(Enum):
     PATH = "path"
     REM = "rem"
     PUSHD = "pushd"
+    POPD = "popd"
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -237,11 +238,44 @@ def pushd(params: List["Argument"], ctx: Context) -> None:
 
     path = " ".join(params)
     try:
-        chdir(path)
         ctx.push_folder(path=path)
     except FileNotFoundError:
         ctx.error_level = 1
         print(PATH_NOT_FOUND, file=sys.stdout)
+
+
+def popd(params: List["Argument"], ctx: Context) -> None:
+    """
+    Batch: POPD command.
+    """
+    this = getframeinfo(currentframe()).function
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
+    # pylint: disable=import-outside-toplevel
+    from butch.help import print_help  # circular
+    params = [
+        percent_expansion(line=param.value, ctx=ctx)
+        for param in params
+    ]
+
+    first = params[0].lower() if params else ""
+    if first == "/?":
+        print_help(cmd=Command.PODP, file=out)
+        return
+
+    try:
+        ctx.cwd = ctx.pop_folder()
+    except FileNotFoundError:
+        log("Folder for POPD not found, ignoring.")
+    except IndexError:
+        log("Empty popd history, ignoring.")
 
 
 def help_cmd(params: List["Argument"], ctx: Context) -> None:
@@ -377,7 +411,7 @@ def cd(params: list, ctx: Context) -> None:
     params_len = len(params)
     if not params:
         # linux
-        chdir(environ.get("HOME"))
+        ctx.cwd = environ.get("HOME")
         # windows
         return
 
@@ -391,7 +425,7 @@ def cd(params: list, ctx: Context) -> None:
         return
 
     try:
-        chdir(first)
+        ctx.cwd = first
     except FileNotFoundError:
         ctx.error_level = 1
         print(PATH_NOT_FOUND, file=sys.stdout)
@@ -744,7 +778,8 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
     "Batch: RMDIR command."
     # pylint: disable=too-many-branches
     this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
+    log = ctx.log.debug
+    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     # pylint: disable=import-outside-toplevel
     from butch.help import print_help  # circular
@@ -764,12 +799,13 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
     quiet = False
     out = []
     while params:
-        item = params.pop(0).lower()
+        item = params.pop(0)
+        item_low = item.lower()
         if item == "/?":
             is_help = True
-        elif item == "/s":
+        elif item_low == "/s":
             ignore_files = True
-        elif item == "/q":
+        elif item_low == "/q":
             quiet = True
         else:
             out.append(item)
@@ -780,6 +816,7 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
 
     for param in out:
         if not isdir(param):
+            log("got %r, is not dir", param)
             print(DIR_INVALID)
             continue
         if listdir(param):
@@ -847,7 +884,8 @@ def get_cmd_map():
         Command.TYPE: type_cmd,
         Command.PATH: path,
         Command.REM: rem_comment,
-        Command.PUSHD: pushd
+        Command.PUSHD: pushd,
+        Command.POPD: popd
     }
 
 
