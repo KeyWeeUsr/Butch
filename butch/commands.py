@@ -5,7 +5,6 @@ import ctypes
 from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 
 from typing import List, Tuple
-from inspect import currentframe, getframeinfo
 from datetime import datetime
 from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
 from os.path import abspath, exists, isdir, join
@@ -33,6 +32,20 @@ DIR_FORMAT_FOLDER_SYMBOL_LJUST = 14
 DIR_FORMAT_FILE_BYTES_RJUST = 14
 
 
+def what_func(func):
+    def wrapper(*args, **kwargs):
+        ctx = kwargs.get("ctx")
+        params = kwargs.get("params")
+        if ctx:
+            ctx.log.debug(
+                "<cmd: %-8.8s>, params: %r, ctx: %r",
+                func.__name__, params, ctx
+            )
+        func(*args, **kwargs)
+    return wrapper
+
+
+@what_func
 def echo(params: List[Argument], ctx: Context) -> None:
     """
     Batch: ECHO command.
@@ -43,9 +56,7 @@ def echo(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     out = sys.stdout
     if ctx.collect_output:
@@ -77,6 +88,7 @@ def echo(params: List[Argument], ctx: Context) -> None:
     print(*params, file=out)
 
 
+@what_func
 def type_cmd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: TYPE command.
@@ -85,9 +97,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     out = sys.stdout
     if ctx.collect_output:
@@ -153,6 +163,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
             print("\n", file=out)
 
 
+@what_func
 def path_cmd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PATH command.
@@ -163,9 +174,7 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     out = sys.stdout
     if ctx.collect_output:
@@ -195,6 +204,7 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
     ctx.set_variable(key="PATH", value_to_set=" ".join(params))
 
 
+@what_func
 def pushd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PUSHD command.
@@ -203,9 +213,7 @@ def pushd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     out = sys.stdout
     if ctx.collect_output:
@@ -235,6 +243,7 @@ def pushd(params: List[Argument], ctx: Context) -> None:
         print(PATH_NOT_FOUND, file=sys.stdout)
 
 
+@what_func
 def popd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: POPD command.
@@ -243,9 +252,7 @@ def popd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     out = sys.stdout
     if ctx.collect_output:
@@ -271,6 +278,7 @@ def popd(params: List[Argument], ctx: Context) -> None:
         log("Empty popd history, ignoring.")
 
 
+@what_func
 def help_cmd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: HELP command.
@@ -279,9 +287,7 @@ def help_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     out = sys.stdout
     if ctx.collect_output:
@@ -319,6 +325,7 @@ def _delete_single_variable(key: str, ctx: Context) -> None:
     ctx.delete_variable(key=key)
 
 
+@what_func
 def set_cmd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: SET command.
@@ -327,8 +334,6 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     params_len = len(params)
@@ -364,6 +369,7 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
     ctx.set_variable(key=left, value_to_set=right)
 
 
+@what_func
 def setlocal(params: list, ctx: Context) -> None:
     """
     Batch: SETLOCAL command.
@@ -372,8 +378,6 @@ def setlocal(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     params_len = len(params)
@@ -404,6 +408,7 @@ def setlocal(params: list, ctx: Context) -> None:
 
 
 # pylint: disable=invalid-name
+@what_func
 def cd(params: list, ctx: Context) -> None:
     """
     Batch: CD command.
@@ -412,8 +417,6 @@ def cd(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     params_len = len(params)
@@ -439,6 +442,7 @@ def cd(params: list, ctx: Context) -> None:
         print(PATH_NOT_FOUND, file=sys.stdout)
 
 
+@what_func
 def prompt(params: list, ctx: Context) -> None:
     """
     Batch: PROMPT command.
@@ -447,8 +451,6 @@ def prompt(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     params_len = len(params)
@@ -464,6 +466,7 @@ def prompt(params: list, ctx: Context) -> None:
     ctx.prompt = text
 
 
+@what_func
 def title(params: list, ctx: Context) -> None:
     """
     Batch: TITLE command.
@@ -472,8 +475,6 @@ def title(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     params_len = len(params)
@@ -500,6 +501,7 @@ def title(params: list, ctx: Context) -> None:
         raise ctypes.WinError(error)
 
 
+@what_func
 def date(params: list, ctx: Context) -> None:
     """
     Batch: DATE command.
@@ -508,8 +510,6 @@ def date(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     first = params[0].value if params else ""
@@ -530,6 +530,7 @@ def date(params: list, ctx: Context) -> None:
     input()
 
 
+@what_func
 def pause(params: list, ctx: Context) -> None:
     """
     Batch: PAUSE command.
@@ -538,8 +539,6 @@ def pause(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     first = params[0] if params else ""
@@ -550,6 +549,7 @@ def pause(params: list, ctx: Context) -> None:
     input(PAUSE_TEXT)
 
 
+@what_func
 def clear_screen(params: list, ctx: Context) -> None:
     """
     Batch: CLS command.
@@ -558,8 +558,6 @@ def clear_screen(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     first = params[0] if params else ""
@@ -571,6 +569,7 @@ def clear_screen(params: list, ctx: Context) -> None:
     print("\033c" if "DEBUG" not in environ else "<clear>")
 
 
+@what_func
 def exit_cmd(params: list, ctx: Context) -> None:
     """
     Batch: EXIT command.
@@ -579,8 +578,6 @@ def exit_cmd(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
     params_len = len(params)
@@ -601,6 +598,7 @@ def exit_cmd(params: list, ctx: Context) -> None:
     sys.exit(ctx.error_level)
 
 
+@what_func
 def delete(params: List[Argument], ctx: Context) -> None:
     """
     Batch: DEL/ERASE command.
@@ -610,8 +608,6 @@ def delete(params: List[Argument], ctx: Context) -> None:
         ctx (Context): Context instance
     """
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     params = [
         percent_expansion(line=param.value, ctx=ctx)
@@ -682,6 +678,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
     ctx.piped = False
 
 
+@what_func
 def create_folder(params: List[Argument], ctx: Context) -> None:
     """
     Batch: MKDIR/MD command.
@@ -690,9 +687,6 @@ def create_folder(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
-
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -790,6 +784,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
     return prefix + tmp + suffix
 
 
+@what_func
 def list_folder(params: List[Argument], ctx: Context) -> None:
     """
     Batch: DIR command.
@@ -801,9 +796,6 @@ def list_folder(params: List[Argument], ctx: Context) -> None:
     Raises:
         NotImplementedError: when dir command is supplied anything but /?
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
-
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -823,6 +815,7 @@ def list_folder(params: List[Argument], ctx: Context) -> None:
     raise NotImplementedError()
 
 
+@what_func
 def remove_folder(params: List[Argument], ctx: Context) -> None:
     """
     Batch: RMDIR command.
@@ -832,9 +825,7 @@ def remove_folder(params: List[Argument], ctx: Context) -> None:
         ctx (Context): Context instance
     """
     # pylint: disable=too-many-branches
-    this = getframeinfo(currentframe()).function
     log = ctx.log.debug
-    log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
     params = [
         percent_expansion(line=param.value, ctx=ctx)
@@ -887,6 +878,7 @@ def remove_folder(params: List[Argument], ctx: Context) -> None:
         rmtree(param)
 
 
+@what_func
 def rem_comment(params: List[Argument], ctx: Context) -> None:
     """
     Batch: REM command.
@@ -897,9 +889,6 @@ def rem_comment(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    this = getframeinfo(currentframe()).function
-    ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
-
     params_len = len(params)
     if not params_len:
         return
