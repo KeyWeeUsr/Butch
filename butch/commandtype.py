@@ -1,14 +1,10 @@
-"""
-Module for CommandType class to prevent circular imports.
-"""
-from enum import Enum
+"""Module for CommandType class to prevent circular imports."""
+import enum
 
 
-class CommandType(Enum):
-    """
-    Enum of command types mapped to their textual representation.
-    """
-    # noqa: WPS115
+class CommandType(enum.Enum):
+    """Enum of command types mapped to their textual representation."""
+
     UNKNOWN = "<unknown>"
     ECHO = "echo"
     CD = "cd"
@@ -24,7 +20,7 @@ class CommandType(Enum):
     MKDIR = "mkdir"
     MD = "md"
     DIR = "dir"
-    CLS = "cls"
+    CLS = "cls"  # noqa: WPS117
     DATE = "date"
     RMDIR = "rmdir"
     RD = "rd"
