@@ -47,6 +47,7 @@ COUNT=$(flake8 \
     --avoid-escape \
     --ignore C812,WPS421,WPS326,I005,I004,WPS336,WPS305,WPS306,WPS327 \
     --max-module-members=10 \
+    --allowed-domain-names param,params \
     . |grep -v WPS412 | tee /dev/stderr | wc -l)
 TOTAL=$(find . -name '*.py' -type f -exec cat {} + | wc -l)
 PERC=$(python -c "print($COUNT / $TOTAL * 100)")

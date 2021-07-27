@@ -1,4 +1,6 @@
-"Module holding command-representing functions for their Batch names."
+"""
+Module holding command-representing functions for their Batch names.
+"""
 
 import sys
 from locale import getlocale, setlocale, LC_NUMERIC, LC_CTYPE
@@ -907,7 +909,7 @@ def get_reverse_cmd_map():
     return rev_cmd_map
 
 
-def parse(cmd_and_args: str) -> Tuple[Command, list]:
+def parse(cmd_and_args: str) -> Tuple[Command, list]:  # noqa: WPS210
     """
     Parse a string into a command.
 
