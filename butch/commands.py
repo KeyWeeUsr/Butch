@@ -709,7 +709,13 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
 
 
 def remove_folder(params: List["Argument"], ctx: Context) -> None:
-    "Batch: RMDIR command."
+    """
+    Batch: RMDIR command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     # pylint: disable=too-many-branches
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -731,16 +737,16 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
     quiet = False
     out = []
     while params:
-        item = params.pop(0)
-        item_low = item.lower()
-        if item == "/?":
+        current_param = params.pop(0)
+        item_low = current_param.lower()
+        if current_param == "/?":
             is_help = True
         elif item_low == "/s":
             ignore_files = True
         elif item_low == "/q":
             quiet = True
         else:
-            out.append(item)
+            out.append(current_param)
 
     if is_help:
         print_help(cmd=CommandType.RMDIR)
@@ -760,17 +766,21 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
                 answer = ctx.output.stdout.read(1)
                 print(f"{text} {answer}")
             else:
-                answer = input(f"{text} ").lower() if not quiet else "y"
+                answer = "y" if quiet else input(f"{text} ").lower()
             if answer != "y":
                 continue
         rmtree(param)
 
 
-def rem_comment(params: list, ctx: Context) -> None:
+def rem_comment(params: List["Argument"], ctx: Context) -> None:
     """
     Batch: REM command.
 
     Must NOT modify errorlevel.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
     """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
