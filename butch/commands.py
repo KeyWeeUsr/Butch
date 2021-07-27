@@ -1,24 +1,22 @@
-"""
-Module holding command-representing functions for their Batch names.
-"""
+"""Module holding command-representing functions for their Batch names."""
 
 import sys
 import ctypes
-from locale import getlocale, setlocale, LC_NUMERIC, LC_CTYPE
+from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 
 from typing import List, Tuple
-from inspect import getframeinfo, currentframe
+from inspect import currentframe, getframeinfo
 from datetime import datetime
-from os import remove, listdir, environ, makedirs, stat, statvfs, getcwd
-from os.path import abspath, isdir, exists, join
+from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
+from os.path import abspath, exists, isdir, join
 from collections import defaultdict
 from shutil import rmtree
 
 from butch.context import Context
 from butch.constants import (
-    PATH_NOT_FOUND, PAUSE_TEXT, ENV_VAR_UNDEFINED, SYNTAX_INCORRECT,
-    SURE, DELETE, PATH_EXISTS, DIR_INVALID, DIR_NONEMPTY, ACCESS_DENIED,
-    ERROR_PROCESSING, FILE_NOT_FOUND
+    ACCESS_DENIED, DELETE, DIR_INVALID, DIR_NONEMPTY, ENV_VAR_UNDEFINED,
+    ERROR_PROCESSING, FILE_NOT_FOUND, PATH_EXISTS, PATH_NOT_FOUND, PAUSE_TEXT,
+    SURE, SYNTAX_INCORRECT
 )
 from butch.outputs import CommandOutput
 from butch.expansion import percent_expansion
@@ -27,11 +25,23 @@ from butch.help import print_help
 from butch.tokens import Argument
 
 
+DIR_FORMAT_TOTAL_SIZE_RJUST = 14
+DIR_FORMAT_FILE_COUNT_RJUST = 17
+DIR_FORMAT_FOLDER_COUNT_RJUST = 18
+DIR_FORMAT_FREE_BYTES_RJUST = 14
+DIR_FORMAT_FOLDER_SYMBOL_LJUST = 14
+DIR_FORMAT_FILE_BYTES_RJUST = 14
+
+
 def echo(params: List[Argument], ctx: Context) -> None:
     """
     Batch: ECHO command.
 
     Must NOT set error level to 0.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
     """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -68,7 +78,13 @@ def echo(params: List[Argument], ctx: Context) -> None:
 
 
 def type_cmd(params: List[Argument], ctx: Context) -> None:
-    """Batch: TYPE command."""
+    """
+    Batch: TYPE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
     log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -142,6 +158,10 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
     Batch: PATH command.
 
     Must NOT set errorlevel.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
     """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -178,6 +198,10 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
 def pushd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PUSHD command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
     """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -214,6 +238,10 @@ def pushd(params: List[Argument], ctx: Context) -> None:
 def popd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: POPD command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
     """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -244,7 +272,13 @@ def popd(params: List[Argument], ctx: Context) -> None:
 
 
 def help_cmd(params: List[Argument], ctx: Context) -> None:
-    """Batch: HELP command."""
+    """
+    Batch: HELP command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
     log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -286,7 +320,13 @@ def _delete_single_variable(key: str, ctx: Context) -> None:
 
 
 def set_cmd(params: List[Argument], ctx: Context) -> None:
-    "Batch: SET command."
+    """
+    Batch: SET command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -325,7 +365,13 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
 
 
 def setlocal(params: list, ctx: Context) -> None:
-    "Batch: SETLOCAL command."
+    """
+    Batch: SETLOCAL command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -359,7 +405,13 @@ def setlocal(params: list, ctx: Context) -> None:
 
 # pylint: disable=invalid-name
 def cd(params: list, ctx: Context) -> None:
-    "Batch: CD command."
+    """
+    Batch: CD command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -388,7 +440,13 @@ def cd(params: list, ctx: Context) -> None:
 
 
 def prompt(params: list, ctx: Context) -> None:
-    "Batch: PROMPT command."
+    """
+    Batch: PROMPT command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -407,7 +465,13 @@ def prompt(params: list, ctx: Context) -> None:
 
 
 def title(params: list, ctx: Context) -> None:
-    "Batch: TITLE command."
+    """
+    Batch: TITLE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -437,7 +501,13 @@ def title(params: list, ctx: Context) -> None:
 
 
 def date(params: list, ctx: Context) -> None:
-    "Batch: DATE command."
+    """
+    Batch: DATE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -461,7 +531,13 @@ def date(params: list, ctx: Context) -> None:
 
 
 def pause(params: list, ctx: Context) -> None:
-    "Batch: PAUSE command."
+    """
+    Batch: PAUSE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -475,7 +551,13 @@ def pause(params: list, ctx: Context) -> None:
 
 
 def clear_screen(params: list, ctx: Context) -> None:
-    "Batch: CLS command."
+    """
+    Batch: CLS command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -490,7 +572,13 @@ def clear_screen(params: list, ctx: Context) -> None:
 
 
 def exit_cmd(params: list, ctx: Context) -> None:
-    "Batch: EXIT command."
+    """
+    Batch: EXIT command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
@@ -514,7 +602,13 @@ def exit_cmd(params: list, ctx: Context) -> None:
 
 
 def delete(params: List[Argument], ctx: Context) -> None:
-    "Batch: DEL/ERASE command."
+    """
+    Batch: DEL/ERASE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -545,8 +639,8 @@ def delete(params: List[Argument], ctx: Context) -> None:
     # higher priority than quiet (/p /q = prompt)
     prompt_for_all = False
     quiet = False
-    for item in params:
-        low = item.lower()
+    for param in params:
+        low = param.lower()
         if low == "/p":
             prompt_for_all = True
         elif low == "/q":
@@ -570,8 +664,8 @@ def delete(params: List[Argument], ctx: Context) -> None:
                     answer = input(f"{text} ").lower()
             if answer != "y":
                 continue
-            for file in listdir(param):
-                remove(join(path, file))
+            for file_item in listdir(param):
+                remove(join(path, file_item))
             return
         if prompt_for_all:
             answer = ""
@@ -589,7 +683,13 @@ def delete(params: List[Argument], ctx: Context) -> None:
 
 
 def create_folder(params: List[Argument], ctx: Context) -> None:
-    "Batch: MKDIR/MD command."
+    """
+    Batch: MKDIR/MD command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
@@ -644,23 +744,25 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
 
     old_locale = getlocale(LC_NUMERIC)
     setlocale(LC_NUMERIC, getlocale(LC_CTYPE))
-    for item in files:
-        raw = stat(item)
+    for file_item in files:
+        raw = stat(file_item)
         cdate = datetime.fromtimestamp(raw.st_ctime)
         time = cdate.strftime("%X")
         cdate = cdate.strftime("%x")
-        is_dir = isdir(item)
-        dir_text = "<DIR>".ljust(14) if is_dir else ""
+        is_dir = isdir(file_item)
+        dir_text = ""
+        if is_dir:
+            dir_text = "<DIR>".ljust(DIR_FORMAT_FOLDER_SYMBOL_LJUST)
         size = raw.st_size
 
         if is_dir:
             count["total_size"] += size
             size = ""
         else:
-            size = "{0:n}".format(size).rjust(14)
+            size = "{0:n}".format(size).rjust(DIR_FORMAT_FILE_BYTES_RJUST)
 
         count["folders" if is_dir else "files"] += 1
-        tmp.append(f"{cdate}  {time}    {dir_text}  {size} {item}")
+        tmp.append(f"{cdate}  {time}    {dir_text}  {size} {file_item}")
 
     prefix = [
         " Volume in drive <NYI> has no label.",
@@ -671,12 +773,15 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
     ]
 
     free_bytes = statvfs(folder)
-    free_bytes = "{0:n}".format(
-        free_bytes.f_frsize * free_bytes.f_bavail
-    ).rjust(14)
-    file_count = str(count["files"]).rjust(17)
-    folder_count = str(count["folders"]).rjust(18)
-    used_bytes = "{0:n}".format(count["total_size"]).rjust(14)
+    free_bytes_avail = free_bytes.f_frsize * free_bytes.f_bavail
+    free_bytes = "{0:n}".format(free_bytes_avail).rjust(
+        DIR_FORMAT_FREE_BYTES_RJUST
+    )
+    file_count = str(count["files"]).rjust(DIR_FORMAT_FILE_COUNT_RJUST)
+    folder_count = str(count["folders"]).rjust(DIR_FORMAT_FOLDER_COUNT_RJUST)
+    used_bytes = "{0:n}".format(count["total_size"]).rjust(
+        DIR_FORMAT_TOTAL_SIZE_RJUST
+    )
     suffix = [
         f"{file_count} File(s){used_bytes} bytes",
         f"{folder_count} Dir(s){free_bytes} bytes free",
@@ -686,7 +791,16 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
 
 
 def list_folder(params: List[Argument], ctx: Context) -> None:
-    "Batch: DIR command."
+    """
+    Batch: DIR command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+
+    Raises:
+        NotImplementedError: when dir command is supplied anything but /?
+    """
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
