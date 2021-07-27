@@ -90,7 +90,7 @@ class Tokenizer(TestCase):
 
     def test_unknown(self):
         from butch.tokenizer import tokenize, Command
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
         cmd = "-\n"
 
@@ -104,7 +104,7 @@ class Tokenizer(TestCase):
 
     def test_unknown_without_newline(self):
         from butch.tokenizer import tokenize, Command
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
         cmd = "-"
 
@@ -118,7 +118,7 @@ class Tokenizer(TestCase):
 
     def test_echo(self):
         from butch.tokenizer import tokenize, Command, Argument
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
 
         param = "hello"
@@ -135,7 +135,7 @@ class Tokenizer(TestCase):
 
     def test_echo_without_newline(self):
         from butch.tokenizer import tokenize, Command, Argument
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
 
         param = "hello"
@@ -152,7 +152,7 @@ class Tokenizer(TestCase):
 
     def test_cd(self):
         from butch.tokenizer import tokenize, Command, Argument
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
 
         param = "hello"
@@ -169,7 +169,7 @@ class Tokenizer(TestCase):
 
     def test_cd_without_newline(self):
         from butch.tokenizer import tokenize, Command, Argument
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
 
         param = "hello"
@@ -186,7 +186,7 @@ class Tokenizer(TestCase):
 
     def test_set(self):
         from butch.tokenizer import tokenize, Command, Argument
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
 
         param = "hello"
@@ -203,7 +203,7 @@ class Tokenizer(TestCase):
 
     def test_set_without_newline(self):
         from butch.tokenizer import tokenize, Command, Argument
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.context import Context
 
         param = "hello"
@@ -257,34 +257,38 @@ class Tokenizer(TestCase):
 
 class Parser(TestCase):
     def test_unknown(self):
-        from butch.commands import Command, parse
+        from butch.commands import parse
+        from butch.commandtype import CommandType
         cmd = "-"
-        self.assertEqual(parse(cmd), (Command.UNKNOWN, [cmd]))
+        self.assertEqual(parse(cmd), (CommandType.UNKNOWN, [cmd]))
 
     def test_echo(self):
-        from butch.commands import Command, parse
+        from butch.commands import parse
+        from butch.commandtype import CommandType
         params = ["hello"]
         cmd = f"echo {params[0]}"
-        self.assertEqual(parse(cmd), (Command.ECHO, params))
+        self.assertEqual(parse(cmd), (CommandType.ECHO, params))
 
     def test_cd(self):
-        from butch.commands import Command, parse
+        from butch.commands import parse
+        from butch.commandtype import CommandType
         params = ["hello"]
         cmd = f"cd {params[0]}"
-        self.assertEqual(parse(cmd), (Command.CD, params))
+        self.assertEqual(parse(cmd), (CommandType.CD, params))
 
     def test_set(self):
-        from butch.commands import Command, parse
+        from butch.commands import parse
+        from butch.commandtype import CommandType
         params = ["hello"]
         cmd = f"set {params[0]}"
-        self.assertEqual(parse(cmd), (Command.SET, params))
+        self.assertEqual(parse(cmd), (CommandType.SET, params))
 
 
 class Caller(TestCase):
     def test_map_resolve_new(self):
         from butch.caller import new_call as call
         from butch.context import Context
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
 
         params = [str(val) for val in range(3)]
@@ -300,7 +304,7 @@ class Caller(TestCase):
 
     def test_map_unresolved_new(self):
         from butch.caller import new_call, UnknownCommand
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.context import Context
         params = [str(val) for val in range(3)]
@@ -329,7 +333,7 @@ class State(TestCase):
 
 class Execution(TestCase):
     def test_echo_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
         from butch.context import Context
@@ -347,7 +351,7 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_cd_nonexisting_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
         from butch.context import Context
@@ -369,7 +373,7 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 1)
 
     def test_cd_existing_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
         from butch.context import Context
@@ -388,7 +392,7 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_dumpall_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command
         from butch.caller import new_call as call
         from butch.context import Context
@@ -402,7 +406,7 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_dumpsingle_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
         from butch.context import Context
@@ -419,7 +423,7 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_unset_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
         from butch.context import Context
@@ -436,7 +440,7 @@ class Execution(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_setsingle_new(self):
-        from butch.commands import Command as CommandType
+        from butch.commandtype import CommandType
         from butch.tokenizer import Command, Argument
         from butch.caller import new_call as call
         from butch.context import Context

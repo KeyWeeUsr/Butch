@@ -7,7 +7,8 @@ from collections import defaultdict
 from enum import Enum, auto
 
 from butch.context import Context
-from butch.commands import Command as CommandType, get_reverse_cmd_map
+from butch.commands import get_reverse_cmd_map
+from butch.commandtype import CommandType
 from butch.grammar import (
     SPECIAL_CR, SPECIAL_CARRET, SPECIAL_LPAREN, SPECIAL_RPAREN, SPECIAL_AMP,
     SPECIAL_PIPE, SPECIAL_LT, SPECIAL_REDIR, SPECIAL_SPLITTERS, SPECIAL_LF,

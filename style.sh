@@ -1,10 +1,11 @@
-#!/bin/sh
+#!/bin/sh -e
 pycodestyle \
     --ignore=W503 --show-source --statistics --count --max-line-length=79 \
     --indent-size=4 .
 
 pylint \
     butch/*.py \
+    --exit-zero \
     --jobs=0 \
     --max-line-length=79 \
     --single-line-if-stmt=n \

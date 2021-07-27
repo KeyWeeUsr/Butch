@@ -3,12 +3,12 @@ Module holding command-representing functions for their Batch names.
 """
 
 import sys
+import ctypes
 from locale import getlocale, setlocale, LC_NUMERIC, LC_CTYPE
 
 from typing import List, Tuple
 from inspect import getframeinfo, currentframe
 from datetime import datetime
-from enum import Enum
 from os import remove, listdir, environ, makedirs, stat, statvfs, getcwd
 from os.path import abspath, isdir, exists, join
 from collections import defaultdict
@@ -22,38 +22,8 @@ from butch.constants import (
 )
 from butch.outputs import CommandOutput
 from butch.expansion import percent_expansion
-
-
-class Command(Enum):
-    """
-    Enum of command types mapped to their textual representation.
-
-    # noqa: WPS115
-    """
-    UNKNOWN = "<unknown>"
-    ECHO = "echo"
-    CD = "cd"
-    SET = "set"
-    PROMPT = "prompt"
-    TITLE = "title"
-    PAUSE = "pause"
-    EXIT = "exit"
-    SETLOCAL = "setlocal"
-    DELETE = "del"
-    ERASE = "erase"
-    HELP = "help"
-    MKDIR = "mkdir"
-    MD = "md"
-    DIR = "dir"
-    CLS = "cls"
-    DATE = "date"
-    RMDIR = "rmdir"
-    RD = "rd"
-    TYPE = "type"
-    PATH = "path"
-    REM = "rem"
-    PUSHD = "pushd"
-    POPD = "popd"
+from butch.commandtype import CommandType
+from butch.help import print_help
 
 
 def echo(params: List["Argument"], ctx: Context) -> None:
@@ -72,8 +42,6 @@ def echo(params: List["Argument"], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -88,7 +56,7 @@ def echo(params: List["Argument"], ctx: Context) -> None:
             ctx.echo = state_rev[first]
             return
         if first == "/?":
-            print_help(cmd=Command.ECHO, file=out)
+            print_help(cmd=CommandType.ECHO, file=out)
             return
 
     if not params_len:
@@ -110,8 +78,6 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -126,7 +92,7 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
     if params_len == 1:
         first = params[0].lower()
         if first == "/?":
-            print_help(cmd=Command.ECHO, file=out)
+            print_help(cmd=CommandType.ECHO, file=out)
             return
 
         if isdir(first):
@@ -186,8 +152,6 @@ def path_cmd(params: List["Argument"], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -200,7 +164,7 @@ def path_cmd(params: List["Argument"], ctx: Context) -> None:
 
     first = params[0].lower()
     if first == "/?":
-        print_help(cmd=Command.PATH, file=out)
+        print_help(cmd=CommandType.PATH, file=out)
         return
 
     if first == ";":
@@ -224,8 +188,6 @@ def pushd(params: List["Argument"], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -237,7 +199,7 @@ def pushd(params: List["Argument"], ctx: Context) -> None:
 
     first = params[0].lower()
     if first == "/?":
-        print_help(cmd=Command.PUSHD, file=out)
+        print_help(cmd=CommandType.PUSHD, file=out)
         return
 
     path = " ".join(params)
@@ -262,8 +224,6 @@ def popd(params: List["Argument"], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -271,7 +231,7 @@ def popd(params: List["Argument"], ctx: Context) -> None:
 
     first = params[0].lower() if params else ""
     if first == "/?":
-        print_help(cmd=Command.POPD, file=out)
+        print_help(cmd=CommandType.POPD, file=out)
         return
 
     try:
@@ -295,16 +255,16 @@ def help_cmd(params: List["Argument"], ctx: Context) -> None:
         out = ctx.output.stdout
 
     cmd_map = get_reverse_cmd_map()
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
     ]
     if not params:
-        print_help(cmd=Command.HELP, file=out)
+        print_help(cmd=CommandType.HELP, file=out)
 
-    print_help(cmd=cmd_map.get(params[0].lower(), Command.UNKNOWN), file=out)
+    print_help(
+        cmd=cmd_map.get(params[0].lower(), CommandType.UNKNOWN), file=out
+    )
 
 
 def _print_all_variables(ctx: Context) -> None:
@@ -330,9 +290,6 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
-
     params_len = len(params)
     if not params_len:
         _print_all_variables(ctx=ctx)
@@ -341,7 +298,7 @@ def set_cmd(params: List["Argument"], ctx: Context) -> None:
     param = params[0]
     value = param.value
     if params_len == 1 and value == "/?":
-        print_help(cmd=Command.SET)
+        print_help(cmd=CommandType.SET)
         return
 
     # >1 values are ignored
@@ -372,16 +329,13 @@ def setlocal(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
-
     params_len = len(params)
     if not params_len:
         # copy all variables to new session, restore old state with endlocal
         return
 
     if params_len == 1 and params[0] == "/?":
-        print_help(cmd=Command.SETLOCAL)
+        print_help(cmd=CommandType.SETLOCAL)
         return
 
     value = [item.lower() for item in set(params)][0]
@@ -409,9 +363,6 @@ def cd(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
-
     params_len = len(params)
     if not params:
         # linux
@@ -425,7 +376,7 @@ def cd(params: list, ctx: Context) -> None:
     ]
     first = params[0]
     if params_len == 1 and first == "/?":
-        print_help(cmd=Command.CD)
+        print_help(cmd=CommandType.CD)
         return
 
     try:
@@ -441,8 +392,6 @@ def prompt(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -450,7 +399,7 @@ def prompt(params: list, ctx: Context) -> None:
 
     first = params[0]
     if params_len == 1 and first == "/?":
-        print_help(cmd=Command.PROMPT)
+        print_help(cmd=CommandType.PROMPT)
         return
     text = first
     ctx.prompt = text
@@ -462,8 +411,6 @@ def title(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params_len = len(params)
     if not params_len:
         print()
@@ -471,7 +418,7 @@ def title(params: list, ctx: Context) -> None:
 
     first = params[0]
     if params_len == 1 and first == "/?":
-        print_help(cmd=Command.TITLE)
+        print_help(cmd=CommandType.TITLE)
         return
 
     # Linux
@@ -481,7 +428,6 @@ def title(params: list, ctx: Context) -> None:
 
     # pylint: disable=unreachable
     # Windows
-    import ctypes
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel32.SetConsoleTitleW(text)
     error = ctypes.get_last_error()
@@ -495,11 +441,9 @@ def date(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     first = params[0].value if params else ""
     if first == "/?":
-        print_help(cmd=Command.DATE)
+        print_help(cmd=CommandType.DATE)
         return
 
     now = datetime.now()
@@ -521,11 +465,9 @@ def pause(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     first = params[0] if params else ""
     if first.value == "/?":
-        print_help(cmd=Command.PAUSE)
+        print_help(cmd=CommandType.PAUSE)
         return
 
     input(PAUSE_TEXT)
@@ -537,12 +479,10 @@ def clear_screen(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     first = params[0] if params else ""
     if first.value == "/?":
         print("here")
-        print_help(cmd=Command.CLS)
+        print_help(cmd=CommandType.CLS)
         return
 
     print("\033c" if "DEBUG" not in environ else "<clear>")
@@ -554,8 +494,6 @@ def exit_cmd(params: list, ctx: Context) -> None:
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
     ctx.error_level = 0
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params_len = len(params)
     if not params_len:
         sys.exit(0)
@@ -564,7 +502,7 @@ def exit_cmd(params: list, ctx: Context) -> None:
     params = [param.value for param in params]
     first = params[0]
     if first == "/?":
-        print_help(cmd=Command.EXIT)
+        print_help(cmd=CommandType.EXIT)
         return
 
     if "/B" in params:
@@ -580,8 +518,6 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -596,7 +532,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     if params_len == 1:
         first = params[0]
         if first.lower() == "/?":
-            print_help(cmd=Command.DELETE)
+            print_help(cmd=CommandType.DELETE)
             return
         file_path = abspath(first)
         if not exists(file_path):
@@ -656,8 +592,6 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -674,7 +608,7 @@ def create_folder(params: List["Argument"], ctx: Context) -> None:
     if params_len == 1:
         first = params[0]
         if first.lower() == "/?":
-            print_help(cmd=Command.MKDIR)
+            print_help(cmd=CommandType.MKDIR)
             return
         first = first.replace("\\", "/")
         dir_path = abspath(first)
@@ -755,8 +689,6 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -771,7 +703,7 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
         return
 
     if params_len == 1 and params[0].lower() == "/?":
-        print_help(cmd=Command.DIR)
+        print_help(cmd=CommandType.DIR)
         return
     raise NotImplementedError()
 
@@ -783,8 +715,6 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
     log = ctx.log.debug
     log("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
     params = [
         percent_expansion(line=param.value, ctx=ctx)
         for param in params
@@ -813,7 +743,7 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
             out.append(item)
 
     if is_help:
-        print_help(cmd=Command.RMDIR)
+        print_help(cmd=CommandType.RMDIR)
         return
 
     for param in out:
@@ -845,16 +775,13 @@ def rem_comment(params: list, ctx: Context) -> None:
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
 
-    # pylint: disable=import-outside-toplevel
-    from butch.help import print_help  # circular
-
     params_len = len(params)
     if not params_len:
         return
 
     params = [param.value for param in params]
     if params_len == 1 and params[0] == "/?":
-        print_help(cmd=Command.REM)
+        print_help(cmd=CommandType.REM)
 
 
 def get_cmd_map():
@@ -865,29 +792,29 @@ def get_cmd_map():
         dict with mapping Command enum to a function it should call
     """
     return {
-        Command.ECHO: echo,
-        Command.CD: cd,
-        Command.SET: set_cmd,
-        Command.PROMPT: prompt,
-        Command.TITLE: title,
-        Command.PAUSE: pause,
-        Command.EXIT: exit_cmd,
-        Command.SETLOCAL: setlocal,
-        Command.DELETE: delete,
-        Command.ERASE: delete,
-        Command.HELP: help_cmd,
-        Command.MKDIR: create_folder,
-        Command.MD: create_folder,
-        Command.DIR: list_folder,
-        Command.CLS: clear_screen,
-        Command.DATE: date,
-        Command.RMDIR: remove_folder,
-        Command.RD: remove_folder,
-        Command.TYPE: type_cmd,
-        Command.PATH: path_cmd,
-        Command.REM: rem_comment,
-        Command.PUSHD: pushd,
-        Command.POPD: popd
+        CommandType.ECHO: echo,
+        CommandType.CD: cd,
+        CommandType.SET: set_cmd,
+        CommandType.PROMPT: prompt,
+        CommandType.TITLE: title,
+        CommandType.PAUSE: pause,
+        CommandType.EXIT: exit_cmd,
+        CommandType.SETLOCAL: setlocal,
+        CommandType.DELETE: delete,
+        CommandType.ERASE: delete,
+        CommandType.HELP: help_cmd,
+        CommandType.MKDIR: create_folder,
+        CommandType.MD: create_folder,
+        CommandType.DIR: list_folder,
+        CommandType.CLS: clear_screen,
+        CommandType.DATE: date,
+        CommandType.RMDIR: remove_folder,
+        CommandType.RD: remove_folder,
+        CommandType.TYPE: type_cmd,
+        CommandType.PATH: path_cmd,
+        CommandType.REM: rem_comment,
+        CommandType.PUSHD: pushd,
+        CommandType.POPD: popd
     }
 
 
@@ -899,17 +826,17 @@ def get_reverse_cmd_map():
         dictionary with CommandType name: CommantType instance pairs
     """
     rev_cmd_map = {}
-    for attr_name in dir(Command):
-        resolved = getattr(Command, attr_name)
-        if not isinstance(resolved, Command):
+    for attr_name in dir(CommandType):
+        resolved = getattr(CommandType, attr_name)
+        if not isinstance(resolved, CommandType):
             continue
-        if attr_name == Command.UNKNOWN.name:
+        if attr_name == CommandType.UNKNOWN.name:
             continue
         rev_cmd_map[resolved.value] = resolved
     return rev_cmd_map
 
 
-def parse(cmd_and_args: str) -> Tuple[Command, list]:  # noqa: WPS210
+def parse(cmd_and_args: str) -> Tuple[CommandType, list]:  # noqa: WPS210
     """
     Parse a string into a command.
 
@@ -920,14 +847,14 @@ def parse(cmd_and_args: str) -> Tuple[Command, list]:  # noqa: WPS210
         tuple with Command and its params in a list
     """
     cmd, *cmd_params = cmd_and_args.split(" ")
-    unk = Command.UNKNOWN
+    unk = CommandType.UNKNOWN
 
     cmds = {}
-    for attr_name in dir(Command):
-        resolved = getattr(Command, attr_name)
+    for attr_name in dir(CommandType):
+        resolved = getattr(CommandType, attr_name)
         if attr_name == unk.name:
             continue
-        if not isinstance(resolved, Command):
+        if not isinstance(resolved, CommandType):
             continue
         cmds[resolved.value] = resolved
 

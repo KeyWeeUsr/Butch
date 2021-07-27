@@ -3,15 +3,15 @@
 import sys
 from os.path import abspath, dirname, join
 
-from butch.commands import Command
+from butch.commandtype import CommandType
 
 
-def print_help(cmd: Command, file=sys.stdout):  # noqa: WPS110
+def print_help(cmd: CommandType, file=sys.stdout):  # noqa: WPS110
     """
-    Open a help file for passed Command and print it.
+    Open a help file for passed CommandType and print it.
 
     Args:
-        cmd: Command instance
+        cmd: CommandType instance
         file: file or standard output/error (default: sys.stdout)
     """
     folder = dirname(abspath(__file__))
