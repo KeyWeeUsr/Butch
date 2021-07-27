@@ -24,9 +24,10 @@ from butch.outputs import CommandOutput
 from butch.expansion import percent_expansion
 from butch.commandtype import CommandType
 from butch.help import print_help
+from butch.tokens import Argument
 
 
-def echo(params: List["Argument"], ctx: Context) -> None:
+def echo(params: List[Argument], ctx: Context) -> None:
     """
     Batch: ECHO command.
 
@@ -66,7 +67,7 @@ def echo(params: List["Argument"], ctx: Context) -> None:
     print(*params, file=out)
 
 
-def type_cmd(params: List["Argument"], ctx: Context) -> None:
+def type_cmd(params: List[Argument], ctx: Context) -> None:
     """Batch: TYPE command."""
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -136,7 +137,7 @@ def type_cmd(params: List["Argument"], ctx: Context) -> None:
             print("\n", file=out)
 
 
-def path_cmd(params: List["Argument"], ctx: Context) -> None:
+def path_cmd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PATH command.
 
@@ -174,7 +175,7 @@ def path_cmd(params: List["Argument"], ctx: Context) -> None:
     ctx.set_variable(key="PATH", value_to_set=" ".join(params))
 
 
-def pushd(params: List["Argument"], ctx: Context) -> None:
+def pushd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PUSHD command.
     """
@@ -210,7 +211,7 @@ def pushd(params: List["Argument"], ctx: Context) -> None:
         print(PATH_NOT_FOUND, file=sys.stdout)
 
 
-def popd(params: List["Argument"], ctx: Context) -> None:
+def popd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: POPD command.
     """
@@ -242,7 +243,7 @@ def popd(params: List["Argument"], ctx: Context) -> None:
         log("Empty popd history, ignoring.")
 
 
-def help_cmd(params: List["Argument"], ctx: Context) -> None:
+def help_cmd(params: List[Argument], ctx: Context) -> None:
     """Batch: HELP command."""
     this = getframeinfo(currentframe()).function
     log = ctx.log.debug
@@ -284,7 +285,7 @@ def _delete_single_variable(key: str, ctx: Context) -> None:
     ctx.delete_variable(key=key)
 
 
-def set_cmd(params: List["Argument"], ctx: Context) -> None:
+def set_cmd(params: List[Argument], ctx: Context) -> None:
     "Batch: SET command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -512,7 +513,7 @@ def exit_cmd(params: list, ctx: Context) -> None:
     sys.exit(ctx.error_level)
 
 
-def delete(params: List["Argument"], ctx: Context) -> None:
+def delete(params: List[Argument], ctx: Context) -> None:
     "Batch: DEL/ERASE command."
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     this = getframeinfo(currentframe()).function
@@ -587,7 +588,7 @@ def delete(params: List["Argument"], ctx: Context) -> None:
     ctx.piped = False
 
 
-def create_folder(params: List["Argument"], ctx: Context) -> None:
+def create_folder(params: List[Argument], ctx: Context) -> None:
     "Batch: MKDIR/MD command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -684,7 +685,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
     return prefix + tmp + suffix
 
 
-def list_folder(params: List["Argument"], ctx: Context) -> None:
+def list_folder(params: List[Argument], ctx: Context) -> None:
     "Batch: DIR command."
     this = getframeinfo(currentframe()).function
     ctx.log.debug("<cmd: %-8.8s>, params: %r, ctx: %r", this, params, ctx)
@@ -708,7 +709,7 @@ def list_folder(params: List["Argument"], ctx: Context) -> None:
     raise NotImplementedError()
 
 
-def remove_folder(params: List["Argument"], ctx: Context) -> None:
+def remove_folder(params: List[Argument], ctx: Context) -> None:
     """
     Batch: RMDIR command.
 
@@ -772,7 +773,7 @@ def remove_folder(params: List["Argument"], ctx: Context) -> None:
         rmtree(param)
 
 
-def rem_comment(params: List["Argument"], ctx: Context) -> None:
+def rem_comment(params: List[Argument], ctx: Context) -> None:
     """
     Batch: REM command.
 
