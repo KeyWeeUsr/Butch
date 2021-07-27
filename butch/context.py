@@ -2,11 +2,11 @@
 
 import sys
 from logging import RootLogger
-from os import getcwd, chdir
+from os import chdir, getcwd
 from os.path import abspath
 from random import randint
-from time import strftime
 from tempfile import gettempdir
+from time import strftime
 
 from butch.logger import get_logger
 from butch.outputs import CommandOutput
@@ -208,7 +208,12 @@ class Context:  # noqa: WPS214,WPS338
 
     @property
     def pushd_history(self):
-        """Get full pushd history."""
+        """
+        Get full pushd history.
+
+        Returns:
+            list with all folders in the pushd history
+        """
         return self._pushd_history
 
     def push_folder(self, path: str) -> None:
@@ -218,6 +223,7 @@ class Context:  # noqa: WPS214,WPS338
         Args:
             path (str): path to append to the PUSHD folder history.
         """
+        # TODO: verify if Batch sets errorlevel if a *file* path is provided
         self._pushd_history.append(abspath(path))
         self.cwd = path
 
