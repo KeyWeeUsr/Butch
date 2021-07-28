@@ -306,17 +306,17 @@ def help_cmd(params: List[Argument], ctx: Context) -> None:
     )
 
 
-def _print_all_variables(ctx: Context) -> None:
+def _print_all_variables(ctx: Context, file=sys.stdout) -> None:
     for key, found_value in ctx.variables.items():
-        print(f"{key}={found_value}", file=sys.stdout)
+        print(f"{key}={found_value}", file=file)
 
 
-def _print_single_variable(key: str, ctx: Context) -> None:
+def _print_single_variable(key: str, ctx: Context, file=sys.stdout) -> None:
     found_value = ctx.get_variable(key)
     if not found_value:
-        print(ENV_VAR_UNDEFINED, file=sys.stdout)
+        print(ENV_VAR_UNDEFINED, file=file)
         return
-    print(f"{key}={found_value}", file=sys.stdout)
+    print(f"{key}={found_value}", file=file)
 
 
 def _delete_single_variable(key: str, ctx: Context) -> None:
@@ -334,37 +334,74 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
     """
     ctx.error_level = 0
 
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
+    should_prompt = False
+
     params_len = len(params)
     if not params_len:
-        _print_all_variables(ctx=ctx)
+        _print_all_variables(ctx=ctx, file=out)
         return
 
     param = params[0]
     quoted = param.quoted
     param_value = param.value
     if params_len == 1 and param_value == PARAM_HELP:
-        print_help(cmd=CommandType.SET)
+        print_help(cmd=CommandType.SET, file=out)
         return
+
+    if params_len >= 2 and param_value.lower() == "/p":
+        should_prompt = True
+        param_value = " ".join(param.value for param in params[1:])
 
     # >1 values are ignored
     if quoted:
         ctx.log.debug("\t- quoted variable")
         param_value = param_value[1:param_value.rfind('"')]
+
     eq_sign = "="
-    if eq_sign not in param_value:
+    if eq_sign not in param_value and not should_prompt:
         ctx.log.debug("\t- single variable print: %r", param_value)
-        _print_single_variable(key=param_value, ctx=ctx)
+        _print_single_variable(key=param_value, ctx=ctx, file=out)
         return
 
     left, right = param_value.split(eq_sign)
     if left and not right:
-        ctx.log.debug("\t- single variable delete: %r", left)
-        _delete_single_variable(key=left.lower(), ctx=ctx)
+        if should_prompt:
+            ctx.log.debug("\t- single variable prompt: %r", left)
+            if ctx.inputted:
+                value_to_set = ctx.input.stdin.readline()
+            else:
+                value_to_set = input()
+            if not value_to_set:
+                ctx.error_level = 1
+                return
+            ctx.set_variable(key=left, value_to_set=value_to_set)
+        else:
+            ctx.log.debug("\t- single variable delete: %r", left)
+            _delete_single_variable(key=left.lower(), ctx=ctx)
         return
 
     left = left.lower()
     ctx.log.debug("\t- single variable create: %r, %r", left, right)
-    ctx.set_variable(key=left, value_to_set=right)
+    if should_prompt:
+        ctx.log.debug("\t- single variable prompt: %r", left)
+        if ctx.inputted:
+            print(right, file=out)
+            value_to_set = ctx.input.stdin.readline().rstrip("\n")
+            ctx.log.debug("\t- read from STDIN: %r", value_to_set)
+        else:
+            value_to_set = input(right)
+        if not value_to_set:
+            ctx.error_level = 1
+            return
+        ctx.set_variable(key=left, value_to_set=value_to_set)
+    else:
+        ctx.set_variable(key=left, value_to_set=right)
 
 
 @what_func

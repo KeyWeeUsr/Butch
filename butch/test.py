@@ -401,7 +401,7 @@ class Execution(TestCase):
 
         with patch("butch.commands._print_all_variables") as mock:
             call(cmd=Command(cmd=CommandType.SET, args=[]), ctx=ctx)
-            mock.assert_called_once_with(ctx=ctx)
+            mock.assert_called_once_with(ctx=ctx, file=sys.stdout)
 
         self.assertEqual(ctx.error_level, 0)
 
@@ -418,7 +418,7 @@ class Execution(TestCase):
             call(cmd=Command(cmd=CommandType.SET, args=[
                 Argument(value=value)
             ]), ctx=ctx)
-            mock.assert_called_once_with(key=value, ctx=ctx)
+            mock.assert_called_once_with(key=value, ctx=ctx, file=sys.stdout)
 
         self.assertEqual(ctx.error_level, 0)
 
@@ -999,6 +999,65 @@ class BatchFiles(TestCase):
             with open(filename) as dest_descr:
                 output = dest_descr.readlines()
                 self.assertEqual(output, ["hello\n", "butch\n"])
+            remove(filename)
+
+    @patch("builtins.print")
+    def test_redir_fromfile_mocked(self, stdout):
+        return
+        from os import remove
+
+        script_name = "redir_set_fromfile.bat"
+
+        from butch.context import Context
+        from butch.outputs import CommandOutput
+        from butch.__main__ import handle_new
+
+        filename = "input.txt"
+        ctx = Context()
+
+        if exists(filename):
+            remove(filename)
+        self.assertFalse(exists(filename))
+
+        cmd_out = CommandOutput()
+        with patch("butch.commands.CommandOutput") as out_mock:
+            out_mock.return_value = cmd_out
+
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            self.assertTrue(exists(filename))
+            remove(filename)
+
+            assert_bat_output_match(
+                script_name, stdout.mock_calls, concat=True,
+                file_buff=cmd_out.stdout
+            )
+
+    def test_redir_fromfile_passthrough(self):
+        from os import remove
+
+        script_name = "redir_set_fromfile.bat"
+
+        from butch.context import Context
+        from butch.outputs import CommandOutput
+        from butch.__main__ import handle_new
+
+        filename = "input.txt"
+        ctx = Context()
+
+        if exists(filename):
+            remove(filename)
+        self.assertFalse(exists(filename))
+
+        cmd_out = CommandOutput()
+        with patch("butch.commands.CommandOutput") as out_mock:
+            out_mock.return_value = cmd_out
+
+            with patch("sys.stdout"):
+                handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            self.assertTrue(exists(filename))
+            with open(filename) as dest_descr:
+                output = dest_descr.readlines()
+                self.assertEqual(output, ["my-input\n"])
             remove(filename)
 
     @patch("builtins.print")

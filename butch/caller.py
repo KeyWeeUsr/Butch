@@ -9,7 +9,8 @@ from typing import Union
 
 from butch.commands import get_cmd_map
 from butch.context import Context
-from butch.tokenizer import Command, Connector, Pipe, Redirection
+from butch.inputs import CommandInput
+from butch.tokenizer import Command, Connector, Pipe, Redirection, RedirType
 
 
 FILE_CHUNK = 512
@@ -19,7 +20,7 @@ class UnknownCommand(Exception):
     """Exception if CommandType.UNKNOWN was passed."""
 
 
-def _handle_redirection(redir_target, ctx: Context):
+def _handle_redirection_output(redir_target, ctx: Context):
     log = ctx.log.debug
     log("\t- redirect collected output to: %r", redir_target)
 
@@ -60,17 +61,40 @@ def new_call(  # noqa: WPS317
     command = cmd
     if isinstance(command, Connector):
         log("\t- unpacking connector")
-        if isinstance(command, (Pipe, Redirection)):
-            log("\t\t- should collect STDOUT+STDERR")
-            ctx.collect_output = True
+        is_redir = isinstance(command, Redirection)
+        is_pipe = isinstance(command, Pipe)
+        is_redir_output = False
+        if is_redir and command.type == RedirType.OUTPUT:
+            is_redir_output = True
+        if is_redir or is_pipe:
+            if is_redir_output or is_pipe:
+                log("\t\t- should collect STDOUT+STDERR")
+                ctx.collect_output = True
+            else:
+                log("\t\t- should create STDIN")
+                ctx.inputted = True
+                ctx.input = CommandInput()
+                input_buff = ctx.input.stdin
+                log("\t\t\t- creating from %r", command.right.value)
+                with open(command.right.value) as stdin:
+                    while True:
+                        chunk = stdin.read(FILE_CHUNK)
+                        if not chunk:
+                            break
+                        input_buff.write(chunk)
+                input_buff.seek(0)
         left = command.left
         log("\t- recursion to connector's left: %r", left)
         new_call(cmd=left, ctx=ctx, child=True)
         ctx.collect_output = False
         ctx.piped = isinstance(command, Pipe)
 
-        if isinstance(command, Redirection):
-            _handle_redirection(redir_target=command.right, ctx=ctx)
+        if is_redir:
+            log("\t- finishing redirection")
+            if is_redir_output:
+                log("\t\t- writing output")
+                _handle_redirection_output(redir_target=command.right, ctx=ctx)
+            log("\t\t- done")
             return
         command = command.right
 

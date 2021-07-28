@@ -140,11 +140,16 @@ Commands
 - [X] `REM <https://ss64.com/nt/rem.html>`__
 - [ ] `REN <https://ss64.com/nt/ren.html>`__
 - [X] `RMDIR <https://ss64.com/nt/rmdir.html>`__
-- [ ] `SET <https://ss64.com/nt/set.html>`__
+- [/] `SET <https://ss64.com/nt/set.html>`__
 
-  *pending:* pretty much everything except the basic value add + clear
+  *pending:*
 
+  - [X] single value adding (``set x=123``)
+  - [X] single value clearing (``set x=``)
+  - [X] listing all stored variables (``set``)
+  - [X] ``/P`` prompt for user input (``set /P x=prompt``)
   - [ ] case-insensitive access, but case-sensitive output
+  - ...
 
 - [ ] `SETLOCAL <https://ss64.com/nt/setlocal.html>`__
 - [ ] `SHIFT <https://ss64.com/nt/shift.html>`__
@@ -179,12 +184,13 @@ Syntax
   - [ ] generic command I/O handling as a decorator/class?
 
 - [X] Output redirection (``>``, ``>>``)
-- [ ] Input redirection (``<``), e.g.: ``set /p key="prompt" < file``
+- [X] Input redirection (``<``), e.g.: ``set /p key="prompt" < file``
 
   https://ss64.com/nt/syntax-redirection.html
 
 - [ ] `Special (reserved) names <reserved_>`__
 - [ ] Redirection to special (``nul``)
+- [ ] Joining streams (STDIN, STDOUT, STDERR, UNDEFINED (3-9)) (``2>&1``)
 - [ ] Command concatenation (``&``)
 - [ ] Command concatenation (``&&``)
 - [ ] Command concatenation (``||``)

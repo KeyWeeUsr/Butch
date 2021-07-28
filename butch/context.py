@@ -9,6 +9,7 @@ from tempfile import gettempdir
 from time import strftime
 
 from butch.logger import get_logger
+from butch.inputs import CommandInput
 from butch.outputs import CommandOutput
 
 PROMPT_KEY = "prompt"
@@ -68,9 +69,11 @@ class Context:  # noqa: WPS214,WPS338
     _pushd_history: list
     _echo: bool
     _prompt: str
+    _input: CommandInput
     _output: CommandOutput
     _collect_output: bool
     _piped: bool
+    _inputted: bool
     _logger: RootLogger
 
     def __init__(self, **kwargs):
@@ -93,8 +96,10 @@ class Context:  # noqa: WPS214,WPS338
         self._history_enabled = True
         self._pushd_history = []
         self._logger = get_logger()
+        self._input = None
         self._output = None
         self._piped = False
+        self._inputted = False
         self._variables = self._get_default_variables()
 
         # dynamic
@@ -179,6 +184,20 @@ class Context:  # noqa: WPS214,WPS338
         self._piped = enabled
 
     @property
+    def inputted(self):
+        """
+        Property.
+
+        Returns:
+            flag whether the input was read from STDIN.
+        """
+        return self._inputted
+
+    @inputted.setter
+    def inputted(self, enabled):
+        self._inputted = enabled
+
+    @property
     def collect_output(self):
         """
         Property.
@@ -205,6 +224,20 @@ class Context:  # noqa: WPS214,WPS338
     @output.setter
     def output(self, out):
         self._output = out
+
+    @property
+    def input(self):
+        """
+        Property.
+
+        Returns:
+            stored input / passed input if redirected.
+        """
+        return self._input
+
+    @input.setter
+    def input(self, input_value):
+        self._input = input_value
 
     @property
     def pushd_history(self):

@@ -264,12 +264,12 @@ def handle_char_quote(
                     quoted=True and not flags[Flag.QUOTE_IN_WORD]
                 )
             ]
-            log("\t\t- appending to output: %r", found.data)
-            output.append(found.data)
             if text.nchar == SPECIAL_LF:
                 # keep to collect quoted but mangled
                 # "name="ignored -> 1 arg later unquoted in cmd func
                 # and 'ignored' part would be stripped
+                log("\t\t- appending to output: %r", found.data)
+                output.append(found.data)
                 found.clear()
             else:
                 flags[Flag.UNFINISHED_LINE] = True
@@ -376,7 +376,9 @@ def handle_char_newline(
     if pos.value != text.last_pos and buff:  # buff check for whitespace
         log("\t\t- not last char, %r", buff)
         if not found:
+            log("\t\t\t- not found")
             if output and isinstance(output[-1], Redirection):
+                log("\t\t\t\t- last item in output is redirection")
                 found.set(File())
             else:
                 # naive
@@ -391,13 +393,19 @@ def handle_char_newline(
                     cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
                 ))
                 buff.clear()
+
         if flags[Flag.UNFINISHED_LINE]:
-            found.data.args[-1].value = (
-                found.data.args[-1].value + buff.data
-            )
-            flags[Flag.UNFINISHED_LINE] = False
-        else:
+            log("\t\t\t- unfinished line")
             if not isinstance(found.data, File):
+                found.data.args[-1].value = (
+                    found.data.args[-1].value + buff.data
+                )
+            else:
+                found.data.value = buff.data
+        else:
+            log("\t\t\t- finished line")
+            if not isinstance(found.data, File):
+                log("\t\t\t\t- setting args %r", buff.data)
                 if buff.data:
                     found.data.args = found.data.args + [
                         Argument(value=buff.data)
@@ -405,24 +413,25 @@ def handle_char_newline(
             else:
                 found.data.value = buff.data
 
-            if not output:
-                log("\t\t- appending to output: %r", found.data)
-                output.append(found.data)
+        flags[Flag.UNFINISHED_LINE] = False
+        if not output:
+            log("\t\t- appending to output: %r", found.data)
+            output.append(found.data)
+        else:
+            log("\t\t- output present, check if connector")
+            last = output[-1]
+            if isinstance(last, Connector) and not last.right:
+                log("\t\t\t- is connector w/ empty r-val")
+                log("\t\t\t\t- insert: %r", found)
+                output[-1].right = found.data
+                found.clear()
             else:
-                log("\t\t- output present, check if connector")
-                last = output[-1]
-                if isinstance(last, Connector) and not last.right:
-                    log("\t\t\t- is connector w/ empty r-val")
-                    log("\t\t\t\t- insert: %r", found)
-                    output[-1].right = found.data
-                    found.clear()
-                else:
-                    log(
-                        "\t\t\t- not connector, appending: %r",
-                        found.data
-                    )
-                    output.append(found.data)
-                    found.clear()
+                log(
+                    "\t\t\t- not connector, appending: %r",
+                    found.data
+                )
+                output.append(found.data)
+                found.clear()
 
         buff.clear()
         found.clear()
