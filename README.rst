@@ -162,6 +162,8 @@ Commands
 Syntax
 ======
 
+.. _reserved: https://ss64.com/nt/syntax-filenames.html#reserved
+
 - [X] Echo off (``@``)
 - [X] Quotes (``"``)
 - [X] Quotes (``"``) in words
@@ -186,6 +188,7 @@ Syntax
 
   https://ss64.com/nt/syntax-redirection.html
 
+- [ ] `Special (reserved) names <reserved_>`__
 - [ ] Redirection to special (``nul``)
 - [ ] Command concatenation (``&``)
 - [ ] Command concatenation (``&&``)
