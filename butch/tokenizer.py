@@ -264,7 +264,7 @@ def handle_char_quote(
                     quoted=True and not flags[Flag.QUOTE_IN_WORD]
                 )
             ]
-            log("\t\t- appending to output: %r", found)
+            log("\t\t- appending to output: %r", found.data)
             output.append(found.data)
             if text.nchar == SPECIAL_LF:
                 # keep to collect quoted but mangled
@@ -356,7 +356,7 @@ def handle_char_newline(
             ]
         buff.clear()
         if not output:
-            log("\t\t- appending to output: %r", found)
+            log("\t\t- appending to output: %r", found.data)
             output.append(found.data)
         else:
             log("\t\t- output present, check if connector")
@@ -369,7 +369,7 @@ def handle_char_newline(
             else:
                 log(
                     "\t\t\t- not connector, appending: %r",
-                    found
+                    found.data
                 )
                 output.append(found.data)
                 found.clear()
@@ -406,7 +406,7 @@ def handle_char_newline(
                 found.data.value = buff.data
 
             if not output:
-                log("\t\t- appending to output: %r", found)
+                log("\t\t- appending to output: %r", found.data)
                 output.append(found.data)
             else:
                 log("\t\t- output present, check if connector")
@@ -419,7 +419,7 @@ def handle_char_newline(
                 else:
                     log(
                         "\t\t\t- not connector, appending: %r",
-                        found
+                        found.data
                     )
                     output.append(found.data)
                     found.clear()
@@ -540,7 +540,7 @@ def handle_char_splitter(
     # the last command is now encapsulated in a connector
     # the newest command is stored in the "right" branch
     log("\t- check output: %r", output)
-    if output:
+    if output and isinstance(output[-1], Connector):
         log("\t- attaching command to connector")
         output[-1] = join
     else:
@@ -597,7 +597,7 @@ def handle_char_last(
             ]
         buff.clear()
         if not output:
-            log("\t- appending to output: %r", found)
+            log("\t- appending to output: %r", found.data)
             output.append(found.data)
         else:
             log("\t\t- output present, check if connector")
@@ -610,7 +610,7 @@ def handle_char_last(
             else:
                 log(
                     "\t\t\t- not connector, appending: %r",
-                    found
+                    found.data
                 )
                 output.append(found.data)
                 found.clear()
@@ -629,7 +629,7 @@ def handle_char_last(
             ]
 
             if not output:
-                log("\t\t- appending to output: %r", found)
+                log("\t\t- appending to output: %r", found.data)
                 output.append(found.data)
             else:
                 log("\t\t- output present, check if connector")
@@ -642,7 +642,7 @@ def handle_char_last(
                 else:
                     log(
                         "\t\t\t- not connector, appending: %r",
-                        found
+                        found.data
                     )
                     output.append(found.data)
                     found.clear()

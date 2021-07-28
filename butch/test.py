@@ -882,10 +882,72 @@ class BatchFiles(TestCase):
         )
 
     @patch("builtins.print")
-    def test_redir_newfile(self, stdout):
+    def test_redir_newfile_mocked(self, stdout):
         from os import remove
 
         script_name = "redir_echo_newfile.bat"
+
+        from butch.context import Context
+        from butch.outputs import CommandOutput
+        from butch.__main__ import handle_new
+
+        filename = "new-file.txt"
+        ctx = Context()
+
+        if exists(filename):
+            remove(filename)
+        self.assertFalse(exists(filename))
+
+        cmd_out = CommandOutput()
+        with patch("butch.commands.CommandOutput") as out_mock:
+            out_mock.return_value = cmd_out
+
+            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            self.assertTrue(exists(filename))
+            with open(filename) as dest_descr:
+                output = dest_descr.read()
+                # empty due to mocked print
+                self.assertEqual(output, "")
+            remove(filename)
+
+            assert_bat_output_match(
+                script_name, stdout.mock_calls, concat=True,
+                file_buff=cmd_out.stdout
+            )
+
+    def test_redir_newfile_passthrough(self):
+        from os import remove
+
+        script_name = "redir_echo_newfile.bat"
+
+        from butch.context import Context
+        from butch.outputs import CommandOutput
+        from butch.__main__ import handle_new
+
+        filename = "new-file.txt"
+        ctx = Context()
+
+        if exists(filename):
+            remove(filename)
+        self.assertFalse(exists(filename))
+
+        cmd_out = CommandOutput()
+        with patch("butch.commands.CommandOutput") as out_mock:
+            out_mock.return_value = cmd_out
+
+            with patch("sys.stdout"):
+                handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            self.assertTrue(exists(filename))
+            with open(filename) as dest_descr:
+                output = dest_descr.readlines()
+                self.assertEqual(output, ["hello\n"])
+            remove(filename)
+
+    @patch("builtins.print")
+    def test_redir_newappend_mocked(self, stdout):
+        from os import remove
+
+        script_name = "redir_echo_newappend.bat"
 
         from butch.context import Context
         from butch.outputs import CommandOutput
@@ -910,6 +972,34 @@ class BatchFiles(TestCase):
                 script_name, stdout.mock_calls, concat=True,
                 file_buff=cmd_out.stdout
             )
+
+    def test_redir_newappend_passthrough(self):
+        from os import remove
+
+        script_name = "redir_echo_newappend.bat"
+
+        from butch.context import Context
+        from butch.outputs import CommandOutput
+        from butch.__main__ import handle_new
+
+        filename = "new-file.txt"
+        ctx = Context()
+
+        if exists(filename):
+            remove(filename)
+        self.assertFalse(exists(filename))
+
+        cmd_out = CommandOutput()
+        with patch("butch.commands.CommandOutput") as out_mock:
+            out_mock.return_value = cmd_out
+
+            with patch("sys.stdout"):
+                handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            self.assertTrue(exists(filename))
+            with open(filename) as dest_descr:
+                output = dest_descr.readlines()
+                self.assertEqual(output, ["hello\n", "butch\n"])
+            remove(filename)
 
     @patch("builtins.print")
     def test_path_set(self, stdout):

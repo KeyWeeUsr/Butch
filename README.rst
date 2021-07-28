@@ -178,13 +178,8 @@ Syntax
   - [ ] some individual commands don't pull ctx.output and related parts
   - [ ] generic command I/O handling as a decorator/class?
 
-- [ ] I/O Redirection
-
-  *pending:*
-
-  - [X] ``>`` create new file
-  - [ ] ``>>`` append to existing file or create if missing
-  - [ ] ``<`` read file to STDIN
+- [X] Output redirection (``>``, ``>>``)
+- [ ] Input redirection (``<``), e.g.: ``set /p key="prompt" < file``
 
   https://ss64.com/nt/syntax-redirection.html
 
