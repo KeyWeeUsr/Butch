@@ -7,7 +7,7 @@ from butch.context import Context
 PERCENT = "%"
 
 
-def percent_expansion(line: str, ctx: Context) -> str:  # noqa: WPS210,WPS231x
+def percent_expansion(line: str, ctx: Context) -> str:  # noqa: WPS210,WPS231
     """
     Expand percent-encapsulated values into variables.
 
@@ -88,5 +88,5 @@ def percent_expansion(line: str, ctx: Context) -> str:  # noqa: WPS210,WPS231x
             if idx != line_len:
                 tmp += PERCENT
             continue
-    ctx.log.debug("percent expansion result: %r", tmp)  # noqa: WPS323
+    ctx.log.debug("percent expansion result: %r", tmp)
     return tmp

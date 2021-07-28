@@ -40,15 +40,16 @@ pylint \
 # WPS336 straight-forward nonsense unless customizable per package/module
 # WPS305 "f strings implicitly rely on the context around them"
 # - crap... so do functions as well as string.format() can be used as template
+# WPS323 there's a lot of logging and % is actually useful in there
 COUNT=$(flake8 \
     --inline-quotes=double \
     --inline-quotes=double \
     --multiline-quotes='"""' \
     --docstring-quotes='"' \
     --avoid-escape \
-    --ignore C812,WPS421,WPS326,I005,I004,WPS336,WPS305,WPS306,WPS327 \
+    --ignore C812,WPS421,WPS326,I005,I004,WPS336,WPS305,WPS306,WPS327,WPS323 \
     --per-file-ignores \
-        'butch/commandtype.py:WPS115 butch/commands.py:WPS323' \
+        'butch/commandtype.py:WPS115' \
     --max-module-members=10 \
     --allowed-domain-names param,params \
     . |grep -v WPS412 | tee /dev/stderr | wc -l)
