@@ -2,25 +2,26 @@
 
 import sys
 import ctypes
-from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 
-from typing import List, Tuple
+from collections import defaultdict
 from datetime import datetime
+from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
 from os.path import abspath, exists, isdir, join
-from collections import defaultdict
+from platform import system
 from shutil import rmtree
+from typing import List, Tuple
 
-from butch.context import Context
+from butch.commandtype import CommandType
 from butch.constants import (
     ACCESS_DENIED, DELETE, DIR_INVALID, DIR_NONEMPTY, ENV_VAR_UNDEFINED,
-    ERROR_PROCESSING, FILE_NOT_FOUND, PATH_EXISTS, PATH_NOT_FOUND, PAUSE_TEXT,
-    SURE, SYNTAX_INCORRECT
+    ERROR_PROCESSING, FILE_NOT_FOUND, PARAM_HELP, PARAM_YES, PATH_EXISTS,
+    PATH_NOT_FOUND, PAUSE_TEXT, SURE, SYNTAX_INCORRECT
 )
-from butch.outputs import CommandOutput
+from butch.context import Context
 from butch.expansion import percent_expansion
-from butch.commandtype import CommandType
 from butch.help import print_help
+from butch.outputs import CommandOutput
 from butch.tokens import Argument
 
 
@@ -33,16 +34,27 @@ DIR_FORMAT_FILE_BYTES_RJUST = 14
 
 
 def what_func(func):
+    """
+    Command logging decorator.
+
+    Args:
+        func (Callable): function to wrap in the decorator
+
+    Returns:
+        function wrapper
+    """
     def wrapper(*args, **kwargs):
         ctx = kwargs.get("ctx")
         params = kwargs.get("params")
         if ctx:
-            ctx.log.debug(
-                "<cmd: %-8.8s>, params: %r, ctx: %r",
-                func.__name__, params, ctx
-            )
+            log_str = "<cmd: %-8.8s>, params: %r, ctx: %r"
+            ctx.log.debug(log_str, func.__name__, params, ctx)
         func(*args, **kwargs)
     return wrapper
+
+
+def _expand_params(params: List[Argument], ctx: Context):
+    return [percent_expansion(line=param.value, ctx=ctx) for param in params]
 
 
 @what_func
@@ -64,25 +76,23 @@ def echo(params: List[Argument], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
-    state = {True: "on", False: "off"}
-    state_rev = {val: key for key, val in state.items()}
+    state_map = {True: "on", False: "off"}
+    state_rev = {state: key for key, state in state_map.items()}
 
     if params_len == 1:
         first = params[0].lower()
         if first in ("on", "off"):
             ctx.echo = state_rev[first]
             return
-        if first == "/?":
+        if first == PARAM_HELP:
             print_help(cmd=CommandType.ECHO, file=out)
             return
 
     if not params_len:
-        print(f"ECHO is {state[ctx.echo]}.", file=out)
+        echo_state = state_map[ctx.echo]
+        print(f"ECHO is {echo_state}.", file=out)
         return
 
     print(*params, file=out)
@@ -105,10 +115,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
@@ -118,7 +125,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
 
     if params_len == 1:
         first = params[0].lower()
-        if first == "/?":
+        if first == PARAM_HELP:
             print_help(cmd=CommandType.ECHO, file=out)
             return
 
@@ -132,10 +139,8 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
             ctx.error_level = 1
             return
 
-        with open(first) as file:
-            # TODO: big files chunking
-            print(file.read(), file=out)
-            return
+        _type_file(path=first, output=out)
+        return
 
     for idx, item_path in enumerate(params):
         print(item_path, file=out)
@@ -155,12 +160,16 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
         for _ in range(2):
             print("\n", file=out)
 
-        with open(item_path) as file:
-            # TODO: big files chunking
-            print(file.read(), file=out)
+        _type_file(path=item_path, output=out)
         # no trailing newline after files
         if idx != params_len - 1:
             print("\n", file=out)
+
+
+def _type_file(path: str, output):
+    with open(path) as file_desc:
+        # TODO: big files chunking
+        print(file_desc.read(), file=output)
 
 
 @what_func
@@ -182,18 +191,16 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
-        print(f"PATH={ctx.get_variable('PATH') or '(null)'}", file=sys.stdout)
+        path = ctx.get_variable("PATH") or "(null)"
+        print(f"PATH={path}", file=sys.stdout)
         return
 
     first = params[0].lower()
-    if first == "/?":
+    if first == PARAM_HELP:
         print_help(cmd=CommandType.PATH, file=out)
         return
 
@@ -221,17 +228,14 @@ def pushd(params: List[Argument], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
         return
 
     first = params[0].lower()
-    if first == "/?":
+    if first == PARAM_HELP:
         print_help(cmd=CommandType.PUSHD, file=out)
         return
 
@@ -260,13 +264,10 @@ def popd(params: List[Argument], ctx: Context) -> None:
         ctx.output = CommandOutput()
         out = ctx.output.stdout
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
 
     first = params[0].lower() if params else ""
-    if first == "/?":
+    if first == PARAM_HELP:
         print_help(cmd=CommandType.POPD, file=out)
         return
 
@@ -296,10 +297,7 @@ def help_cmd(params: List[Argument], ctx: Context) -> None:
         out = ctx.output.stdout
 
     cmd_map = get_reverse_cmd_map()
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     if not params:
         print_help(cmd=CommandType.HELP, file=out)
 
@@ -309,16 +307,16 @@ def help_cmd(params: List[Argument], ctx: Context) -> None:
 
 
 def _print_all_variables(ctx: Context) -> None:
-    for key, val in ctx.variables.items():
-        print(f"{key}={val}", file=sys.stdout)
+    for key, found_value in ctx.variables.items():
+        print(f"{key}={found_value}", file=sys.stdout)
 
 
 def _print_single_variable(key: str, ctx: Context) -> None:
-    value = ctx.get_variable(key)
-    if not value:
+    found_value = ctx.get_variable(key)
+    if not found_value:
         print(ENV_VAR_UNDEFINED, file=sys.stdout)
         return
-    print(f"{key}={value}", file=sys.stdout)
+    print(f"{key}={found_value}", file=sys.stdout)
 
 
 def _delete_single_variable(key: str, ctx: Context) -> None:
@@ -342,23 +340,23 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
         return
 
     param = params[0]
-    value = param.value
-    if params_len == 1 and value == "/?":
+    quoted = param.quoted
+    param_value = param.value
+    if params_len == 1 and param_value == PARAM_HELP:
         print_help(cmd=CommandType.SET)
         return
 
     # >1 values are ignored
-    quoted = param.quoted
-    value = param.value
     if quoted:
         ctx.log.debug("\t- quoted variable")
-        value = value[1:value.rfind('"')]
-    if "=" not in value:
-        ctx.log.debug("\t- single variable print: %r", value)
-        _print_single_variable(key=value, ctx=ctx)
+        param_value = param_value[1:param_value.rfind('"')]
+    eq_sign = "="
+    if eq_sign not in param_value:
+        ctx.log.debug("\t- single variable print: %r", param_value)
+        _print_single_variable(key=param_value, ctx=ctx)
         return
 
-    left, right = value.split("=")
+    left, right = param_value.split(eq_sign)
     if left and not right:
         ctx.log.debug("\t- single variable delete: %r", left)
         _delete_single_variable(key=left.lower(), ctx=ctx)
@@ -382,27 +380,29 @@ def setlocal(params: list, ctx: Context) -> None:
 
     params_len = len(params)
     if not params_len:
-        # copy all variables to new session, restore old state with endlocal
+        # TODO: copy all variables to new session
+        # TODO: restore old state with endlocal
         return
 
-    if params_len == 1 and params[0] == "/?":
+    if params_len == 1 and params[0] == PARAM_HELP:
         print_help(cmd=CommandType.SETLOCAL)
         return
 
-    value = [item.lower() for item in set(params)][0]
-    if value == "enabledelayedexpansion":
+    # TODO: add bat-test, it's probably broken now
+    first = [param.lower() for param in set(params)][0]
+    if first == "enabledelayedexpansion":
         ctx.delayed_expansion_enabled = True
         return
 
-    if value == "disabledelayedexpansion":
+    if first == "disabledelayedexpansion":
         ctx.delayed_expansion_enabled = False
         return
 
-    if value == "enableextensions":
+    if first == "enableextensions":
         ctx.extensions_enabled = True
         return
 
-    if value == "disableextensions":
+    if first == "disableextensions":
         ctx.extensions_enabled = False
         return
 
@@ -426,12 +426,9 @@ def cd(params: list, ctx: Context) -> None:
         # windows
         return
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     first = params[0]
-    if params_len == 1 and first == "/?":
+    if params_len == 1 and first == PARAM_HELP:
         print_help(cmd=CommandType.CD)
         return
 
@@ -459,7 +456,7 @@ def prompt(params: list, ctx: Context) -> None:
         return
 
     first = params[0]
-    if params_len == 1 and first == "/?":
+    if params_len == 1 and first == PARAM_HELP:
         print_help(cmd=CommandType.PROMPT)
         return
     text = first
@@ -474,6 +471,9 @@ def title(params: list, ctx: Context) -> None:
     Args:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
+
+    Raises:
+        WinError: raised when console title can't be set via Win32 API
     """
     ctx.error_level = 0
 
@@ -483,22 +483,20 @@ def title(params: list, ctx: Context) -> None:
         return
 
     first = params[0]
-    if params_len == 1 and first == "/?":
+    if params_len == 1 and first == PARAM_HELP:
         print_help(cmd=CommandType.TITLE)
         return
 
-    # Linux
-    text = params[0]
-    sys.stdout.write(f"\x1b]2;{text}\x07")
-    return
-
-    # pylint: disable=unreachable
-    # Windows
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-    kernel32.SetConsoleTitleW(text)
-    error = ctypes.get_last_error()
-    if error:
-        raise ctypes.WinError(error)
+    platform_name = system()
+    if platform_name == "Linux":
+        text = params[0]
+        sys.stdout.write(f"\x1b]2;{text}\x07")
+    elif platform_name == "Windows":
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.SetConsoleTitleW(text)
+        error = ctypes.get_last_error()
+        if error:
+            raise ctypes.WinError(error)
 
 
 @what_func
@@ -513,7 +511,7 @@ def date(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     first = params[0].value if params else ""
-    if first == "/?":
+    if first == PARAM_HELP:
         print_help(cmd=CommandType.DATE)
         return
 
@@ -542,7 +540,7 @@ def pause(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     first = params[0] if params else ""
-    if first.value == "/?":
+    if first.value == PARAM_HELP:
         print_help(cmd=CommandType.PAUSE)
         return
 
@@ -561,7 +559,7 @@ def clear_screen(params: list, ctx: Context) -> None:
     ctx.error_level = 0
 
     first = params[0] if params else ""
-    if first.value == "/?":
+    if first.value == PARAM_HELP:
         print("here")
         print_help(cmd=CommandType.CLS)
         return
@@ -587,7 +585,7 @@ def exit_cmd(params: list, ctx: Context) -> None:
 
     params = [param.value for param in params]
     first = params[0]
-    if first == "/?":
+    if first == PARAM_HELP:
         print_help(cmd=CommandType.EXIT)
         return
 
@@ -609,10 +607,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
     """
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
@@ -622,7 +617,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
 
     if params_len == 1:
         first = params[0]
-        if first.lower() == "/?":
+        if first.lower() == PARAM_HELP:
             print_help(cmd=CommandType.DELETE)
             return
         file_path = abspath(first)
@@ -643,7 +638,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
             quiet = True
 
     # for multiple paths "not found" or error level setting is skipped
-    for param in params:
+    for param in params:  # noqa: WPS440
         path = abspath(param)
         if not exists(path):
             continue
@@ -652,13 +647,13 @@ def delete(params: List[Argument], ctx: Context) -> None:
         if isdir(param):
             answer = ""
             if prompt_for_all or not quiet:
-                text = f"{os_path}\\*, {SURE}"
+                text = rf"{os_path}\*, {SURE}"
                 if ctx.piped:
                     answer = ctx.output.stdout.read(1)
                     print(f"{text} {answer}")
                 else:
                     answer = input(f"{text} ").lower()
-            if answer != "y":
+            if answer != PARAM_YES:
                 continue
             for file_item in listdir(param):
                 remove(join(path, file_item))
@@ -671,7 +666,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
                 print(f"{text} {answer}")
             else:
                 answer = input(text).lower()
-            if answer != "y":
+            if answer != PARAM_YES:
                 continue
         remove(path)
     ctx.error_level = 0
@@ -687,10 +682,7 @@ def create_folder(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
@@ -702,7 +694,7 @@ def create_folder(params: List[Argument], ctx: Context) -> None:
 
     if params_len == 1:
         first = params[0]
-        if first.lower() == "/?":
+        if first.lower() == PARAM_HELP:
             print_help(cmd=CommandType.MKDIR)
             return
         first = first.replace("\\", "/")
@@ -796,10 +788,7 @@ def list_folder(params: List[Argument], ctx: Context) -> None:
     Raises:
         NotImplementedError: when dir command is supplied anything but /?
     """
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
@@ -809,7 +798,7 @@ def list_folder(params: List[Argument], ctx: Context) -> None:
         ctx.error_level = 0
         return
 
-    if params_len == 1 and params[0].lower() == "/?":
+    if params_len == 1 and params[0].lower() == PARAM_HELP:
         print_help(cmd=CommandType.DIR)
         return
     raise NotImplementedError()
@@ -827,10 +816,7 @@ def remove_folder(params: List[Argument], ctx: Context) -> None:
     # pylint: disable=too-many-branches
     log = ctx.log.debug
 
-    params = [
-        percent_expansion(line=param.value, ctx=ctx)
-        for param in params
-    ]
+    params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
@@ -845,7 +831,7 @@ def remove_folder(params: List[Argument], ctx: Context) -> None:
     while params:
         current_param = params.pop(0)
         item_low = current_param.lower()
-        if current_param == "/?":
+        if current_param == PARAM_HELP:
             is_help = True
         elif item_low == "/s":
             ignore_files = True
@@ -872,8 +858,8 @@ def remove_folder(params: List[Argument], ctx: Context) -> None:
                 answer = ctx.output.stdout.read(1)
                 print(f"{text} {answer}")
             else:
-                answer = "y" if quiet else input(f"{text} ").lower()
-            if answer != "y":
+                answer = PARAM_YES if quiet else input(f"{text} ").lower()
+            if answer != PARAM_YES:
                 continue
         rmtree(param)
 
@@ -894,7 +880,7 @@ def rem_comment(params: List[Argument], ctx: Context) -> None:
         return
 
     params = [param.value for param in params]
-    if params_len == 1 and params[0] == "/?":
+    if params_len == 1 and params[0] == PARAM_HELP:
         print_help(cmd=CommandType.REM)
 
 
