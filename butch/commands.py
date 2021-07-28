@@ -376,7 +376,6 @@ def setlocal(params: list, ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    ctx.error_level = 0
 
     params_len = len(params)
     if not params_len:
@@ -392,19 +391,12 @@ def setlocal(params: list, ctx: Context) -> None:
     first = [param.lower() for param in set(params)][0]
     if first == "enabledelayedexpansion":
         ctx.delayed_expansion_enabled = True
-        return
-
-    if first == "disabledelayedexpansion":
+    elif first == "disabledelayedexpansion":
         ctx.delayed_expansion_enabled = False
-        return
-
-    if first == "enableextensions":
+    elif first == "enableextensions":
         ctx.extensions_enabled = True
-        return
-
-    if first == "disableextensions":
+    elif first == "disableextensions":
         ctx.extensions_enabled = False
-        return
 
 
 # pylint: disable=invalid-name
