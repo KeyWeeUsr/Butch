@@ -160,7 +160,7 @@ Commands
 - [ ] `VER <https://ss64.com/nt/ver.html>`__
 - [ ] `VERIFY <https://ss64.com/nt/verify.html>`__
 - [ ] `VOL <https://ss64.com/nt/vol.html>`__
-- [ ] `:: <https://ss64.com/nt/rem.html>`__
+- [X] `:: <https://ss64.com/nt/rem.html>`__
 - [ ] External commands
 - [ ] CLI prioritization of external commands
 

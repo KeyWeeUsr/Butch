@@ -1109,6 +1109,25 @@ class BatchFiles(TestCase):
         self.assertEqual(ctx.error_level, 1)
 
     @patch("builtins.print")
+    def test_rem_colon_comment(self, stdout):
+        script_name = "rem_colon_comment.bat"
+
+        from butch.commandtype import CommandType
+        from butch.context import Context
+        from butch.__main__ import handle_new
+
+        ctx = Context()
+        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 1)
+        comments = 0
+        for command in ctx.history:
+            if command.cmd != CommandType.REM:
+                continue
+            comments += 1
+        self.assertEqual(comments, 48)
+
+    @patch("builtins.print")
     def test_pushd_tmp(self, stdout):
         script_name = "pushd_tmp.bat"
 

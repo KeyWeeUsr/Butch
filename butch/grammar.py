@@ -29,6 +29,7 @@ SPECIAL_AMP = "&"
 SPECIAL_PIPE = "|"
 SPECIAL_LT = "<"
 SPECIAL_GT = ">"
+SPECIAL_COLON = ":"
 SPECIAL_REDIR = frozenset((
     SPECIAL_LT,
     SPECIAL_GT
@@ -47,7 +48,8 @@ SPECIALS = frozenset(
         SPECIAL_LPAREN,
         SPECIAL_RPAREN,
         SPECIAL_AT,
-        SPECIAL_LF
+        SPECIAL_LF,
+        SPECIAL_COLON
     ] + list(SPECIAL_SPLITTERS) + list(DELIMS)
 )
 

@@ -12,7 +12,7 @@ from butch.commandtype import CommandType
 from butch.grammar import (
     SPECIAL_CR, SPECIAL_CARRET, SPECIAL_LPAREN, SPECIAL_RPAREN, SPECIAL_AMP,
     SPECIAL_PIPE, SPECIAL_LT, SPECIAL_REDIR, SPECIAL_SPLITTERS, SPECIAL_LF,
-    DELIM_WHITE, QUOTE_DOUBLE
+    DELIM_WHITE, QUOTE_DOUBLE, SPECIAL_COLON
 )
 from butch.counter import Count
 from butch.filmbuffer import FilmBuffer
@@ -39,6 +39,8 @@ class Flag(Enum):
     WORD = auto()
     QUOTE_IN_WORD = auto()
     UNFINISHED_LINE = auto()
+    COLON_COMMENT = auto()
+    COLON_LABEL = auto()
 
 
 class File:
@@ -325,6 +327,8 @@ def handle_char_newline(
     # SO says this, but CLI says no
     # if not flags[Flag.ESCAPE]:
     flags[Flag.QUOTE] = False
+    flags[Flag.COLON_COMMENT] = False
+    flags[Flag.COLON_LABEL] = False
     cmd_map = get_reverse_cmd_map()
 
     if flags[Flag.ESCAPE]:
@@ -346,8 +350,7 @@ def handle_char_newline(
                 cmd_clear = cmd_clear[1:]
             log("\t- cmd string: %r", cmd_clear)
             found.set(Command(
-                cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN),
-                echo=echo
+                cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
             ))
             buff.clear()
         if buff:
@@ -389,9 +392,8 @@ def handle_char_newline(
                     echo = False
                     cmd_clear = cmd_clear[1:]
                 log("\t- cmd string: %r", cmd_clear)
-                found.set(Command(
-                    cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
-                ))
+                cmd_type = cmd_map.get(cmd_clear, CommandType.UNKNOWN)
+                found.set(Command(cmd=cmd_type, echo=echo))
                 buff.clear()
 
         if flags[Flag.UNFINISHED_LINE]:
@@ -441,6 +443,7 @@ def handle_char_newline(
         # join buff to single command
         pass
 
+    flags[Flag.COLON_COMMENT] = False
     next(pos)
 
 
@@ -660,6 +663,23 @@ def handle_char_last(
         found.clear()
 
 
+def handle_char_colon(
+        pos: Count, flags: dict, text: FilmBuffer, found: Shared, log=emptyf
+) -> None:
+    """Handle the colon prefix for label or comment."""
+    log("- colon")
+    nchar = text.nchar
+    cmd_map = get_reverse_cmd_map()
+
+    if nchar == SPECIAL_COLON:
+        flags[Flag.COLON_COMMENT] = True
+        found.set(Command(cmd=CommandType.REM))
+        next(pos)
+    elif nchar != SPECIAL_COLON and not flags[Flag.COLON_COMMENT]:
+        flags[Flag.COLON_LABEL] = True
+    next(pos)
+
+
 def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     "Convert Batch as text input into tokens."
     log = ctx.log.debug
@@ -730,6 +750,10 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             handle_char_whitespace(
                 pos=idx, flags=flags, text=text, buff=buff,
                 found=found_command, log=log
+            )
+        elif char == SPECIAL_COLON and not flags[Flag.COLON_COMMENT]:
+            handle_char_colon(
+                pos=idx, flags=flags, text=text, found=found_command, log=log
             )
         else:
             handle_char_ordinary(
