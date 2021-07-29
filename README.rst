@@ -154,7 +154,12 @@ Commands
 - [ ] `SETLOCAL <https://ss64.com/nt/setlocal.html>`__
 - [ ] `SHIFT <https://ss64.com/nt/shift.html>`__
 - [ ] `START <https://ss64.com/nt/start.html>`__
-- [ ] `TIME <https://ss64.com/nt/time.html>`__
+- [X] `TIME <https://ss64.com/nt/time.html>`__
+
+  *pending:*
+
+  - [ ] set the system time when called without arguments
+
 - [X] `TITLE <https://ss64.com/nt/title.html>`__
 - [X] `TYPE <https://ss64.com/nt/type.html>`__
 - [ ] `VER <https://ss64.com/nt/ver.html>`__

@@ -29,3 +29,4 @@ class CommandType(enum.Enum):
     REM = "rem"
     PUSHD = "pushd"
     POPD = "popd"
+    TIME = "time"

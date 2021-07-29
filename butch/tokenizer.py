@@ -669,7 +669,6 @@ def handle_char_colon(
     """Handle the colon prefix for label or comment."""
     log("- colon")
     nchar = text.nchar
-    cmd_map = get_reverse_cmd_map()
 
     if nchar == SPECIAL_COLON:
         flags[Flag.COLON_COMMENT] = True

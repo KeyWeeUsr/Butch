@@ -334,6 +334,7 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
     """
     ctx.error_level = 0
 
+    log = ctx.log.debug
     out = sys.stdout
     if ctx.collect_output:
         log("\t- should collect output")
@@ -554,7 +555,42 @@ def date(params: list, ctx: Context) -> None:
     print(f"The current date is: {now}")
     print("Enter the new date: (mm-dd-yy)")
     print("Setting the date is not implemented, use /T", file=sys.stderr)
-    input()
+    try:
+        input()
+    except KeyboardInterrupt:
+        ctx.error_level = 1
+
+
+@what_func
+def time(params: list, ctx: Context) -> None:
+    """
+    Batch: TIME command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
+    ctx.error_level = 0
+
+    first = params[0].value if params else ""
+    if first == PARAM_HELP:
+        print_help(cmd=CommandType.TIME)
+        return
+
+    now = datetime.now()
+    now = now.strftime("%X")
+    if first.upper() == "/T":
+        # should match the locale format
+        print(now)
+        return
+
+    print(f"The current time is: {now}")
+    print("Enter the new time: ")
+    print("Setting the date is not implemented, use /T", file=sys.stderr)
+    try:
+        input()
+    except KeyboardInterrupt:
+        ctx.error_level = 1
 
 
 @what_func
@@ -762,7 +798,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
     for file_item in files:
         raw = stat(file_item)
         cdate = datetime.fromtimestamp(raw.st_ctime)
-        time = cdate.strftime("%X")
+        file_time = cdate.strftime("%X")
         cdate = cdate.strftime("%x")
         is_dir = isdir(file_item)
         dir_text = ""
@@ -777,7 +813,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
             size = "{0:n}".format(size).rjust(DIR_FORMAT_FILE_BYTES_RJUST)
 
         count["folders" if is_dir else "files"] += 1
-        tmp.append(f"{cdate}  {time}    {dir_text}  {size} {file_item}")
+        tmp.append(f"{cdate}  {file_time}    {dir_text}  {size} {file_item}")
 
     prefix = [
         " Volume in drive <NYI> has no label.",
@@ -943,7 +979,8 @@ def get_cmd_map():
         CommandType.PATH: path_cmd,
         CommandType.REM: rem_comment,
         CommandType.PUSHD: pushd,
-        CommandType.POPD: popd
+        CommandType.POPD: popd,
+        CommandType.TIME: time
     }
 
 
