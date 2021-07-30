@@ -10,4 +10,4 @@ coverage run \
         --start-directory $PKG \
         --top-level-directory $PKG $*
 
-coverage report --show-missing --omit butch/test.py
+coverage report --show-missing --omit butch/tests
