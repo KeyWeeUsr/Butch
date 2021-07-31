@@ -48,7 +48,7 @@ def _handle_redirection_input(redir_target: str, ctx: Context):
     input_buff = ctx.input.stdin
 
     path = redir_target.replace("\\", "/")
-    log("\t\t\t- creating from %r", redir_target)
+    log("\t\t\t- creating from %r", path)
     with open(path) as stdin:
         while True:
             chunk = stdin.read(FILE_CHUNK)

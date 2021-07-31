@@ -337,6 +337,29 @@ class Caller(TestCase):
             lines = tmpfile.readlines()
             self.assertEqual(lines, output_content)
             remove(tmp_path)
+            self.assertFalse(exists(tmp_path))
+
+    def test_input_redirection(self):
+        from os import remove
+        from tempfile import NamedTemporaryFile
+        from butch.caller import _handle_redirection_input as handle
+        from butch.context import Context
+
+        input_content = ["hello\n", "butch\n"]
+
+        ctx = Context()
+
+        with NamedTemporaryFile(mode="w+", delete=False) as tmpfile:
+            for line in input_content:
+                tmpfile.write(line)
+            tmpfile.seek(0)
+
+            tmp_path = tmpfile.name
+            handle(redir_target=tmp_path.replace("/", "\\"), ctx=ctx)
+            self.assertTrue(exists(tmp_path))
+            lines = ctx.input.stdin.readlines()
+            self.assertEqual(lines, input_content)
+            remove(tmp_path)
 
 
 class State(TestCase):
