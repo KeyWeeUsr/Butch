@@ -20,13 +20,13 @@ class UnknownCommand(Exception):
     """Exception if CommandType.UNKNOWN was passed."""
 
 
-def _handle_redirection_output(redir_target, ctx: Context):
+def _handle_redirection_output(redir_target: str, ctx: Context):
     log = ctx.log.debug
     log("\t- redirect collected output to: %r", redir_target)
 
     # read ctx.output.stdout/stderr
     # and write to whatever provided as cmd.right
-    path = redir_target.value.replace("\\", "/")
+    path = redir_target.replace("\\", "/")
     log("\t\t- writing collected stdout to %r", path)
 
     out = ctx.output.stdout
@@ -93,7 +93,9 @@ def new_call(  # noqa: WPS317
             log("\t- finishing redirection")
             if is_redir_output:
                 log("\t\t- writing output")
-                _handle_redirection_output(redir_target=command.right, ctx=ctx)
+                _handle_redirection_output(
+                    redir_target=command.right.value, ctx=ctx
+                )
             log("\t\t- done")
             return
         command = command.right

@@ -313,6 +313,31 @@ class Caller(TestCase):
                 Argument(value=value) for value in params
             ]), ctx=Context())
 
+    def test_output_redirection(self):
+        from os import remove
+        from tempfile import NamedTemporaryFile
+        from butch.caller import _handle_redirection_output as handle
+        from butch.context import Context
+        from butch.outputs import CommandOutput
+
+        output_content = ["hello\n", "butch\n"]
+        output = CommandOutput()
+        for line in output_content:
+            output.stdout.write(line)
+        output.stdout.seek(0)
+
+        ctx = Context()
+        ctx.output = output
+
+        with NamedTemporaryFile(mode="w+", delete=False) as tmpfile:
+            tmp_path = tmpfile.name
+            handle(redir_target=tmp_path.replace("/", "\\"), ctx=ctx)
+            self.assertTrue(exists(tmp_path))
+            tmpfile.seek(0)
+            lines = tmpfile.readlines()
+            self.assertEqual(lines, output_content)
+            remove(tmp_path)
+
 
 class State(TestCase):
     def test_unknown_skipped(self):
