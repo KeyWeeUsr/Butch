@@ -40,6 +40,24 @@ def _handle_redirection_output(redir_target: str, ctx: Context):
             output_descr.write(chunk)
 
 
+def _handle_redirection_input(redir_target: str, ctx: Context):
+    log = ctx.log.debug
+    log("\t\t- should create STDIN")
+    ctx.inputted = True
+    ctx.input = CommandInput()
+    input_buff = ctx.input.stdin
+
+    path = redir_target.replace("\\", "/")
+    log("\t\t\t- creating from %r", redir_target)
+    with open(path) as stdin:
+        while True:
+            chunk = stdin.read(FILE_CHUNK)
+            if not chunk:
+                break
+            input_buff.write(chunk)
+    input_buff.seek(0)
+
+
 def new_call(  # noqa: WPS317
         cmd: Union[Command, Connector],  # noqa: WPS318
         ctx: Context, child: bool = False  # noqa: WPS318
@@ -64,25 +82,18 @@ def new_call(  # noqa: WPS317
         is_redir = isinstance(command, Redirection)
         is_pipe = isinstance(command, Pipe)
         is_redir_output = False
+
         if is_redir and command.type == RedirType.OUTPUT:
             is_redir_output = True
+
         if is_redir or is_pipe:
             if is_redir_output or is_pipe:
                 log("\t\t- should collect STDOUT+STDERR")
                 ctx.collect_output = True
             else:
-                log("\t\t- should create STDIN")
-                ctx.inputted = True
-                ctx.input = CommandInput()
-                input_buff = ctx.input.stdin
-                log("\t\t\t- creating from %r", command.right.value)
-                with open(command.right.value) as stdin:
-                    while True:
-                        chunk = stdin.read(FILE_CHUNK)
-                        if not chunk:
-                            break
-                        input_buff.write(chunk)
-                input_buff.seek(0)
+                _handle_redirection_input(
+                    redir_target=command.right.value, ctx=ctx
+                )
         left = command.left
         log("\t- recursion to connector's left: %r", left)
         new_call(cmd=left, ctx=ctx, child=True)
