@@ -361,6 +361,29 @@ class Caller(TestCase):
             self.assertEqual(lines, input_content)
             remove(tmp_path)
 
+    def test_trigger_input_redirect(self):
+        from butch.caller import new_call, UnknownCommand
+        from butch.commandtype import CommandType
+        from butch.context import Context
+        from butch.tokenizer import Command, File, Redirection, RedirType
+
+        ctx = Context()
+        self.assertFalse(ctx.collect_output)
+        redir_mock = patch(
+            "butch.caller._handle_redirection_input",
+            side_effect=UnknownCommand()
+        )
+        file_path = "<nonexisting>"
+
+        with redir_mock as redir, self.assertRaises(UnknownCommand):
+            new_call(cmd=Redirection(
+                redir_type=RedirType.INPUT,
+                left=Command(cmd=CommandType.UNKNOWN),
+                right=File(value=file_path)
+            ), ctx=ctx, child=False)
+        self.assertFalse(ctx.collect_output)
+        self.assertFalse(ctx.piped)
+
 
 class State(TestCase):
     def test_unknown_skipped(self):
