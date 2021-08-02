@@ -138,6 +138,27 @@ class Caller(TestCase):
         self.assertFalse(ctx.piped)
         second_call.assert_called_with(cmd=left, ctx=ctx, child=True)
 
+    def test_raw_connector_else(self):
+        from butch.caller import new_call as call, UnknownCommand
+        from butch.context import Context
+        from butch.commandtype import CommandType
+        from butch.tokenizer import Connector, Command, Argument
+
+        params = [str(val) for val in range(3)]
+        args = [Argument(value=value) for value in params]
+
+        ctx = Context()
+        echo_mock = patch("butch.commands.echo")
+        dummy = MagicMock()
+        unk_mock = self.assertRaises(UnknownCommand)
+
+        left = Command(cmd=CommandType.ECHO, args=args)
+        with echo_mock as echo, unk_mock as unk:
+            self.assertEqual(call(
+                cmd=Connector(name="dummy", left=left, right=dummy), ctx=ctx
+            ))
+            echo.assert_called_once_with(params=args, ctx=ctx)
+
 
 if __name__ == "__main__":
     main()
