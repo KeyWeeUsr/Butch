@@ -110,6 +110,29 @@ class Caller(TestCase):
         self.assertFalse(ctx.collect_output)
         self.assertFalse(ctx.piped)
 
+    def test_trigger_output_redirect(self):
+        from butch.caller import new_call, UnknownCommand
+        from butch.commandtype import CommandType
+        from butch.context import Context
+        from butch.tokenizer import Command, File, Redirection, RedirType
+
+        ctx = Context()
+        self.assertFalse(ctx.collect_output)
+        redir_mock = patch(
+            "butch.caller._handle_redirection_output",
+            side_effect=UnknownCommand()
+        )
+        file_path = "<nonexisting>"
+
+        with redir_mock as redir, self.assertRaises(UnknownCommand):
+            new_call(cmd=Redirection(
+                redir_type=RedirType.OUTPUT,
+                left=Command(cmd=CommandType.UNKNOWN),
+                right=File(value=file_path)
+            ), ctx=ctx, child=False)
+        self.assertTrue(ctx.collect_output)
+        self.assertFalse(ctx.piped)
+
 
 if __name__ == "__main__":
     main()
