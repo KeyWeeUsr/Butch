@@ -5,8 +5,10 @@
 # pylint: disable=too-many-lines,too-many-locals
 
 from unittest import main, TestCase
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from os.path import exists
+
+from butch.tests.utils import FuncCalls
 
 
 class Caller(TestCase):
@@ -118,20 +120,23 @@ class Caller(TestCase):
 
         ctx = Context()
         self.assertFalse(ctx.collect_output)
-        redir_mock = patch(
-            "butch.caller._handle_redirection_output",
-            side_effect=UnknownCommand()
+        redir_mock = patch("butch.caller._handle_redirection_output")
+        second_call = MagicMock()
+        call_mock = patch(
+            "butch.caller.new_call",
+            side_effect=FuncCalls(second_call)
         )
         file_path = "<nonexisting>"
 
-        with redir_mock as redir, self.assertRaises(UnknownCommand):
+        left = Command(cmd=CommandType.UNKNOWN)
+        with redir_mock as redir, call_mock as kall:
             new_call(cmd=Redirection(
-                redir_type=RedirType.OUTPUT,
-                left=Command(cmd=CommandType.UNKNOWN),
+                redir_type=RedirType.OUTPUT, left=left,
                 right=File(value=file_path)
             ), ctx=ctx, child=False)
         self.assertTrue(ctx.collect_output)
         self.assertFalse(ctx.piped)
+        second_call.assert_called_with(cmd=left, ctx=ctx, child=True)
 
 
 if __name__ == "__main__":
