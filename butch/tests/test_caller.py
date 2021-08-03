@@ -112,6 +112,25 @@ class Caller(TestCase):
         self.assertFalse(ctx.collect_output)
         self.assertFalse(ctx.piped)
 
+    def test_trigger_output_redirect_check_ctx(self):
+        from butch.caller import new_call, UnknownCommand
+        from butch.commandtype import CommandType
+        from butch.context import Context
+        from butch.tokenizer import Command, File, Redirection, RedirType
+
+        ctx = Context()
+        self.assertFalse(ctx.collect_output)
+        file_path = "<nonexisting>"
+
+        with self.assertRaises(UnknownCommand):
+            new_call(cmd=Redirection(
+                redir_type=RedirType.OUTPUT,
+                left=Command(cmd=CommandType.UNKNOWN),
+                right=File(value=file_path)
+            ), ctx=ctx, child=False)
+        self.assertTrue(ctx.collect_output)
+        self.assertFalse(ctx.piped)
+
     def test_trigger_output_redirect(self):
         from butch.caller import new_call, UnknownCommand
         from butch.commandtype import CommandType
@@ -134,9 +153,10 @@ class Caller(TestCase):
                 redir_type=RedirType.OUTPUT, left=left,
                 right=File(value=file_path)
             ), ctx=ctx, child=False)
-        self.assertTrue(ctx.collect_output)
+            redir.assert_called_once_with(redir_target=file_path, ctx=ctx)
+        second_call.assert_called_once_with(cmd=left, ctx=ctx, child=True)
+        self.assertFalse(ctx.collect_output)
         self.assertFalse(ctx.piped)
-        second_call.assert_called_with(cmd=left, ctx=ctx, child=True)
 
     def test_raw_connector_else(self):
         from butch.caller import new_call as call, UnknownCommand
