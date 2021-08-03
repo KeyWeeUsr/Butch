@@ -16,7 +16,7 @@ from butch.commandtype import CommandType
 from butch.constants import (
     ACCESS_DENIED, DELETE, DIR_INVALID, DIR_NONEMPTY, ENV_VAR_UNDEFINED,
     ERROR_PROCESSING, FILE_NOT_FOUND, PARAM_HELP, PARAM_YES, PATH_EXISTS,
-    PATH_NOT_FOUND, PAUSE_TEXT, SURE, SYNTAX_INCORRECT
+    PATH_NOT_FOUND, PAUSE_TEXT, SURE, SYNTAX_INCORRECT, ECHO_STATE
 )
 from butch.context import Context
 from butch.expansion import percent_expansion
@@ -92,7 +92,7 @@ def echo(params: List[Argument], ctx: Context) -> None:
 
     if not params_len:
         echo_state = state_map[ctx.echo]
-        print(f"ECHO is {echo_state}.", file=out)
+        print(ECHO_STATE.format(echo_state), file=out)
         return
 
     print(*params, file=out)

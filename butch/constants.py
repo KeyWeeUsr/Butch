@@ -14,3 +14,4 @@ DIR_INVALID = "The directory name is invalid."
 DIR_NONEMPTY = "The directory is not empty."
 ACCESS_DENIED = "Access is denied."
 ERROR_PROCESSING = "Error occured while processing: {}."  # noqa: P103
+ECHO_STATE = "ECHO is {}."
