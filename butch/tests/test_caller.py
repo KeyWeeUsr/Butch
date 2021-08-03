@@ -89,7 +89,7 @@ class Caller(TestCase):
             self.assertEqual(lines, input_content)
             remove(tmp_path)
 
-    def test_trigger_input_redirect(self):
+    def test_trigger_input_redirect_ctx_check(self):
         from butch.caller import new_call, UnknownCommand
         from butch.commandtype import CommandType
         from butch.context import Context
@@ -109,6 +109,32 @@ class Caller(TestCase):
                 left=Command(cmd=CommandType.UNKNOWN),
                 right=File(value=file_path)
             ), ctx=ctx, child=False)
+        self.assertFalse(ctx.collect_output)
+        self.assertFalse(ctx.piped)
+
+    def test_trigger_input_redirect(self):
+        from butch.caller import new_call, UnknownCommand
+        from butch.commandtype import CommandType
+        from butch.context import Context
+        from butch.tokenizer import Command, File, Redirection, RedirType
+
+        ctx = Context()
+        self.assertFalse(ctx.collect_output)
+        redir_mock = patch("butch.caller._handle_redirection_input")
+        second_call = MagicMock()
+        call_mock = patch(
+            "butch.caller.new_call",
+            side_effect=FuncCalls(second_call)
+        )
+        file_path = "<nonexisting>"
+
+        left = Command(cmd=CommandType.UNKNOWN)
+        with redir_mock as redir, call_mock as kall:
+            new_call(cmd=Redirection(
+                redir_type=RedirType.INPUT, left=left,
+                right=File(value=file_path)
+            ), ctx=ctx, child=False)
+        second_call.assert_called_once_with(cmd=left, ctx=ctx, child=True)
         self.assertFalse(ctx.collect_output)
         self.assertFalse(ctx.piped)
 
@@ -148,7 +174,7 @@ class Caller(TestCase):
         file_path = "<nonexisting>"
 
         left = Command(cmd=CommandType.UNKNOWN)
-        with redir_mock as redir, call_mock as kall:
+        with redir_mock as redir, call_mock:
             new_call(cmd=Redirection(
                 redir_type=RedirType.OUTPUT, left=left,
                 right=File(value=file_path)
