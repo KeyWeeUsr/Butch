@@ -31,6 +31,7 @@ DIR_FORMAT_FOLDER_COUNT_RJUST = 18
 DIR_FORMAT_FREE_BYTES_RJUST = 14
 DIR_FORMAT_FOLDER_SYMBOL_LJUST = 14
 DIR_FORMAT_FILE_BYTES_RJUST = 14
+LOG_STR = "<cmd: %-8.8s>, params: %r, ctx: %r"
 
 
 def what_func(func):
@@ -47,9 +48,8 @@ def what_func(func):
         ctx = kwargs.get("ctx")
         params = kwargs.get("params")
         if ctx:
-            log_str = "<cmd: %-8.8s>, params: %r, ctx: %r"
-            ctx.log.debug(log_str, func.__name__, params, ctx)
-        func(*args, **kwargs)
+            ctx.log.debug(LOG_STR, func.__name__, params, ctx)
+        return func(*args, **kwargs)
     return wrapper
 
 
