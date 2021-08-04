@@ -302,6 +302,7 @@ def help_cmd(params: List[Argument], ctx: Context) -> None:
     params = _expand_params(params=params, ctx=ctx)
     if not params:
         print_help(cmd=CommandType.HELP, file=out)
+        return
 
     print_help(
         cmd=cmd_map.get(params[0].lower(), CommandType.UNKNOWN), file=out
