@@ -338,3 +338,16 @@ class PathCommand(TestCase):
         self.assertEqual(pipe.read(), "")  # no seek
         pipe.seek(0)
         self.assertEqual(pipe.read(), f"PATH={path}\n")
+
+    def test_path_help(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import path_cmd
+        from butch.tokens import Argument
+        from butch.constants import PARAM_HELP
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        with patch("butch.commands.print_help") as prnt:
+            path_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+        prnt.assert_called_once_with(cmd=CommandType.PATH, file=sys.stdout)
