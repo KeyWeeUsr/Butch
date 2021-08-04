@@ -119,7 +119,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
     params_len = len(params)
 
     if not params_len:
-        print(SYNTAX_INCORRECT, file=sys.stdout)
+        print(SYNTAX_INCORRECT, file=out)
         ctx.error_level = 1
         return
 

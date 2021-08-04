@@ -190,3 +190,21 @@ class TypeCommand(TestCase):
                 pipe.read(),
                 f"{path}\n\n\n\n\n{body}\n\n\n{path}\n\n\n\n\n{body}\n"
             )
+
+    def test_type_no_args(self):
+        import sys
+        from os.path import abspath
+        from butch.context import Context
+        from butch.constants import SYNTAX_INCORRECT
+        from butch.commands import type_cmd
+
+        ctx = Context()
+        ctx.collect_output = True
+        self.assertEqual(ctx.error_level, 0)
+        type_cmd(params=[], ctx=ctx)
+        self.assertEqual(ctx.error_level, 1)
+
+        pipe = ctx.output.stdout
+        self.assertEqual(pipe.read(), "")  # no seek
+        pipe.seek(0)
+        self.assertEqual(pipe.read(), SYNTAX_INCORRECT + "\n")
