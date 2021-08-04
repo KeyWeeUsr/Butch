@@ -402,6 +402,22 @@ class PopdCommand(TestCase):
             popd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.POPD, file=sys.stdout)
 
+    def test_popd_help_piped(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import popd
+        from butch.tokens import Argument
+        from butch.constants import PARAM_HELP
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        ctx.collect_output = True
+
+        with patch("butch.commands.print_help") as prnt:
+            popd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+        pipe = ctx.output.stdout
+        prnt.assert_called_once_with(cmd=CommandType.POPD, file=pipe)
+
     def test_popd_normal(self):
         import sys
         from butch.context import Context
