@@ -242,7 +242,7 @@ class TypeCommand(TestCase):
         with open(__file__) as this_file:
             self.assertEqual(pipe.read(), ACCESS_DENIED + "\n")
 
-    def test_type_nonexisting(self):
+    def test_type_nonexisting_single(self):
         import sys
         from os.path import abspath, dirname
         from butch.context import Context
@@ -261,3 +261,25 @@ class TypeCommand(TestCase):
         pipe.seek(0)
         with open(__file__) as this_file:
             self.assertEqual(pipe.read(), FILE_NOT_FOUND + "\n")
+
+    def test_type_nonexisting_multi(self):
+        import sys
+        from os.path import abspath, dirname
+        from butch.context import Context
+        from butch.commands import type_cmd
+        from butch.constants import FILE_NOT_FOUND, ERROR_PROCESSING
+        from butch.tokens import Argument
+
+        dummy = "dummy"
+
+        ctx = Context()
+        ctx.collect_output = True
+        type_cmd(params=[Argument(value=dummy)] * 2, ctx=ctx)
+
+        pipe = ctx.output.stdout
+        self.assertEqual(pipe.read(), "")  # no seek
+        pipe.seek(0)
+        error = ERROR_PROCESSING.format(dummy)
+        self.assertEqual(
+            pipe.read(), f"{dummy}\n{FILE_NOT_FOUND}\n{error}\n" * 2
+        )
