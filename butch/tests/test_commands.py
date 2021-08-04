@@ -166,3 +166,27 @@ class TypeCommand(TestCase):
         pipe.seek(0)
         with open(__file__) as this_file:
             self.assertEqual(pipe.read(), this_file.read() + "\n")
+
+    def test_type_piped_multi(self):
+        import sys
+        from os.path import abspath
+        from butch.context import Context
+        from butch.commands import type_cmd
+        from butch.tokens import Argument
+
+        dummy = "dummy"
+
+        ctx = Context()
+        ctx.collect_output = True
+        path = abspath(__file__)
+        type_cmd(params=[Argument(value=path)] * 2, ctx=ctx)
+
+        pipe = ctx.output.stdout
+        self.assertEqual(pipe.read(), "")  # no seek
+        pipe.seek(0)
+        with open(__file__) as this_file:
+            body = this_file.read()
+            self.assertEqual(
+                pipe.read(),
+                f"{path}\n\n\n\n\n{body}\n\n\n{path}\n\n\n\n\n{body}\n"
+            )
