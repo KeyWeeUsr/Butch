@@ -368,3 +368,21 @@ class PathCommand(TestCase):
         self.assertEqual(ctx.get_variable("PATH"), dummy)
         path_cmd(params=[Argument(value=";")], ctx=ctx)
         self.assertEqual(ctx.get_variable("PATH"), "")
+
+    def test_path_set(self):
+        from butch.context import Context
+        from butch.commands import path_cmd
+        from butch.tokens import Argument
+        from butch.constants import PARAM_HELP
+
+        ctx = Context()
+        new_path = "something"
+        self.assertIsNone(ctx.get_variable("PATH"))
+        path_cmd(params=[Argument(value=new_path)], ctx=ctx)
+        self.assertEqual(ctx.get_variable("PATH"), new_path)
+
+        dummy = "butch"
+        ctx.set_variable("PATH", dummy)
+        self.assertEqual(ctx.get_variable("PATH"), dummy)
+        path_cmd(params=[Argument(value=new_path)], ctx=ctx)
+        self.assertEqual(ctx.get_variable("PATH"), new_path)
