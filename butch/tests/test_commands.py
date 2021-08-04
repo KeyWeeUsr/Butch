@@ -145,3 +145,24 @@ class EchoCommand(TestCase):
         self.assertEqual(pipe.read(), "")  # no seek
         pipe.seek(0)
         self.assertEqual(pipe.read(), f"{dummy}\n")
+
+
+class TypeCommand(TestCase):
+    def test_type_piped_single(self):
+        import sys
+        from os.path import abspath
+        from butch.context import Context
+        from butch.commands import type_cmd
+        from butch.tokens import Argument
+
+        dummy = "dummy"
+
+        ctx = Context()
+        ctx.collect_output = True
+        type_cmd(params=[Argument(value=abspath(__file__))], ctx=ctx)
+
+        pipe = ctx.output.stdout
+        self.assertEqual(pipe.read(), "")  # no seek
+        pipe.seek(0)
+        with open(__file__) as this_file:
+            self.assertEqual(pipe.read(), this_file.read() + "\n")

@@ -124,7 +124,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
         return
 
     if params_len == 1:
-        first = params[0].lower()
+        first = params[0]
         if first == PARAM_HELP:
             print_help(cmd=CommandType.ECHO, file=out)
             return
