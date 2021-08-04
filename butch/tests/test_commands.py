@@ -193,7 +193,6 @@ class TypeCommand(TestCase):
 
     def test_type_no_args(self):
         import sys
-        from os.path import abspath
         from butch.context import Context
         from butch.constants import SYNTAX_INCORRECT
         from butch.commands import type_cmd
@@ -222,3 +221,23 @@ class TypeCommand(TestCase):
             type_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
 
         prnt.assert_called_once_with(cmd=CommandType.TYPE, file=sys.stdout)
+
+    def test_type_folder(self):
+        import sys
+        from os.path import abspath, dirname
+        from butch.context import Context
+        from butch.commands import type_cmd
+        from butch.constants import ACCESS_DENIED
+        from butch.tokens import Argument
+
+        dummy = "dummy"
+
+        ctx = Context()
+        ctx.collect_output = True
+        type_cmd(params=[Argument(value=dirname(abspath(__file__)))], ctx=ctx)
+
+        pipe = ctx.output.stdout
+        self.assertEqual(pipe.read(), "")  # no seek
+        pipe.seek(0)
+        with open(__file__) as this_file:
+            self.assertEqual(pipe.read(), ACCESS_DENIED + "\n")
