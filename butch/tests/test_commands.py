@@ -306,3 +306,21 @@ class TypeCommand(TestCase):
         self.assertEqual(
             pipe.read(), f"{dummy}\n{FILE_NOT_FOUND}\n{error}\n" * 2
         )
+
+
+class PathCommand(TestCase):
+    def test_path_piped(self):
+        from butch.context import Context
+        from butch.commands import path_cmd
+        from butch.tokens import Argument
+
+        ctx = Context()
+        ctx.collect_output = True
+        path = "h%e!l;l/o\\."
+        ctx.set_variable("PATH", path)
+        path_cmd(params=[], ctx=ctx)
+
+        pipe = ctx.output.stdout
+        self.assertEqual(pipe.read(), "")  # no seek
+        pipe.seek(0)
+        self.assertEqual(pipe.read(), f"PATH={path}\n")

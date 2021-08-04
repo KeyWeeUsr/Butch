@@ -196,7 +196,7 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
 
     if not params_len:
         path = ctx.get_variable("PATH") or "(null)"
-        print(f"PATH={path}", file=sys.stdout)
+        print(f"PATH={path}", file=out)
         return
 
     first = params[0].lower()
