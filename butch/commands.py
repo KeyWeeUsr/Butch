@@ -252,6 +252,8 @@ def popd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: POPD command.
 
+    Must NOT set errorlevel.
+
     Args:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
