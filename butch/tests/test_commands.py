@@ -309,6 +309,20 @@ class TypeCommand(TestCase):
 
 
 class PathCommand(TestCase):
+    def test_path_stdout(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import path_cmd
+        from butch.tokens import Argument
+
+        ctx = Context()
+        path = "h%e!l;l/o\\."
+        ctx.set_variable("PATH", path)
+
+        with patch("builtins.print") as prnt:
+            path_cmd(params=[], ctx=ctx)
+        prnt.assert_called_once_with(f"PATH={path}", file=sys.stdout)
+
     def test_path_piped(self):
         from butch.context import Context
         from butch.commands import path_cmd
