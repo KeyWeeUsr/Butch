@@ -436,3 +436,17 @@ class PopdCommand(TestCase):
             popd(params=[], ctx=ctx)
         ctx.pop_folder.assert_called_once_with()
         cdir.assert_called_once_with(dummy)
+
+    def test_popd_empty_stack(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import popd
+        from butch.tokens import Argument
+        from butch.constants import PARAM_HELP
+        from butch.commandtype import CommandType
+
+        dummy = "dummy"
+        ctx = Context()
+        ctx.pop_folder = MagicMock(side_effect=IndexError)
+        popd(params=[], ctx=ctx)
+        ctx.pop_folder.assert_called_once_with()
