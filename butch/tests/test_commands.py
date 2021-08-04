@@ -208,3 +208,17 @@ class TypeCommand(TestCase):
         self.assertEqual(pipe.read(), "")  # no seek
         pipe.seek(0)
         self.assertEqual(pipe.read(), SYNTAX_INCORRECT + "\n")
+
+    def test_type_help(self):
+        import sys
+        from butch.context import Context
+        from butch.constants import PARAM_HELP
+        from butch.commands import type_cmd
+        from butch.commandtype import CommandType
+        from butch.tokens import Argument
+
+        ctx = Context()
+        with patch("butch.commands.print_help") as prnt:
+            type_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+
+        prnt.assert_called_once_with(cmd=CommandType.TYPE, file=sys.stdout)

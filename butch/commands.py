@@ -126,7 +126,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
     if params_len == 1:
         first = params[0]
         if first == PARAM_HELP:
-            print_help(cmd=CommandType.ECHO, file=out)
+            print_help(cmd=CommandType.TYPE, file=out)
             return
 
         if isdir(first):
