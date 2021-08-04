@@ -351,3 +351,20 @@ class PathCommand(TestCase):
         with patch("butch.commands.print_help") as prnt:
             path_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.PATH, file=sys.stdout)
+
+    def test_path_delete(self):
+        from butch.context import Context
+        from butch.commands import path_cmd
+        from butch.tokens import Argument
+        from butch.constants import PARAM_HELP
+
+        ctx = Context()
+        self.assertIsNone(ctx.get_variable("PATH"))
+        path_cmd(params=[Argument(value=";")], ctx=ctx)
+        self.assertEqual(ctx.get_variable("PATH"), "")
+
+        dummy = "butch"
+        ctx.set_variable("PATH", dummy)
+        self.assertEqual(ctx.get_variable("PATH"), dummy)
+        path_cmd(params=[Argument(value=";")], ctx=ctx)
+        self.assertEqual(ctx.get_variable("PATH"), "")
