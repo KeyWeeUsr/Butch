@@ -417,3 +417,22 @@ class PopdCommand(TestCase):
             popd(params=[], ctx=ctx)
         ctx.pop_folder.assert_called_once_with()
         cdir.assert_called_once_with(dummy)
+
+    def test_popd_nonexisting(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import popd
+        from butch.tokens import Argument
+        from butch.constants import PARAM_HELP
+        from butch.commandtype import CommandType
+
+        dummy = "dummy"
+        ctx = Context()
+        ctx.pop_folder = MagicMock(return_value=dummy)
+        chdir_mock = patch(
+            "butch.context.chdir", side_effect=FileNotFoundError
+        )
+        with chdir_mock as cdir:
+            popd(params=[], ctx=ctx)
+        ctx.pop_folder.assert_called_once_with()
+        cdir.assert_called_once_with(dummy)
