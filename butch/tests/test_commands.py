@@ -874,3 +874,15 @@ class SetlocalCommand(TestCase):
         self.assertTrue(ctx.extensions_enabled)
         setlocal(params=[Argument(value="disableextensions")], ctx=ctx)
         self.assertFalse(ctx.extensions_enabled)
+
+    def test_setlocal_unknown(self):
+        from butch.context import Context
+        from butch.commands import setlocal
+        from butch.tokens import Argument
+
+        ctx = Context()
+        self.assertFalse(ctx.delayed_expansion_enabled)
+        self.assertTrue(ctx.extensions_enabled)
+        setlocal(params=[Argument(value="unknown")], ctx=ctx)
+        self.assertFalse(ctx.delayed_expansion_enabled)
+        self.assertTrue(ctx.extensions_enabled)
