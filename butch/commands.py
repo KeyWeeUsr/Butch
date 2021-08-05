@@ -322,10 +322,6 @@ def _print_single_variable(key: str, ctx: Context, file=sys.stdout) -> None:
     print(f"{key}={found_value}", file=file)
 
 
-def _delete_single_variable(key: str, ctx: Context) -> None:
-    ctx.delete_variable(key=key)
-
-
 @what_func
 def set_cmd(params: List[Argument], ctx: Context) -> None:
     """
@@ -387,7 +383,7 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
             ctx.set_variable(key=left, value_to_set=value_to_set)
         else:
             ctx.log.debug("\t- single variable delete: %r", left)
-            _delete_single_variable(key=left.lower(), ctx=ctx)
+            ctx.delete_variable(key=left.lower())
         return
 
     left = left.lower()
