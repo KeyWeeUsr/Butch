@@ -414,14 +414,22 @@ def setlocal(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
 
+    log = ctx.log.debug
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
     params_len = len(params)
     if not params_len:
         # TODO: copy all variables to new session
         # TODO: restore old state with endlocal
         return
 
+    params = _expand_params(params=params, ctx=ctx)
     if params_len == 1 and params[0] == PARAM_HELP:
-        print_help(cmd=CommandType.SETLOCAL)
+        print_help(cmd=CommandType.SETLOCAL, file=out)
         return
 
     # TODO: add bat-test, it's probably broken now
