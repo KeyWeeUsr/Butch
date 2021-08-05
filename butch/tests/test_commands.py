@@ -766,3 +766,27 @@ class SetCommand(TestCase):
         set_cmd(params=[Argument(value=f"{key}={dummy}")], ctx=ctx)
         self.assertEqual(ctx.error_level, 0)
         self.assertEqual(ctx.get_variable(key=key), dummy)
+
+    def test_set_print_single(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.outputs import CommandOutput
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        key = "myvar"
+        dummy = "dummy"
+        ctx.set_variable(key=key, value_to_set=dummy)
+        with patch("butch.commands._print_single_variable") as prnt:
+            set_cmd(params=[Argument(value=key)], ctx=ctx)
+        prnt.assert_called_once_with(key=key, ctx=ctx, file=sys.stdout)
+        self.assertEqual(ctx.error_level, 0)
+
+        ctx.collect_output = True
+        ctx.output = CommandOutput()
+        with patch("butch.commands._print_single_variable") as prnt:
+            set_cmd(params=[Argument(value=key)], ctx=ctx)
+        prnt.assert_called_once_with(key=key, ctx=ctx, file=ctx.output.stdout)
+        self.assertEqual(ctx.error_level, 0)
