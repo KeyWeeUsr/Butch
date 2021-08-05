@@ -735,3 +735,18 @@ class SetCommand(TestCase):
         inp.assert_not_called()
         prnt.assert_not_called()
         self.assertEqual(ctx.error_level, 1)
+
+    def test_set_delete(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.inputs import CommandInput
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        key = "myvar"
+        ctx.set_variable(key=key, value_to_set="dummy")
+        set_cmd(params=[Argument(value=f"{key}=")], ctx=ctx)
+        self.assertEqual(ctx.error_level, 0)
+        self.assertEqual(ctx.get_variable(key=key), "")
