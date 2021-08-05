@@ -886,3 +886,12 @@ class SetlocalCommand(TestCase):
         setlocal(params=[Argument(value="unknown")], ctx=ctx)
         self.assertFalse(ctx.delayed_expansion_enabled)
         self.assertTrue(ctx.extensions_enabled)
+
+    def test_setlocal_nyi(self):
+        from butch.context import Context
+        from butch.commands import setlocal
+        from butch.tokens import Argument
+
+        ctx = Context()
+        with self.assertRaises(NotImplementedError):
+            setlocal(params=[], ctx=ctx)

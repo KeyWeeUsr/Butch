@@ -425,7 +425,7 @@ def setlocal(params: list, ctx: Context) -> None:
     if not params_len:
         # TODO: copy all variables to new session
         # TODO: restore old state with endlocal
-        return
+        raise NotImplementedError("SETLOCAL")
 
     params = _expand_params(params=params, ctx=ctx)
     if params_len == 1 and params[0] == PARAM_HELP:
