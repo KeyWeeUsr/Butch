@@ -619,6 +619,22 @@ class SetCommand(TestCase):
             ], ctx=ctx)
         self.assertEqual(ctx.get_variable(key=key), prompt_input)
 
+    def test_set_prompt_quiet(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        key = "myvar"
+        prompt_input = "butch"
+        with patch("builtins.input", return_value=prompt_input):
+            set_cmd(params=[
+                Argument(value="/P"), Argument(value=f"{key}=")
+            ], ctx=ctx)
+        self.assertEqual(ctx.get_variable(key=key), prompt_input)
+
     def test_set_prompt_from_stdin(self):
         import sys
         from butch.context import Context
