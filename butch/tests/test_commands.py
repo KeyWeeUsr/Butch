@@ -547,3 +547,19 @@ class Utils(TestCase):
             _print_single_variable(key=dummy, ctx=ctx, file=sys.stdout)
         prnt.assert_called_once_with(ENV_VAR_UNDEFINED, file=sys.stdout)
         ctx.get_variable.assert_called_once_with(key=dummy)
+
+    def test_print_single_var_defined(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import _print_single_variable
+        from unittest.mock import call
+
+        ctx = Context()
+        found_value = "found"
+        ctx.get_variable = MagicMock(return_value=found_value)
+
+        dummy = "dummy"
+        with patch("butch.commands.print") as prnt:
+            _print_single_variable(key=dummy, ctx=ctx, file=sys.stdout)
+        prnt.assert_called_once_with(f"{dummy}={found_value}", file=sys.stdout)
+        ctx.get_variable.assert_called_once_with(key=dummy)
