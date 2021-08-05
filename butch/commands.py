@@ -315,7 +315,7 @@ def _print_all_variables(ctx: Context, file=sys.stdout) -> None:
 
 
 def _print_single_variable(key: str, ctx: Context, file=sys.stdout) -> None:
-    found_value = ctx.get_variable(key)
+    found_value = ctx.get_variable(key=key)
     if not found_value:
         print(ENV_VAR_UNDEFINED, file=file)
         return

@@ -518,3 +518,32 @@ class HelpCommand(TestCase):
         prnt.assert_called_once_with(
             cmd=cmd_map.return_value.get.return_value, file=ctx.output.stdout
         )
+
+
+class Utils(TestCase):
+    def test_print_all_vars(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import _print_all_variables
+        from unittest.mock import call
+
+        ctx = Context()
+        with patch("butch.commands.print") as prnt:
+            _print_all_variables(ctx=ctx, file=sys.stdout)
+            self.assertEqual(prnt.call_count, len(ctx.variables))
+
+    def test_print_single_var_undefined(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import _print_single_variable
+        from butch.constants import ENV_VAR_UNDEFINED
+        from unittest.mock import call
+
+        ctx = Context()
+        ctx.get_variable = MagicMock(return_value=False)
+
+        dummy = "dummy"
+        with patch("butch.commands.print") as prnt:
+            _print_single_variable(key=dummy, ctx=ctx, file=sys.stdout)
+        prnt.assert_called_once_with(ENV_VAR_UNDEFINED, file=sys.stdout)
+        ctx.get_variable.assert_called_once_with(key=dummy)
