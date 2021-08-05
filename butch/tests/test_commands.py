@@ -601,3 +601,20 @@ class SetCommand(TestCase):
         with patch("butch.commands._print_all_variables") as prnt:
             set_cmd(params=[], ctx=ctx)
         prnt.assert_called_once_with(ctx=ctx, file=ctx.output.stdout)
+
+    def test_set_prompt_with_text(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        key = "myvar"
+        prompt = "my prompt"
+        prompt_input = "butch"
+        with patch("builtins.input", return_value=prompt_input):
+            set_cmd(params=[
+                Argument(value="/P"), Argument(value=f"{key}={prompt}")
+            ], ctx=ctx)
+        self.assertEqual(ctx.get_variable(key=key), prompt_input)
