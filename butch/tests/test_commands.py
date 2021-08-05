@@ -585,3 +585,19 @@ class SetCommand(TestCase):
         prnt.assert_called_once_with(
             cmd=CommandType.SET, file=ctx.output.stdout
         )
+
+    def test_set_print_all(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        with patch("butch.commands._print_all_variables") as prnt:
+            set_cmd(params=[], ctx=ctx)
+        prnt.assert_called_once_with(ctx=ctx, file=sys.stdout)
+
+        ctx.collect_output = True
+        with patch("butch.commands._print_all_variables") as prnt:
+            set_cmd(params=[], ctx=ctx)
+        prnt.assert_called_once_with(ctx=ctx, file=ctx.output.stdout)
