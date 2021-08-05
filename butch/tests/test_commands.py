@@ -750,3 +750,19 @@ class SetCommand(TestCase):
         set_cmd(params=[Argument(value=f"{key}=")], ctx=ctx)
         self.assertEqual(ctx.error_level, 0)
         self.assertEqual(ctx.get_variable(key=key), "")
+
+    def test_set_value(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.inputs import CommandInput
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        key = "myvar"
+        dummy = "dummy"
+        ctx.set_variable(key=key, value_to_set=dummy)
+        set_cmd(params=[Argument(value=f"{key}={dummy}")], ctx=ctx)
+        self.assertEqual(ctx.error_level, 0)
+        self.assertEqual(ctx.get_variable(key=key), dummy)
