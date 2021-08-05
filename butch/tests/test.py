@@ -8,7 +8,7 @@ import sys
 from io import StringIO
 from typing import Callable
 from unittest import main, TestCase
-from unittest.mock import patch, call as mock_call, _CallList
+from unittest.mock import patch, call as mock_call, _CallList, MagicMock
 from os.path import join, dirname, abspath, exists
 
 
@@ -399,12 +399,11 @@ class Execution(TestCase):
         ctx = Context()
         value = "hello"
 
-        with patch("butch.commands._delete_single_variable") as mock:
-            call(cmd=Command(cmd=CommandType.SET, args=[
-                Argument(value=f"{value}=")
-            ]), ctx=ctx)
-            mock.assert_called_once_with(key=value, ctx=ctx)
-
+        ctx.delete_variable = MagicMock()
+        call(cmd=Command(cmd=CommandType.SET, args=[
+            Argument(value=f"{value}=")
+        ]), ctx=ctx)
+        ctx.delete_variable.assert_called_once_with(key=value)
         self.assertEqual(ctx.error_level, 0)
 
     def test_set_setsingle_new(self):
