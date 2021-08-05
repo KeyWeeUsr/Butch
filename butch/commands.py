@@ -374,7 +374,7 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
         if should_prompt:
             ctx.log.debug("\t- single variable prompt: %r", left)
             if ctx.inputted:
-                value_to_set = ctx.input.stdin.readline()
+                value_to_set = ctx.input.stdin.readline().rstrip("\n")
             else:
                 value_to_set = input()
             if not value_to_set:

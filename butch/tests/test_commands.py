@@ -662,3 +662,30 @@ class SetCommand(TestCase):
         inp.assert_not_called()
         prnt.assert_called_once_with(prompt, file=sys.stdout)
         self.assertEqual(ctx.get_variable(key=key), prompt_input)
+
+    def test_set_prompt_from_stdin_quiet(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.inputs import CommandInput
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+
+        ctx = Context()
+        input_obj = CommandInput()
+        ctx.input = input_obj
+
+        key = "myvar"
+        prompt_input = "butch"
+        input_obj.stdin.write(prompt_input + "\n")
+        input_obj.stdin.seek(0)
+
+        input_mock = patch("builtins.input")
+        ctx.inputted = True
+        with input_mock as inp, patch("builtins.print") as prnt:
+            set_cmd(params=[
+                Argument(value="/P"), Argument(value=f"{key}=")
+            ], ctx=ctx)
+        inp.assert_not_called()
+        prnt.assert_not_called()
+        self.assertEqual(ctx.get_variable(key=key), prompt_input)
