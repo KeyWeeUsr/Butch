@@ -563,3 +563,25 @@ class Utils(TestCase):
             _print_single_variable(key=dummy, ctx=ctx, file=sys.stdout)
         prnt.assert_called_once_with(f"{dummy}={found_value}", file=sys.stdout)
         ctx.get_variable.assert_called_once_with(key=dummy)
+
+
+class SetCommand(TestCase):
+    def test_set_help(self):
+        import sys
+        from butch.context import Context
+        from butch.commands import set_cmd
+        from butch.tokens import Argument
+        from butch.commandtype import CommandType
+        from butch.constants import PARAM_HELP
+
+        ctx = Context()
+        with patch("butch.commands.print_help") as prnt:
+            set_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+        prnt.assert_called_once_with(cmd=CommandType.SET, file=sys.stdout)
+
+        ctx.collect_output = True
+        with patch("butch.commands.print_help") as prnt:
+            set_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+        prnt.assert_called_once_with(
+            cmd=CommandType.SET, file=ctx.output.stdout
+        )
