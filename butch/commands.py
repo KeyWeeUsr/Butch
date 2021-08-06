@@ -456,6 +456,14 @@ def cd(params: list, ctx: Context) -> None:
     """
     ctx.error_level = 0
 
+    log = ctx.log.debug
+
+    out = sys.stdout
+    if ctx.collect_output:
+        log("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+
     params_len = len(params)
     if not params:
         # linux
@@ -466,7 +474,7 @@ def cd(params: list, ctx: Context) -> None:
     params = _expand_params(params=params, ctx=ctx)
     first = params[0]
     if params_len == 1 and first == PARAM_HELP:
-        print_help(cmd=CommandType.CD)
+        print_help(cmd=CommandType.CD, file=out)
         return
 
     try:
