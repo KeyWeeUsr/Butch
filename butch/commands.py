@@ -473,7 +473,7 @@ def cd(params: list, ctx: Context) -> None:
         ctx.cwd = first
     except FileNotFoundError:
         ctx.error_level = 1
-        print(PATH_NOT_FOUND, file=sys.stdout)
+        print(PATH_NOT_FOUND, file=sys.stderr)
 
 
 @what_func

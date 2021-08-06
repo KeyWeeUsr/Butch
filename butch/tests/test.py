@@ -336,7 +336,7 @@ class Execution(TestCase):
                 Argument(value=value)
             ]), ctx=ctx)
             chdir.assert_called_once_with(value)
-            mock.assert_called_once_with(PATH_NOT_FOUND, file=sys.stdout)
+            mock.assert_called_once_with(PATH_NOT_FOUND, file=sys.stderr)
 
         self.assertEqual(ctx.error_level, 1)
 

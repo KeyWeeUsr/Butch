@@ -30,11 +30,15 @@ def assert_bat_output_match(
     )
 
     pipe_text = "<pipe> "
+    stderr_text = "<stderr> "
     for idx, out in enumerate(output):
         buff = sys.stdout
         if out.startswith(pipe_text):
             out = out[len(pipe_text):]
             buff = file_buff
+        elif out.startswith(stderr_text):
+            out = out[len(stderr_text):]
+            buff = sys.stderr
         text = splitter(out)
 
         left = mock_calls[idx]
