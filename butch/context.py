@@ -3,7 +3,7 @@
 import sys
 from logging import RootLogger
 from os import chdir, getcwd
-from os.path import abspath
+from os.path import abspath, isdir
 from random import randint
 from tempfile import gettempdir
 from time import strftime
@@ -256,9 +256,12 @@ class Context:  # noqa: WPS214,WPS338
         Args:
             path (str): path to append to the PUSHD folder history.
         """
-        # TODO: verify if Batch sets errorlevel if a *file* path is provided
-        self._pushd_history.append(abspath(path))
+        if not isdir(path):
+            self.error_level = 1
+            return
+
         self.cwd = path
+        self._pushd_history.append(abspath(path))
 
     def pop_folder(self) -> str:
         """

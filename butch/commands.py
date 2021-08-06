@@ -216,6 +216,8 @@ def pushd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PUSHD command.
 
+    Must NOT set error_level on empty param list.
+
     Args:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
@@ -232,6 +234,7 @@ def pushd(params: List[Argument], ctx: Context) -> None:
     params_len = len(params)
 
     if not params_len:
+        print(file=out)
         return
 
     first = params[0].lower()
@@ -244,7 +247,7 @@ def pushd(params: List[Argument], ctx: Context) -> None:
         ctx.push_folder(path=path)
     except FileNotFoundError:
         ctx.error_level = 1
-        print(PATH_NOT_FOUND, file=sys.stdout)
+        print(PATH_NOT_FOUND, file=sys.stderr)
 
 
 @what_func
