@@ -410,7 +410,7 @@ class Context:  # noqa: WPS214,WPS338
     @prompt.setter
     def prompt(self, prompt_text: str):
         self._prompt = prompt_text
-        self.set_variable(PROMPT_KEY, prompt_text)
+        self.set_variable(key=PROMPT_KEY, value_to_set=prompt_text)
 
     @staticmethod
     def _get_default_variables():  # noqa: WPS602, WPS605
