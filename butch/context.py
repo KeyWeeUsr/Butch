@@ -260,8 +260,8 @@ class Context:  # noqa: WPS214,WPS338
             self.error_level = 1
             return
 
-        self.cwd = path
         self._pushd_history.append(abspath(path))
+        self.cwd = path
 
     def pop_folder(self) -> str:
         """
