@@ -57,6 +57,21 @@ def _expand_params(params: List[Argument], ctx: Context):
     return [percent_expansion(line=param.value, ctx=ctx) for param in params]
 
 
+def get_output(ctx: Context):
+    """
+    Get STDOUT buffer according to the Context settings.
+
+    Args:
+        ctx (Context): Context instance
+    """
+    out = sys.stdout
+    if ctx.collect_output:
+        ctx.log.debug("\t- should collect output")
+        ctx.output = CommandOutput()
+        out = ctx.output.stdout
+    return out
+
+
 @what_func
 def echo(params: List[Argument], ctx: Context) -> None:
     """
@@ -68,13 +83,7 @@ def echo(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
@@ -107,13 +116,7 @@ def type_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
@@ -183,13 +186,7 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
@@ -222,13 +219,7 @@ def pushd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
@@ -262,12 +253,7 @@ def popd(params: List[Argument], ctx: Context) -> None:
         ctx (Context): Context instance
     """
     log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params = _expand_params(params=params, ctx=ctx)
 
@@ -293,13 +279,7 @@ def help_cmd(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
-    log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     cmd_map = get_reverse_cmd_map()
     params = _expand_params(params=params, ctx=ctx)
@@ -335,13 +315,8 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
         ctx (Context): Context instance
     """
     ctx.error_level = 0
-
     log = ctx.log.debug
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     should_prompt = False
 
@@ -363,19 +338,19 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
 
     # >1 values are ignored
     if quoted:
-        ctx.log.debug("\t- quoted variable")
+        log("\t- quoted variable")
         param_value = param_value[1:param_value.rfind('"')]
 
     eq_sign = "="
     if eq_sign not in param_value and not should_prompt:
-        ctx.log.debug("\t- single variable print: %r", param_value)
+        log("\t- single variable print: %r", param_value)
         _print_single_variable(key=param_value, ctx=ctx, file=out)
         return
 
     left, right = param_value.split(eq_sign)
     if left and not right:
         if should_prompt:
-            ctx.log.debug("\t- single variable prompt: %r", left)
+            log("\t- single variable prompt: %r", left)
             if ctx.inputted:
                 value_to_set = ctx.input.stdin.readline().rstrip("\n")
             else:
@@ -385,18 +360,18 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
                 return
             ctx.set_variable(key=left, value_to_set=value_to_set)
         else:
-            ctx.log.debug("\t- single variable delete: %r", left)
+            log("\t- single variable delete: %r", left)
             ctx.delete_variable(key=left.lower())
         return
 
     left = left.lower()
-    ctx.log.debug("\t- single variable create: %r, %r", left, right)
+    log("\t- single variable create: %r, %r", left, right)
     if should_prompt:
-        ctx.log.debug("\t- single variable prompt: %r", left)
+        log("\t- single variable prompt: %r", left)
         if ctx.inputted:
             print(right, file=out)
             value_to_set = ctx.input.stdin.readline().rstrip("\n")
-            ctx.log.debug("\t- read from STDIN: %r", value_to_set)
+            log("\t- read from STDIN: %r", value_to_set)
         else:
             value_to_set = input(right)
         if not value_to_set:
@@ -417,12 +392,7 @@ def setlocal(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
 
-    log = ctx.log.debug
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params_len = len(params)
     if not params_len:
@@ -459,13 +429,7 @@ def cd(params: list, ctx: Context) -> None:
     """
     ctx.error_level = 0
 
-    log = ctx.log.debug
-
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params_len = len(params)
     if not params:
@@ -498,12 +462,7 @@ def prompt(params: list, ctx: Context) -> None:
     """
     ctx.error_level = 0
 
-    log = ctx.log.debug
-    out = sys.stdout
-    if ctx.collect_output:
-        log("\t- should collect output")
-        ctx.output = CommandOutput()
-        out = ctx.output.stdout
+    out = get_output(ctx=ctx)
 
     params_len = len(params)
     if not params_len:
@@ -534,14 +493,16 @@ def title(params: list, ctx: Context) -> None:
     """
     ctx.error_level = 0
 
+    out = get_output(ctx=ctx)
+
     params_len = len(params)
     if not params_len:
-        print()
+        print(file=out)
         return
 
     first = params[0]
     if params_len == 1 and first == PARAM_HELP:
-        print_help(cmd=CommandType.TITLE)
+        print_help(cmd=CommandType.TITLE, file=out)
         return
 
     platform_name = system()
