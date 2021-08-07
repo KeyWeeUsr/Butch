@@ -3,7 +3,7 @@
 import sys
 from logging import RootLogger
 from os import chdir, getcwd
-from os.path import abspath, isdir
+from os.path import abspath, exists, isdir
 from random import randint
 from tempfile import gettempdir
 from time import strftime
@@ -260,7 +260,8 @@ class Context:  # noqa: WPS214,WPS338
             self.error_level = 1
             return
 
-        self._pushd_history.append(abspath(path))
+        if exists(path):
+            self._pushd_history.append(abspath(path))
         self.cwd = path
 
     def pop_folder(self) -> str:

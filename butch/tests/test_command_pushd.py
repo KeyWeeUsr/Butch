@@ -62,7 +62,8 @@ class PushdCommand(TestCase):
         self.assertEqual(ctx.error_level, 0)
         self.assertEqual(ctx.pushd_history, [])
         isdir_mock = patch("butch.context.isdir", return_value=True)
-        with isdir_mock, patch("butch.context.chdir") as cdir:
+        exists_mock = patch("butch.context.exists", return_value=True)
+        with exists_mock, isdir_mock, patch("butch.context.chdir") as cdir:
             pushd(params=[
                 Argument(value=part)
                 for part in path.split(" ")
