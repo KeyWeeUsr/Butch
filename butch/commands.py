@@ -560,21 +560,22 @@ def time(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
     ctx.error_level = 0
+    out = get_output(ctx=ctx)
 
     first = params[0].value if params else ""
     if first == PARAM_HELP:
-        print_help(cmd=CommandType.TIME)
+        print_help(cmd=CommandType.TIME, file=out)
         return
 
     now = datetime.now()
     now = now.strftime("%X")
     if first.upper() == "/T":
         # should match the locale format
-        print(now)
+        print(now, file=out)
         return
 
-    print(f"The current time is: {now}")
-    print("Enter the new time: ")
+    print(f"The current time is: {now}", file=out)
+    print("Enter the new time: ", file=out)
     print("Setting the date is not implemented, use /T", file=sys.stderr)
     try:
         input()
