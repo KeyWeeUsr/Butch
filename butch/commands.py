@@ -593,10 +593,12 @@ def pause(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
     ctx.error_level = 0
+    out = get_output(ctx=ctx)
 
+    params = _expand_params(params=params, ctx=ctx)
     first = params[0] if params else ""
-    if first.value == PARAM_HELP:
-        print_help(cmd=CommandType.PAUSE)
+    if first == PARAM_HELP:
+        print_help(cmd=CommandType.PAUSE, file=out)
         return
 
     input(PAUSE_TEXT)
