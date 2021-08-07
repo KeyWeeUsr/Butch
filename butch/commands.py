@@ -527,21 +527,22 @@ def date(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
     ctx.error_level = 0
+    out = get_output(ctx=ctx)
 
     first = params[0].value if params else ""
     if first == PARAM_HELP:
-        print_help(cmd=CommandType.DATE)
+        print_help(cmd=CommandType.DATE, file=out)
         return
 
     now = datetime.now()
     if first.upper() == "/T":
         # should match the locale format
-        print(now.strftime("%x"))
+        print(now.strftime("%x"), file=out)
         return
 
     now = now.strftime("%a %x")
-    print(f"The current date is: {now}")
-    print("Enter the new date: (mm-dd-yy)")
+    print(f"The current date is: {now}", file=out)
+    print("Enter the new date: (mm-dd-yy)", file=out)
     print("Setting the date is not implemented, use /T", file=sys.stderr)
     try:
         input()
