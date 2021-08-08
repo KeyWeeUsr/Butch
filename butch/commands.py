@@ -16,7 +16,7 @@ from butch.commandtype import CommandType
 from butch.constants import (
     ACCESS_DENIED, DELETE, DIR_INVALID, DIR_NONEMPTY, ENV_VAR_UNDEFINED,
     ERROR_PROCESSING, FILE_NOT_FOUND, PARAM_HELP, PARAM_YES, PATH_EXISTS,
-    PATH_NOT_FOUND, PAUSE_TEXT, SURE, SYNTAX_INCORRECT, ECHO_STATE
+    PATH_NOT_FOUND, PAUSE_TEXT, SURE, SYNTAX_INCORRECT, ECHO_STATE, OCTAL_CLEAR
 )
 from butch.context import Context
 from butch.expansion import percent_expansion
@@ -614,14 +614,14 @@ def clear_screen(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
     ctx.error_level = 0
+    out = get_output(ctx=ctx)
+    params = _expand_params(params=params, ctx=ctx)
 
     first = params[0] if params else ""
-    if first.value == PARAM_HELP:
-        print("here")
-        print_help(cmd=CommandType.CLS)
+    if first == PARAM_HELP:
+        print_help(cmd=CommandType.CLS, file=out)
         return
-
-    print("\033c" if "DEBUG" not in environ else "<clear>")
+    print(OCTAL_CLEAR if "DEBUG" not in environ else "<clear>", file=out)
 
 
 @what_func

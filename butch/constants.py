@@ -15,3 +15,5 @@ DIR_NONEMPTY = "The directory is not empty."
 ACCESS_DENIED = "Access is denied."
 ERROR_PROCESSING = "Error occured while processing: {}."  # noqa: P103
 ECHO_STATE = "ECHO is {}."
+OCTAL_ESC = "\033"
+OCTAL_CLEAR = f"{OCTAL_ESC}c"
