@@ -867,18 +867,19 @@ def list_folder(params: List[Argument], ctx: Context) -> None:
     Raises:
         NotImplementedError: when dir command is supplied anything but /?
     """
+    out = get_output(ctx=ctx)
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
         # show current directory list
         lines = _get_listdir_lines(folder=getcwd(), ctx=ctx)
-        print("\n".join(lines))
+        print("\n".join(lines), file=out)
         ctx.error_level = 0
         return
 
     if params_len == 1 and params[0].lower() == PARAM_HELP:
-        print_help(cmd=CommandType.DIR)
+        print_help(cmd=CommandType.DIR, file=out)
         return
     raise NotImplementedError()
 
