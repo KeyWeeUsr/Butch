@@ -761,27 +761,28 @@ def create_folder(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
+    out = get_output(ctx=ctx)
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
         # do this also for piped input as mkdir does not care about pipes
         # echo hello | mkdir -> syntax incorrect
-        print(SYNTAX_INCORRECT)
+        print(SYNTAX_INCORRECT, file=sys.stderr)
         ctx.error_level = 1
         return
 
     if params_len == 1:
         first = params[0]
         if first.lower() == PARAM_HELP:
-            print_help(cmd=CommandType.MKDIR)
+            print_help(cmd=CommandType.MKDIR, file=out)
             return
         first = first.replace("\\", "/")
         dir_path = abspath(first)
         try:
             makedirs(dir_path)
         except FileExistsError:
-            print(PATH_EXISTS.format(first))
+            print(PATH_EXISTS.format(first), file=sys.stderr)
             ctx.error_level = 1
         return
 
@@ -790,7 +791,7 @@ def create_folder(params: List[Argument], ctx: Context) -> None:
         try:
             makedirs(param)
         except FileExistsError:
-            print(PATH_EXISTS.format(param))
+            print(PATH_EXISTS.format(param), file=sys.stderr)
             failed = True
 
     ctx.error_level = failed
