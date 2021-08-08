@@ -954,13 +954,14 @@ def rem_comment(params: List[Argument], ctx: Context) -> None:
         params (list): list of Argument instances for the Command
         ctx (Context): Context instance
     """
+    out = get_output(ctx=ctx)
     params_len = len(params)
     if not params_len:
         return
 
     params = [param.value for param in params]
     if params_len == 1 and params[0] == PARAM_HELP:
-        print_help(cmd=CommandType.REM)
+        print_help(cmd=CommandType.REM, file=out)
 
 
 def get_cmd_map():
