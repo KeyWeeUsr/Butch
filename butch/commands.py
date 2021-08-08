@@ -634,16 +634,16 @@ def exit_cmd(params: list, ctx: Context) -> None:
         ctx (Context): Context instance
     """
     ctx.error_level = 0
+    out = get_output(ctx=ctx)
+    params = _expand_params(params=params, ctx=ctx)
 
-    params_len = len(params)
-    if not params_len:
+    if not params:
         sys.exit(0)
         return
 
-    params = [param.value for param in params]
     first = params[0]
     if first == PARAM_HELP:
-        print_help(cmd=CommandType.EXIT)
+        print_help(cmd=CommandType.EXIT, file=out)
         return
 
     if "/B" in params:
