@@ -1014,31 +1014,3 @@ def get_reverse_cmd_map():
             continue
         rev_cmd_map[resolved.value] = resolved
     return rev_cmd_map
-
-
-def parse(cmd_and_args: str) -> Tuple[CommandType, list]:  # noqa: WPS210
-    """
-    Parse a string into a command.
-
-    Args:
-        cmd_and_args (str): isolated cmd string, e.g. "echo Hello, World"
-
-    Returns:
-        tuple with Command and its params in a list
-    """
-    cmd, *cmd_params = cmd_and_args.split(" ")
-    unk = CommandType.UNKNOWN
-
-    cmds = {}
-    for attr_name in dir(CommandType):
-        resolved = getattr(CommandType, attr_name)
-        if attr_name == unk.name:
-            continue
-        if not isinstance(resolved, CommandType):
-            continue
-        cmds[resolved.value] = resolved
-
-    found = cmds.get(cmd, unk)
-    if found == unk:
-        cmd_params = [cmd]
-    return (found, cmd_params)
