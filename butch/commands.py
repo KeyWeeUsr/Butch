@@ -65,11 +65,32 @@ def get_output(ctx: Context):
         ctx (Context): Context instance
     """
     out = sys.stdout
+    log = ctx.log.debug
     if ctx.collect_output:
-        ctx.log.debug("\t- should collect output")
-        ctx.output = CommandOutput()
+        log("\t- should collect output")
+        if not ctx.output:
+            log("\t\t- using existing output instance")
+            ctx.output = CommandOutput()
         out = ctx.output.stdout
     return out
+
+
+def get_error(ctx: Context):
+    """
+    Get STDERR buffer according to the Context settings.
+
+    Args:
+        ctx (Context): Context instance
+    """
+    err = sys.stderr
+    log = ctx.log.debug
+    if ctx.collect_output:
+        log("\t- should collect error")
+        if not ctx.output:
+            log("\t\t- using existing output instance")
+            ctx.output = CommandOutput()
+        err = ctx.output.stderr
+    return err
 
 
 @what_func
