@@ -254,35 +254,6 @@ class Tokenizer(TestCase):
             self.assertEqual(len(output), 0)
 
 
-class Parser(TestCase):
-    def test_unknown(self):
-        from butch.commands import parse
-        from butch.commandtype import CommandType
-        cmd = "-"
-        self.assertEqual(parse(cmd), (CommandType.UNKNOWN, [cmd]))
-
-    def test_echo(self):
-        from butch.commands import parse
-        from butch.commandtype import CommandType
-        params = ["hello"]
-        cmd = f"echo {params[0]}"
-        self.assertEqual(parse(cmd), (CommandType.ECHO, params))
-
-    def test_cd(self):
-        from butch.commands import parse
-        from butch.commandtype import CommandType
-        params = ["hello"]
-        cmd = f"cd {params[0]}"
-        self.assertEqual(parse(cmd), (CommandType.CD, params))
-
-    def test_set(self):
-        from butch.commands import parse
-        from butch.commandtype import CommandType
-        params = ["hello"]
-        cmd = f"set {params[0]}"
-        self.assertEqual(parse(cmd), (CommandType.SET, params))
-
-
 class State(TestCase):
     def test_unknown_skipped(self):
         from butch.context import Context
