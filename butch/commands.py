@@ -664,23 +664,24 @@ def delete(params: List[Argument], ctx: Context) -> None:
     """
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
 
+    out = get_output(ctx=ctx)
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
     if not params_len:
-        print(SYNTAX_INCORRECT, file=sys.stdout)
+        print(SYNTAX_INCORRECT, file=out)
         ctx.error_level = 1
         return
 
     if params_len == 1:
         first = params[0]
         if first.lower() == PARAM_HELP:
-            print_help(cmd=CommandType.DELETE)
+            print_help(cmd=CommandType.DELETE, file=out)
             return
         file_path = abspath(first)
         if not exists(file_path):
             os_path = file_path.replace("/", "\\")
-            print(f"Could Not Find {os_path}")
+            print(f"Could Not Find {os_path}", file=sys.stderr)
             ctx.error_level = 0
             return
 
@@ -707,9 +708,9 @@ def delete(params: List[Argument], ctx: Context) -> None:
                 text = rf"{os_path}\*, {SURE}"
                 if ctx.piped:
                     answer = ctx.output.stdout.read(1)
-                    print(f"{text} {answer}")
+                    print(f"{text} {answer}", file=out)
                 else:
-                    answer = input(f"{text} ").lower()
+                    answer = input(f"{text} ", file=out).lower()
             if answer != PARAM_YES:
                 continue
             for file_item in listdir(param):
@@ -720,9 +721,9 @@ def delete(params: List[Argument], ctx: Context) -> None:
             text = f"{os_path}, {DELETE}"
             if ctx.piped:
                 answer = ctx.output.stdout.read(1)
-                print(f"{text} {answer}")
+                print(f"{text} {answer}", file=out)
             else:
-                answer = input(text).lower()
+                answer = input(text, file=out).lower()
             if answer != PARAM_YES:
                 continue
         remove(path)
