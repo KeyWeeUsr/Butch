@@ -185,7 +185,7 @@ Syntax
 
   *pending:*
 
-  - [ ] some individual commands don't pull ctx.output and related parts
+  - [ ] ``RMDIR`` command doesn't pull ctx.output and related parts
   - [ ] generic command I/O handling as a decorator/class?
 
 - [X] Output redirection (``>``, ``>>``)
