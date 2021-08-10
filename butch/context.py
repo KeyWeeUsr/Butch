@@ -7,10 +7,12 @@ from os.path import abspath, exists, isdir
 from random import randint
 from tempfile import gettempdir
 from time import strftime
+from typing import Union
 
 from butch.logger import get_logger
 from butch.inputs import CommandInput
 from butch.outputs import CommandOutput
+from butch.jumptype import JumpType
 
 PROMPT_KEY = "prompt"
 PROMPT_SYMBOL = "$"
@@ -75,6 +77,7 @@ class Context:  # noqa: WPS214,WPS338
     _piped: bool
     _inputted: bool
     _logger: RootLogger
+    _jump: JumpType
 
     def __init__(self, **kwargs):
         """
@@ -100,6 +103,7 @@ class Context:  # noqa: WPS214,WPS338
         self._output = None
         self._piped = False
         self._inputted = False
+        self._jump = None
         self._variables = self._get_default_variables()
 
         # dynamic
@@ -415,6 +419,20 @@ class Context:  # noqa: WPS214,WPS338
     def prompt(self, prompt_text: str):
         self._prompt = prompt_text
         self.set_variable(key=PROMPT_KEY, value_to_set=prompt_text)
+
+    @property
+    def jump(self) -> JumpType:
+        """
+        Property.
+
+        Returns:
+            current jump instance
+        """
+        return self._jump
+
+    @jump.setter
+    def jump(self, jump_type: Union[None, JumpType]):
+        self._jump = jump_type
 
     @staticmethod
     def _get_default_variables():  # noqa: WPS602, WPS605
