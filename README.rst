@@ -32,7 +32,8 @@ should be located in the first ``site-packages`` folder found via |sitepkgs|_.
 
 .. code::
 
-   python $(python -c "import site;print(site.getsitepackages()[0])")/butch/test.py
+   python -m unittest discover \
+       $(python -c "import site;print(site.getsitepackages()[0])")/butch
 
 Development
 -----------
