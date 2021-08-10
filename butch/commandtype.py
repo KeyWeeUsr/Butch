@@ -30,3 +30,4 @@ class CommandType(enum.Enum):
     PUSHD = "pushd"
     POPD = "popd"
     TIME = "time"
+    GOTO = "goto"

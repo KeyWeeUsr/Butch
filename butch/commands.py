@@ -966,6 +966,31 @@ def rem_comment(params: List[Argument], ctx: Context) -> None:
         print_help(cmd=CommandType.REM, file=out)
 
 
+@what_func
+def goto(params: List[Argument], ctx: Context) -> None:
+    """
+    Batch: GOTO command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
+    out = get_output(ctx=ctx)
+    params = _expand_params(params=params, ctx=ctx)
+    params_len = len(params)
+
+    if not params_len:
+        ctx.error_level = 1
+        return
+
+    first = params[0]
+    if first.lower() == PARAM_HELP:
+        print_help(cmd=CommandType.GOTO, file=out)
+        return
+
+    raise NotImplementedError("GOTO label")
+
+
 def get_cmd_map():
     """
     Get mapping of CommandType into its functions for execution.
@@ -997,7 +1022,8 @@ def get_cmd_map():
         CommandType.REM: rem_comment,
         CommandType.PUSHD: pushd,
         CommandType.POPD: popd,
-        CommandType.TIME: time
+        CommandType.TIME: time,
+        CommandType.GOTO: goto
     }
 
 
