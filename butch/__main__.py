@@ -7,34 +7,8 @@ from os.path import exists
 
 from butch.caller import new_call
 from butch.context import Context, get_context
+from butch.handler import handle_input, handle_file, handle
 from butch.tokenizer import tokenize
-
-
-def handle_input_new(inp: str, ctx: Context):
-    """
-    Handle a Batch input from CLI.
-
-    Args:
-        inp: Batch commands as a string
-        ctx: Context instance
-    """
-    for cmd in tokenize(text=inp, ctx=ctx):
-        new_call(cmd=cmd, ctx=ctx)
-
-
-def handle_file_new(path: str, ctx: Context):
-    """
-    Open and handle a Batch file.
-
-    Args:
-        path: path to the Batch file
-        ctx: Context instance
-    """
-    with open(path) as fdes:
-        batch_file = fdes.read()
-    cmds = tokenize(text=batch_file, ctx=ctx)
-    for cmd in cmds:
-        new_call(cmd=cmd, ctx=ctx)
 
 
 def loop(ctx: Context):
@@ -49,7 +23,7 @@ def loop(ctx: Context):
         if ctx.echo:
             prompt = ctx.resolve_prompt()
         inp = input(prompt)
-        handle_input_new(inp=inp, ctx=ctx)
+        handle_input(inp=inp, ctx=ctx)
 
 
 def ctrlc_handler(*_):  # noqa: DAR101
@@ -149,20 +123,6 @@ def mainloop(ctx: Context):
             sys.exit(0)
 
 
-def handle_new(text: str, ctx: Context):
-    """
-    Handle for file and text.
-
-    Args:
-        text: either path or string input
-        ctx: Context instance
-    """
-    if exists(text):
-        handle_file_new(path=text, ctx=ctx)
-        return
-    handle_input_new(inp=text, ctx=ctx)
-
-
 def main():
     """Entrypoint function for Butch program."""
     cli = get_cli_parser()
@@ -177,12 +137,12 @@ def main():
     ctx.echo = not args.Q
 
     if args.C:
-        handle_new(text=" ".join(args.C), ctx=ctx)
+        handle(text=" ".join(args.C), ctx=ctx)
         sys.exit(ctx.error_level)
         return
 
     if args.K:
-        handle_new(text=" ".join(args.K), ctx=ctx)
+        handle(text=" ".join(args.K), ctx=ctx)
         mainloop(ctx=ctx)
         return
 

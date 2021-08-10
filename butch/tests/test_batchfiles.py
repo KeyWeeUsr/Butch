@@ -57,7 +57,7 @@ class BatchFiles(TestCase):
         script_name = "hello.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -69,7 +69,7 @@ class BatchFiles(TestCase):
         script_name = "cd_existing.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         with patch("butch.context.chdir") as cdr:
             ctx = Context()
@@ -83,7 +83,7 @@ class BatchFiles(TestCase):
         script_name = "cd_nonexisting.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -98,7 +98,7 @@ class BatchFiles(TestCase):
         script_name = "set_join.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -110,7 +110,7 @@ class BatchFiles(TestCase):
         script_name = "hello_quote.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -123,7 +123,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -135,7 +135,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote_2.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -147,7 +147,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote_3.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -159,7 +159,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote_4.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -171,7 +171,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote_5.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -183,7 +183,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote_6.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -195,7 +195,7 @@ class BatchFiles(TestCase):
         script_name = "set_quote_7.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -208,7 +208,7 @@ class BatchFiles(TestCase):
         script_name = "delete_file.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         tmp = script_name.replace(".bat", ".tmp")
@@ -228,7 +228,7 @@ class BatchFiles(TestCase):
         script_name = "delete_file_syntax.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -245,7 +245,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.constants import SURE
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         with open(join(folder, script_name)) as file:
             script = file.readlines()
@@ -284,7 +284,7 @@ class BatchFiles(TestCase):
         script_name = "mkdir_nonexisting.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         self.assertFalse(exists("new-folder"))
@@ -301,7 +301,7 @@ class BatchFiles(TestCase):
         script_name = "mkdir_tree.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         tree = join("new-folder", "with", "sub", "folders")
         ctx = Context()
@@ -321,7 +321,7 @@ class BatchFiles(TestCase):
         script_name = "type_print.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "new-file.txt"
         ctx = Context()
@@ -345,7 +345,7 @@ class BatchFiles(TestCase):
         script_name = "type_print_folder.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "new-folder"
         ctx = Context()
@@ -367,7 +367,7 @@ class BatchFiles(TestCase):
         script_name = "type_print_multiple.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         first = "new-file.txt"
         second = "new-file-2.txt"
@@ -406,7 +406,7 @@ class BatchFiles(TestCase):
         script_name = "type_print_multiple_halffail.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         first = "new-file.txt"
         second = "new-folder"
@@ -447,7 +447,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.outputs import CommandOutput
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "new-file.txt"
         ctx = Context()
@@ -480,7 +480,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.outputs import CommandOutput
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "new-file.txt"
         ctx = Context()
@@ -509,7 +509,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.outputs import CommandOutput
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "new-file.txt"
         ctx = Context()
@@ -538,7 +538,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.outputs import CommandOutput
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "new-file.txt"
         ctx = Context()
@@ -568,7 +568,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.outputs import CommandOutput
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "input.txt"
         ctx = Context()
@@ -597,7 +597,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.outputs import CommandOutput
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         filename = "input.txt"
         ctx = Context()
@@ -623,7 +623,7 @@ class BatchFiles(TestCase):
         script_name = "path_set.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -635,7 +635,7 @@ class BatchFiles(TestCase):
         script_name = "path_unset.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -647,7 +647,7 @@ class BatchFiles(TestCase):
         script_name = "path_append.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -659,7 +659,7 @@ class BatchFiles(TestCase):
         script_name = "rem_comment.bat"
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -672,7 +672,7 @@ class BatchFiles(TestCase):
 
         from butch.commandtype import CommandType
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
@@ -692,7 +692,7 @@ class BatchFiles(TestCase):
         from os import getcwd, chdir
         from shutil import rmtree
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         original = getcwd()
@@ -716,7 +716,7 @@ class BatchFiles(TestCase):
         from os import getcwd, chdir
         from shutil import rmtree
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         original = getcwd()
@@ -742,7 +742,7 @@ class BatchFiles(TestCase):
         from os import getcwd, chdir
         from shutil import rmtree
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         ctx = Context()
         original = getcwd()
@@ -766,7 +766,7 @@ class BatchFiles(TestCase):
         folder = BATCH_FOLDER
 
         from butch.context import Context
-        from butch.__main__ import handle_new
+        from butch.handler import handle as handle_new
 
         with open(join(folder, out_name)) as file:
             output = file.readlines()
