@@ -8,4 +8,4 @@ def get_version():
     Returns:
         version string in https://semver.org/ style
     """
-    return "0.0.1"
+    return "1.0.0"
