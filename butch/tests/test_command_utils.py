@@ -54,5 +54,10 @@ class Utils(TestCase):
 
     def test_cmd_map(self):
         from butch.commands import get_cmd_map
+        aliases = {"erase": "del", "md": "mkdir", "rd": "rmdir"}
+
         for key, func in get_cmd_map().items():
-            self.assertEqual(key.value, func.__name__[4:])
+            key_name = aliases.get(key.value, key.value)
+            func_name = func.__name__
+            self.assertEqual(func_name[:4], "cmd_")
+            self.assertEqual(key_name, func_name[4:])

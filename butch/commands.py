@@ -5,6 +5,7 @@ import ctypes
 
 from collections import defaultdict
 from datetime import datetime
+from functools import wraps
 from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
 from os.path import abspath, exists, isdir, join
@@ -45,6 +46,7 @@ def what_func(func):
     Returns:
         function wrapper
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         ctx = kwargs.get("ctx")
         params = kwargs.get("params")
