@@ -31,3 +31,4 @@ class CommandType(enum.Enum):
     POPD = "popd"
     TIME = "time"
     GOTO = "goto"
+    VER = "ver"

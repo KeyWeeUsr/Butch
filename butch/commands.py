@@ -8,7 +8,7 @@ from datetime import datetime
 from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
 from os.path import abspath, exists, isdir, join
-from platform import system
+from platform import system, platform
 from shutil import rmtree
 from typing import List, Tuple
 
@@ -997,6 +997,27 @@ def goto(params: List[Argument], ctx: Context) -> None:
     ctx.jump = JumpType(target=first)
 
 
+@what_func
+def ver(params: list, ctx: Context) -> None:
+    """
+    Batch: VER command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
+    ctx.error_level = 0
+    out = get_output(ctx=ctx)
+
+    first = params[0].value if params else ""
+    if first == PARAM_HELP:
+        print_help(cmd=CommandType.VER, file=out)
+        return
+
+    print(platform(), file=out)
+    ctx.error_level = 0
+
+
 def get_cmd_map():
     """
     Get mapping of CommandType into its functions for execution.
@@ -1029,7 +1050,8 @@ def get_cmd_map():
         CommandType.PUSHD: pushd,
         CommandType.POPD: popd,
         CommandType.TIME: time,
-        CommandType.GOTO: goto
+        CommandType.GOTO: goto,
+        CommandType.VER: ver
     }
 
 

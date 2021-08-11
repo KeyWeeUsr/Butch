@@ -163,7 +163,7 @@ Commands
 
 - [X] `TITLE <https://ss64.com/nt/title.html>`__
 - [X] `TYPE <https://ss64.com/nt/type.html>`__
-- [ ] `VER <https://ss64.com/nt/ver.html>`__
+- [X] `VER <https://ss64.com/nt/ver.html>`__
 - [ ] `VERIFY <https://ss64.com/nt/verify.html>`__
 - [ ] `VOL <https://ss64.com/nt/vol.html>`__
 - [X] `:: <https://ss64.com/nt/rem.html>`__
