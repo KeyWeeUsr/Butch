@@ -61,3 +61,9 @@ class Utils(TestCase):
             func_name = func.__name__
             self.assertEqual(func_name[:4], "cmd_")
             self.assertEqual(key_name, func_name[4:])
+
+    def test_reverse_cmd_map(self):
+        from butch.commands import get_reverse_cmd_map
+
+        for func, key in get_reverse_cmd_map().items():
+            self.assertEqual(key.value, func)
