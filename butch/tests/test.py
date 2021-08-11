@@ -253,6 +253,34 @@ class Tokenizer(TestCase):
             self.assertIsInstance(output, list)
             self.assertEqual(len(output), 0)
 
+    def test_block_single(self):
+        from butch.tokenizer import tokenize
+        from butch.tokens import Block
+        from butch.context import Context
+
+        command = "(\n    echo one\n    echo two\n    echo three\n)"
+        output = tokenize(text=command, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+
+        first = output[0]
+        self.assertIsInstance(first, Block)
+        self.assertEqual(len(first), len(command.split("\n")) - 2)
+
+    def test_block_multi(self):
+        from butch.tokenizer import tokenize
+        from butch.tokens import Block
+        from butch.context import Context
+
+        command = "(\n    echo one\n    echo two\n    echo three\n)"
+        output = tokenize(text=command, ctx=Context())
+        self.assertIsInstance(output, list)
+        self.assertEqual(len(output), 1)
+
+        first = output[0]
+        self.assertIsInstance(first, Block)
+        self.assertEqual(len(first), len(command.split("\n")) - 2)
+
 
 class State(TestCase):
     def test_unknown_skipped(self):
