@@ -664,13 +664,16 @@ def handle_char_last(
 
 
 def handle_char_colon(
-        pos: Count, flags: dict, text: FilmBuffer, found: Shared, log=emptyf
+        pos: Count, flags: dict, text: FilmBuffer, buff: CharList,
+        found: Shared, log=emptyf
 ) -> None:
     """Handle the colon prefix for label or comment."""
     log("- colon")
     nchar = text.nchar
 
-    if nchar == SPECIAL_COLON:
+    if found:
+        buff += ":"
+    elif nchar == SPECIAL_COLON:
         flags[Flag.COLON_COMMENT] = True
         found.set(Command(cmd=CommandType.REM))
         next(pos)
@@ -752,7 +755,8 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
             )
         elif char == SPECIAL_COLON and not flags[Flag.COLON_COMMENT]:
             handle_char_colon(
-                pos=idx, flags=flags, text=text, found=found_command, log=log
+                pos=idx, flags=flags, text=text, buff=buff,
+                found=found_command, log=log
             )
         else:
             handle_char_ordinary(
