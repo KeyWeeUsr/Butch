@@ -21,7 +21,7 @@ from butch.constants import (
 from butch.context import Context
 from butch.expansion import percent_expansion
 from butch.help import print_help
-from butch.jumptype import JumpTypeEof
+from butch.jumptype import JumpType, JumpTypeEof
 from butch.outputs import CommandOutput
 from butch.tokens import Argument
 
@@ -994,7 +994,7 @@ def goto(params: List[Argument], ctx: Context) -> None:
         ctx.jump = JumpTypeEof()
         return
 
-    raise NotImplementedError("GOTO label")
+    ctx.jump = JumpType(target=first)
 
 
 def get_cmd_map():

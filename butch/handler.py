@@ -1,9 +1,19 @@
 from os.path import exists
+from typing import List
 
 from butch.caller import new_call
 from butch.context import Context
 from butch.jumptype import JumpTypeEof
 from butch.tokenizer import tokenize
+from butch.tokens import Label, Token
+
+
+def collect_labels(cmds: List[Token]):
+    return {
+        cmd.value: idx
+        for idx, cmd in enumerate(cmds)
+        if isinstance(cmd, Label)
+    }
 
 
 def handle_input(inp: str, ctx: Context):
@@ -16,10 +26,26 @@ def handle_input(inp: str, ctx: Context):
     """
     jump_eof = JumpTypeEof()
 
-    for cmd in tokenize(text=inp, ctx=ctx):
+    instructions = tokenize(text=inp, ctx=ctx)
+    labels = collect_labels(cmds=instructions)
+
+    inst_len = len(instructions)
+    inst_ptr = 0
+    while 0 <= inst_ptr < inst_len:
+        cmd = instructions[inst_ptr]
         new_call(cmd=cmd, ctx=ctx)
-        if ctx.jump == jump_eof:
+
+        jump = ctx.jump
+        if jump == jump_eof:
             break
+
+        if jump and jump.target in labels:
+            # the position after the label
+            # as the label isn't an executable command
+            inst_ptr = labels[jump.target] + 1
+            ctx.jump = None
+            continue
+        inst_ptr += 1
 
 
 def handle_file(path: str, ctx: Context):
