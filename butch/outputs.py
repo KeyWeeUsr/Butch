@@ -2,13 +2,23 @@
 from io import StringIO
 
 
+class DevNull(StringIO):
+    """StringIO alias to collect and discard the output."""
+
+    def __repr__(self):
+        return "</dev/null>"
+
+
 class CommandOutput:
     """Container for STDOUT and STDERR buffers for piping and redirection."""
 
     _stdout: StringIO
     _stderr: StringIO
 
-    def __init__(self, stdout: bool = True, stderr: bool = False):
+    def __init__(
+            self, stdout: bool = True, stderr: bool = False,
+            discard: bool = False
+    ):
         """
         Initialize STDOUT and/or STDERR buffers based on params.
 
@@ -17,8 +27,9 @@ class CommandOutput:
             stderr (bool): should create STDERR buffer
         """
         # ask to allocate, don't provide custom though
-        self._stdout = StringIO() if stdout else None
-        self._stderr = StringIO() if stderr else None
+        outclass = DevNull if discard else StringIO
+        self._stdout = outclass() if stdout else None
+        self._stderr = outclass() if stderr else None
 
     @property
     def stdout(self):

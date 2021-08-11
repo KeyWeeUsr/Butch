@@ -14,6 +14,7 @@ from butch.tokenizer import Command, Connector, Pipe, Redirection, RedirType
 
 
 FILE_CHUNK = 512
+REDIR_NULL = "nul"
 
 
 class UnknownCommand(Exception):
@@ -104,9 +105,11 @@ def new_call(  # noqa: WPS317
             log("\t- finishing redirection")
             if is_redir_output:
                 log("\t\t- writing output")
-                _handle_redirection_output(
-                    redir_target=command.right.value, ctx=ctx
-                )
+                redir_target = command.right.value
+                if redir_target.lower().strip() != REDIR_NULL:
+                    _handle_redirection_output(
+                        redir_target=redir_target, ctx=ctx
+                    )
             log("\t\t- done")
             return
         command = command.right

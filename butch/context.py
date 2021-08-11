@@ -74,6 +74,7 @@ class Context:  # noqa: WPS214,WPS338
     _input: CommandInput
     _output: CommandOutput
     _collect_output: bool
+    _discard_output: bool
     _piped: bool
     _inputted: bool
     _logger: RootLogger
@@ -90,6 +91,7 @@ class Context:  # noqa: WPS214,WPS338
             BadContextKey: disallow setting custom properties from __init__
         """
         self._collect_output = False
+        self._discard_output = False
         self._cwd = getcwd()
         self._delayed_expansion_enabled = False
         self._echo = True
@@ -214,6 +216,20 @@ class Context:  # noqa: WPS214,WPS338
     @collect_output.setter
     def collect_output(self, collected):
         self._collect_output = collected
+
+    @property
+    def discard_output(self):
+        """
+        Property.
+
+        Returns:
+            flag whether to discard output in redirection.
+        """
+        return self._discard_output
+
+    @discard_output.setter
+    def discard_output(self, discarded):
+        self._discard_output = discarded
 
     @property
     def output(self):

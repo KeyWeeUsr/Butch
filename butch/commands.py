@@ -73,7 +73,7 @@ def get_output(ctx: Context):
         log("\t- should collect output")
         if not ctx.output:
             log("\t\t- using existing output instance")
-            ctx.output = CommandOutput()
+            ctx.output = CommandOutput(discard=ctx.discard_output)
         out = ctx.output.stdout
     return out
 
