@@ -48,5 +48,11 @@ class JumpType:
         return self.target.lower() == other.target.lower()
 
 
-class JumpTypeEof:
+class JumpTypeEof(JumpType):
     _target: str = ":eof"
+
+    def __init__(self):
+        """
+        Initialize JumpTypeEof instance.
+        """
+        super().__init__(target=self._target)

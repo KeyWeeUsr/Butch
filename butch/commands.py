@@ -21,6 +21,7 @@ from butch.constants import (
 from butch.context import Context
 from butch.expansion import percent_expansion
 from butch.help import print_help
+from butch.jumptype import JumpTypeEof
 from butch.outputs import CommandOutput
 from butch.tokens import Argument
 
@@ -984,8 +985,13 @@ def goto(params: List[Argument], ctx: Context) -> None:
         return
 
     first = params[0]
-    if first.lower() == PARAM_HELP:
+    first_lower = first.lower()
+    if first_lower == PARAM_HELP:
         print_help(cmd=CommandType.GOTO, file=out)
+        return
+
+    if first_lower == JumpTypeEof._target:
+        ctx.jump = JumpTypeEof()
         return
 
     raise NotImplementedError("GOTO label")
