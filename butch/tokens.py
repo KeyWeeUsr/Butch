@@ -159,3 +159,6 @@ class Block(Token):
             int
         """
         return len(self.values)
+
+    def __iter__(self):
+        return self.values.__iter__()

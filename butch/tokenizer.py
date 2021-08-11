@@ -3,8 +3,10 @@ Module holding all tokens and tokenizing functions for converting an inputted
 Batch code into a set of instructions for the interpreter to execute.
 """
 
+import sys
 from collections import defaultdict
 from enum import Enum, auto
+from os import environ
 
 from butch.context import Context
 from butch.commands import get_reverse_cmd_map
@@ -18,7 +20,7 @@ from butch.counter import Count
 from butch.filmbuffer import FilmBuffer
 from butch.charlist import CharList
 from butch.shared import Shared
-from butch.tokens import Argument, File, Label, Token
+from butch.tokens import Argument, Block, File, Label, Token
 
 
 def emptyf(*_, **__):
@@ -292,7 +294,7 @@ def handle_char_newline(
         # pylint: disable=too-many-arguments
         pos: Count, flags: dict, text: FilmBuffer,
         buff: CharList, output: list, found: Shared,
-        compound: Count, log=emptyf
+        compound: Count, block: list, log=emptyf
 ) -> None:
     "Handle a LF character while parsing an input line."
     # pylint: disable=too-many-statements, too-many-branches
@@ -326,9 +328,10 @@ def handle_char_newline(
                     echo = False
                     cmd_clear = cmd_clear[1:]
                 log("\t- cmd string: %r", cmd_clear)
-                found.set(Command(
+                cmd_to_set = Command(
                     cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
-                ))
+                )
+                found.set(cmd_to_set)
             buff.clear()
         if buff:
             found.data.args = found.data.args + [
@@ -360,6 +363,14 @@ def handle_char_newline(
             if output and isinstance(output[-1], Redirection):
                 log("\t\t\t\t- last item in output is redirection")
                 found.set(File())
+            elif block:
+                if isinstance(block[-1], Redirection):
+                    found.set(File())
+                else:
+                    if buff.data:
+                        block[-1].args = block[-1].args + [
+                            Argument(value=buff.data)
+                        ]
             else:
                 # naive
                 if flags[Flag.COLON_LABEL]:
@@ -390,7 +401,7 @@ def handle_char_newline(
             log("\t\t\t- finished line")
             if not isinstance(found.data, File):
                 log("\t\t\t\t- setting args %r", buff.data)
-                if buff.data:
+                if buff.data and found:
                     found.data.args = found.data.args + [
                         Argument(value=buff.data)
                     ]
@@ -400,21 +411,33 @@ def handle_char_newline(
         flags[Flag.UNFINISHED_LINE] = False
         if not output:
             log("\t\t- appending to output: %r", found.data)
-            output.append(found.data)
+            if compound > 0 and not block:
+                block.append(found.data)
+            elif compound <= 0 and not block:
+                output.append(found.data)
         else:
             log("\t\t- output present, check if connector")
             last = output[-1]
+            if block:
+                last = block[-1]
             if isinstance(last, Connector) and not last.right:
                 log("\t\t\t- is connector w/ empty r-val")
                 log("\t\t\t\t- insert: %r", found)
-                output[-1].right = found.data
+                if compound > 0:
+                    block[-1].right = found.data
+                else:
+                    output[-1].right = found.data
                 found.clear()
             else:
                 log(
                     "\t\t\t- not connector, appending: %r",
                     found.data
                 )
-                output.append(found.data)
+                if found:
+                    if compound > 0:
+                        block.append(found.data)
+                    else:
+                        output.append(found.data)
                 found.clear()
 
         buff.clear()
@@ -431,8 +454,8 @@ def handle_char_newline(
 
 def handle_char_whitespace(
         # pylint: disable=too-many-arguments
-        pos: Count, flags: dict, text: FilmBuffer,
-        buff: CharList, found: Shared, log=emptyf
+        pos: Count, compound: Count, flags: dict, text: FilmBuffer,
+        buff: CharList, found: Shared, block: list, log=emptyf
 ) -> None:
     "Handle a whitespace character while parsing an input line."
     log("- is whitespace")
@@ -454,30 +477,40 @@ def handle_char_whitespace(
             echo = False
             cmd_clear = cmd_clear[1:]
         log("\t- cmd string: %r", cmd_clear)
-        found.set(Command(
+        cmd_to_set = Command(
             cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
-        ))
+        )
+        if compound > 0:
+            block.append(cmd_to_set)
+        else:
+            found.set(cmd_to_set)
         buff.clear()
     elif found:
         log("\t- found command")
         if not flags[Flag.QUOTE]:
             log("\t\t- not in quote mode")
-            found.data.args = found.data.args + [
-                Argument(value=buff.data)
-            ]
-            buff.clear()
+            if buff:
+                log("\t\t\t- appending buff to args %r", buff.data)
+                found.data.args = found.data.args + [
+                    Argument(value=buff.data)
+                ]
+                buff.clear()
     flags[Flag.WORD] = False
     next(pos)
 
 
 def handle_char_splitter(
         pos: Count, text: FilmBuffer, buff: CharList,
-        output: list, found: Shared, log=emptyf
+        output: list, found: Shared, block: list, log=emptyf
 ) -> None:
     "Handle a command splitting character while parsing an input line."
     # pylint: disable=too-many-arguments
     log("- is splitter")
-    last = output[-1] if output else None
+    last = None
+    if block:
+        last = block[-1]
+    elif output:
+        last = output[-1]
     if last and not isinstance(last, Command):
         log("\t- left isn't command, assuming splitter")
         log("\t- assuming argument leftovers in buffer")
@@ -534,8 +567,11 @@ def handle_char_splitter(
     # the last command is now encapsulated in a connector
     # the newest command is stored in the "right" branch
     log("\t- check output: %r", output)
-    if output and isinstance(output[-1], Connector):
-        log("\t- attaching command to connector")
+    if block and isinstance(block[-1], Command):
+        log("\t- attaching command to connector in block")
+        block[-1] = join
+    elif output and isinstance(output[-1], Connector):
+        log("\t- attaching command to connector in output")
         output[-1] = join
     else:
         log("\t- creating new item: %r", join)
@@ -546,7 +582,8 @@ def handle_char_splitter(
 
 def handle_char_last(
         pos: Count, flags: dict, text: FilmBuffer,
-        buff: CharList, output: list, found: Shared, log=emptyf
+        buff: CharList, output: list, found: Shared, block: list,
+        compound: Count, log=emptyf
 ) -> None:
     "Handle the last character of an input line."
     # pylint: disable=too-many-arguments,too-many-statements,too-many-branches
@@ -564,6 +601,13 @@ def handle_char_last(
         log("\t- is quote, swapping quote flag")
         flags[Flag.QUOTE] = not flags[Flag.QUOTE]
         log("\t\t- quote: %s", flags[Flag.QUOTE])
+    elif char == SPECIAL_RPAREN:
+        log("- is right-paren")
+        output.append(Block(values=block))
+        block = []
+        flags[Flag.WORD] = False
+        reversed(compound)
+        buff.clear()
     # append last char because finishing
     # and if buff is empty (single-char), then copy char to buff
     if pos.value == 0:
@@ -680,6 +724,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
 
     buff = CharList()
     found_command = Shared()
+    block = []
 
     while idx.value < len(text):
         text.move(idx.value)
@@ -690,13 +735,17 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         )
         log("- flags: %r", flags)
         log("- buff: %r", buff)
+        log("- block: %r", block)
+        log("- found: %r", found_command)
+        log("- out: %r", output)
 
         # last char isn't <LF>
         if char != SPECIAL_LF and idx == last_pos:
             handle_char_last(
                 pos=idx, flags=flags,
                 text=text, buff=buff, output=output,
-                found=found_command, log=log
+                found=found_command, log=log, block=block,
+                compound=compound
             )
             break
 
@@ -713,27 +762,29 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
         elif char == SPECIAL_LF:
             handle_char_newline(
                 pos=idx, flags=flags,
-                text=text, buff=buff, output=output,
+                text=text, buff=buff, output=output, block=block,
                 found=found_command, compound=compound, log=log
             )
         elif char in SPECIAL_SPLITTERS:
             handle_char_splitter(
                 pos=idx, text=text, buff=buff, output=output,
-                found=found_command, log=log
+                found=found_command, block=block, log=log
             )
-        elif char == SPECIAL_LPAREN:
+        elif char == SPECIAL_LPAREN and not flags[Flag.COLON_COMMENT]:
             log("- is left-paren")
             next(compound)
             next(idx)
-        elif char == SPECIAL_RPAREN:
+        elif char == SPECIAL_RPAREN and not flags[Flag.COLON_COMMENT]:
             log("- is right-paren")
+            output.append(Block(values=block))
+            block = []
             flags[Flag.WORD] = False
             reversed(compound)
             next(idx)
         elif char in DELIM_WHITE:
             handle_char_whitespace(
                 pos=idx, flags=flags, text=text, buff=buff,
-                found=found_command, log=log
+                found=found_command, log=log, block=block, compound=compound
             )
         elif char == SPECIAL_COLON and not flags[Flag.COLON_COMMENT]:
             handle_char_colon(
@@ -749,4 +800,16 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
     if debug:
         return list(flags.items())
     log("- tokenized output: %r", output)
+    if "DEBUG_TOKENIZE" in environ:
+        from pprint import pprint
+        left_slice = environ["DEBUG_TOKENIZE"]
+        right_slice = len(output)
+        if "," in left_slice:
+            left_slice, right_slice = debug_val.split(",")
+        pprint(output[int(left_slice):int(right_slice)], indent=4)
+        sys.exit()
+    if "DEBUG_TOKENIZE_PICKLE" in environ:
+        import pickle
+        with open(environ["DEBUG_TOKENIZE_PICKLE"], "wb") as pickled:
+            pickle.dump(output, pickled)
     return output
