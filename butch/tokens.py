@@ -104,3 +104,7 @@ class File(BaseValue):
             value (str): raw filename to store, defaults to empty string
         """
         super().__init__(value=value)
+
+
+class Label(BaseValue):
+    "Token holding the raw value of label for a GOTO command."
