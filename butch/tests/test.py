@@ -258,7 +258,7 @@ class Tokenizer(TestCase):
         from butch.tokens import Block
         from butch.context import Context
 
-        command = "(\n    echo one\n    echo two\n    echo three\n)"
+        command = "(\n    echo one\n)"
         output = tokenize(text=command, ctx=Context())
         self.assertIsInstance(output, list)
         self.assertEqual(len(output), 1)
