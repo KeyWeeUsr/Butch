@@ -39,3 +39,16 @@ class GotoCommand(TestCase):
         self.assertEqual(ctx.error_level, 0)
         self.assertIsNone(goto(params=[], ctx=ctx))
         self.assertEqual(ctx.error_level, 1)
+
+    def test_goto_colon_eof(self):
+        from butch.context import Context
+        from butch.commands import goto
+        from butch.jumptype import JumpTypeEof
+        from butch.tokens import Argument
+
+        ctx = Context()
+        self.assertEqual(ctx.error_level, 0)
+        self.assertIsNone(ctx.jump)
+        self.assertIsNone(goto(params=[Argument(value=":eof")], ctx=ctx))
+        self.assertEqual(ctx.jump, JumpTypeEof())
+        self.assertEqual(ctx.error_level, 0)
