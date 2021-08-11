@@ -91,3 +91,16 @@ class Argument(BaseValue):
         if quoted:
             stored = repr(stored)
         return f"<Argument: {stored!r}, q={quoted}>"
+
+
+class File(BaseValue):
+    "Token holding the raw value of filename for redirection."
+
+    def __init__(self, value: str = ""):  # noqa: WPS110
+        """
+        Initialize File instance.
+
+        Args:
+            value (str): raw filename to store, defaults to empty string
+        """
+        super().__init__(value=value)

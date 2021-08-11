@@ -18,7 +18,7 @@ from butch.counter import Count
 from butch.filmbuffer import FilmBuffer
 from butch.charlist import CharList
 from butch.shared import Shared
-from butch.tokens import Argument
+from butch.tokens import Argument, File
 
 
 def emptyf(*_, **__):
@@ -41,33 +41,6 @@ class Flag(Enum):
     UNFINISHED_LINE = auto()
     COLON_COMMENT = auto()
     COLON_LABEL = auto()
-
-
-class File:
-    "Token holding the raw value of filename for redirection."
-
-    _value: str = ""
-
-    def __init__(self, value: str = ""):
-        self._value = value
-
-    @property
-    def value(self):
-        "Property: raw argument value."
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        self._value = value
-
-    def __repr__(self):
-        val = self._value
-        return f"<File: {val!r}>"
-
-    def __eq__(self, other):
-        if not isinstance(other, File):
-            return False
-        return self.value == other.value
 
 
 class Command:
