@@ -1,7 +1,11 @@
 """Module for storing the tokens for tokenizer."""
 
 
-class BaseValue:
+class Token:
+    pass
+
+
+class BaseValue(Token):
     """Base for a token holding the raw value with repr() and == operator."""
 
     _value: str  # noqa: WPS110

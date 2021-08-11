@@ -43,7 +43,7 @@ class Flag(Enum):
     COLON_LABEL = auto()
 
 
-class Command:
+class Command(Token):
     "Token holding the raw value of a command and its properties."
 
     _cmd: CommandType = None
@@ -97,7 +97,7 @@ class Command:
         return f'<{prefix}Command: "{self.name}" {self.args}>'
 
 
-class Connector:
+class Connector(Token):
     """Shouldn't be used directly, but ABC might be overkill."""
 
     _name: str = ""
