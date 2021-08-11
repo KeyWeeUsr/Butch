@@ -18,7 +18,7 @@ from butch.counter import Count
 from butch.filmbuffer import FilmBuffer
 from butch.charlist import CharList
 from butch.shared import Shared
-from butch.tokens import Argument, File
+from butch.tokens import Argument, File, Label, Token
 
 
 def emptyf(*_, **__):
@@ -301,7 +301,6 @@ def handle_char_newline(
     # if not flags[Flag.ESCAPE]:
     flags[Flag.QUOTE] = False
     flags[Flag.COLON_COMMENT] = False
-    flags[Flag.COLON_LABEL] = False
     cmd_map = get_reverse_cmd_map()
 
     if flags[Flag.ESCAPE]:
@@ -315,16 +314,21 @@ def handle_char_newline(
     if pos.value == text.last_pos and buff:  # buff check for whitespace
         log("\t\t- last char")
         if not found:
-            cmd_clear = buff.data.strip().lower()
-            echo = True
-            if cmd_clear.startswith("@"):
-                log("\t\t- echo off")
-                echo = False
-                cmd_clear = cmd_clear[1:]
-            log("\t- cmd string: %r", cmd_clear)
-            found.set(Command(
-                cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
-            ))
+            if flags[Flag.COLON_LABEL]:
+                flags[Flag.COLON_LABEL] = False
+                log("\t\t- label for goto %r", buff)
+                found.set(Label(value=buff.data))
+            else:
+                cmd_clear = buff.data.strip().lower()
+                echo = True
+                if cmd_clear.startswith("@"):
+                    log("\t\t- echo off")
+                    echo = False
+                    cmd_clear = cmd_clear[1:]
+                log("\t- cmd string: %r", cmd_clear)
+                found.set(Command(
+                    cmd=cmd_map.get(cmd_clear, CommandType.UNKNOWN), echo=echo
+                ))
             buff.clear()
         if buff:
             found.data.args = found.data.args + [
@@ -358,15 +362,20 @@ def handle_char_newline(
                 found.set(File())
             else:
                 # naive
-                cmd_clear = buff.data.strip().lower()
-                echo = True
-                if cmd_clear.startswith("@"):
-                    log("\t\t- echo off")
-                    echo = False
-                    cmd_clear = cmd_clear[1:]
-                log("\t- cmd string: %r", cmd_clear)
-                cmd_type = cmd_map.get(cmd_clear, CommandType.UNKNOWN)
-                found.set(Command(cmd=cmd_type, echo=echo))
+                if flags[Flag.COLON_LABEL]:
+                    flags[Flag.COLON_LABEL] = False
+                    log("\t\t- label for goto %r", buff)
+                    found.set(Label(value=buff.data))
+                else:
+                    cmd_clear = buff.data.strip().lower()
+                    echo = True
+                    if cmd_clear.startswith("@"):
+                        log("\t\t- echo off")
+                        echo = False
+                        cmd_clear = cmd_clear[1:]
+                    log("\t- cmd string: %r", cmd_clear)
+                    cmd_type = cmd_map.get(cmd_clear, CommandType.UNKNOWN)
+                    found.set(Command(cmd=cmd_type, echo=echo))
                 buff.clear()
 
         if flags[Flag.UNFINISHED_LINE]:
