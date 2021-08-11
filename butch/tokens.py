@@ -112,3 +112,50 @@ class File(BaseValue):
 
 class Label(BaseValue):
     "Token holding the raw value of label for a GOTO command."
+
+
+class Block(Token):
+    """Block of commands to execute in specific order."""
+
+    _values: list  # noqa: WPS110
+
+    def __init__(self, values: list):  # noqa: WPS110
+        """
+        Initialize Block instance.
+
+        Args:
+            values (list): raw list of tokens to store
+        """
+        self._values = values  # noqa: WPS110
+
+    @property
+    def values(self):  # noqa: WPS110
+        """
+        Raw values.
+
+        Returns:
+            whatever was stored
+        """
+        return self._values
+
+    @values.setter
+    def values(self, values):  # noqa: WPS110
+        self._values = values  # noqa: WPS110
+
+    def __repr__(self):
+        """
+        Get a string representation of this instance.
+
+        Returns:
+            string representation
+        """
+        return f"<{self.__class__.__name__}: {self._values!r}>"
+
+    def __len__(self):
+        """
+        Get a length of values in this instance.
+
+        Returns:
+            int
+        """
+        return len(self.values)
