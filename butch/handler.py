@@ -2,6 +2,7 @@ from os.path import exists
 
 from butch.caller import new_call
 from butch.context import Context
+from butch.jumptype import JumpTypeEof
 from butch.tokenizer import tokenize
 
 
@@ -13,8 +14,12 @@ def handle_input(inp: str, ctx: Context):
         inp: Batch commands as a string
         ctx: Context instance
     """
+    jump_eof = JumpTypeEof()
+
     for cmd in tokenize(text=inp, ctx=ctx):
         new_call(cmd=cmd, ctx=ctx)
+        if ctx.jump == jump_eof:
+            break
 
 
 def handle_file(path: str, ctx: Context):
@@ -27,9 +32,7 @@ def handle_file(path: str, ctx: Context):
     """
     with open(path) as fdes:
         batch_file = fdes.read()
-    cmds = tokenize(text=batch_file, ctx=ctx)
-    for cmd in cmds:
-        new_call(cmd=cmd, ctx=ctx)
+    handle_input(inp=batch_file, ctx=ctx)
 
 
 def handle(text: str, ctx: Context):

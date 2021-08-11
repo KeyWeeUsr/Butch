@@ -126,7 +126,13 @@ Commands
 - [X] `EXIT <https://ss64.com/nt/exit.html>`__
 - [ ] `FOR <https://ss64.com/nt/for.html>`__
 - [ ] `FTYPE <https://ss64.com/nt/ftype.html>`__
-- [ ] `GOTO <https://ss64.com/nt/goto.html>`__
+- [/] `GOTO <https://ss64.com/nt/goto.html>`__
+
+  *pending:*
+
+  - [X] ``GOTO :EOF``
+  - [ ] custom label
+
 - [ ] `IF <https://ss64.com/nt/if.html>`__
 - [X] `MD <https://ss64.com/nt/md.html>`__
 - [X] `MKDIR <https://ss64.com/nt/md.html>`__
