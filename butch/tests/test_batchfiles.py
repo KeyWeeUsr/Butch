@@ -772,6 +772,18 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 0)
 
+    @patch("builtins.print")
+    def test_goto_label(self, stdout):
+        script_name = "goto_label.bat"
+
+        from butch.context import Context
+        from butch.handler import handle
+
+        ctx = Context(history_enabled=False)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+        self.assertEqual(ctx.error_level, 0)
+
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"
         out_name = f"{script_name}.out"
