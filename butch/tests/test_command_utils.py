@@ -51,3 +51,8 @@ class Utils(TestCase):
             _print_single_variable(key=dummy, ctx=ctx, file=sys.stdout)
         prnt.assert_called_once_with(f"{dummy}={found_value}", file=sys.stdout)
         ctx.get_variable.assert_called_once_with(key=dummy)
+
+    def test_cmd_map(self):
+        from butch.commands import get_cmd_map
+        for key, func in get_cmd_map().items():
+            self.assertEqual(key.value, func.__name__[4:])
