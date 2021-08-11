@@ -95,7 +95,7 @@ def get_error(ctx: Context):
 
 
 @what_func
-def echo(params: List[Argument], ctx: Context) -> None:
+def cmd_echo(params: List[Argument], ctx: Context) -> None:
     """
     Batch: ECHO command.
 
@@ -130,7 +130,7 @@ def echo(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def type_cmd(params: List[Argument], ctx: Context) -> None:
+def cmd_type(params: List[Argument], ctx: Context) -> None:
     """
     Batch: TYPE command.
 
@@ -198,7 +198,7 @@ def _type_file(path: str, output):
 
 
 @what_func
-def path_cmd(params: List[Argument], ctx: Context) -> None:
+def cmd_path(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PATH command.
 
@@ -231,7 +231,7 @@ def path_cmd(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def pushd(params: List[Argument], ctx: Context) -> None:
+def cmd_pushd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: PUSHD command.
 
@@ -264,7 +264,7 @@ def pushd(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def popd(params: List[Argument], ctx: Context) -> None:
+def cmd_popd(params: List[Argument], ctx: Context) -> None:
     """
     Batch: POPD command.
 
@@ -293,7 +293,7 @@ def popd(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def help_cmd(params: List[Argument], ctx: Context) -> None:
+def cmd_help(params: List[Argument], ctx: Context) -> None:
     """
     Batch: HELP command.
 
@@ -328,7 +328,7 @@ def _print_single_variable(key: str, ctx: Context, file=sys.stdout) -> None:
 
 
 @what_func
-def set_cmd(params: List[Argument], ctx: Context) -> None:
+def cmd_set(params: List[Argument], ctx: Context) -> None:
     """
     Batch: SET command.
 
@@ -405,7 +405,7 @@ def set_cmd(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def setlocal(params: list, ctx: Context) -> None:
+def cmd_setlocal(params: list, ctx: Context) -> None:
     """
     Batch: SETLOCAL command.
 
@@ -441,7 +441,7 @@ def setlocal(params: list, ctx: Context) -> None:
 
 # pylint: disable=invalid-name
 @what_func
-def cd(params: list, ctx: Context) -> None:
+def cmd_cd(params: list, ctx: Context) -> None:
     """
     Batch: CD command.
 
@@ -474,7 +474,7 @@ def cd(params: list, ctx: Context) -> None:
 
 
 @what_func
-def prompt(params: list, ctx: Context) -> None:
+def cmd_prompt(params: list, ctx: Context) -> None:
     """
     Batch: PROMPT command.
 
@@ -502,7 +502,7 @@ def prompt(params: list, ctx: Context) -> None:
 
 
 @what_func
-def title(params: list, ctx: Context) -> None:
+def cmd_title(params: list, ctx: Context) -> None:
     """
     Batch: TITLE command.
 
@@ -540,7 +540,7 @@ def title(params: list, ctx: Context) -> None:
 
 
 @what_func
-def date(params: list, ctx: Context) -> None:
+def cmd_date(params: list, ctx: Context) -> None:
     """
     Batch: DATE command.
 
@@ -573,7 +573,7 @@ def date(params: list, ctx: Context) -> None:
 
 
 @what_func
-def time(params: list, ctx: Context) -> None:
+def cmd_time(params: list, ctx: Context) -> None:
     """
     Batch: TIME command.
 
@@ -606,7 +606,7 @@ def time(params: list, ctx: Context) -> None:
 
 
 @what_func
-def pause(params: list, ctx: Context) -> None:
+def cmd_pause(params: list, ctx: Context) -> None:
     """
     Batch: PAUSE command.
 
@@ -627,7 +627,7 @@ def pause(params: list, ctx: Context) -> None:
 
 
 @what_func
-def clear_screen(params: list, ctx: Context) -> None:
+def cmd_cls(params: list, ctx: Context) -> None:
     """
     Batch: CLS command.
 
@@ -647,7 +647,7 @@ def clear_screen(params: list, ctx: Context) -> None:
 
 
 @what_func
-def exit_cmd(params: list, ctx: Context) -> None:
+def cmd_exit(params: list, ctx: Context) -> None:
     """
     Batch: EXIT command.
 
@@ -676,7 +676,7 @@ def exit_cmd(params: list, ctx: Context) -> None:
 
 
 @what_func
-def delete(params: List[Argument], ctx: Context) -> None:
+def cmd_del(params: List[Argument], ctx: Context) -> None:
     """
     Batch: DEL/ERASE command.
 
@@ -698,7 +698,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
     if params_len == 1:
         first = params[0]
         if first.lower() == PARAM_HELP:
-            print_help(cmd=CommandType.DELETE, file=out)
+            print_help(cmd=CommandType.DEL, file=out)
             return
         file_path = abspath(first)
         if not exists(file_path):
@@ -754,7 +754,7 @@ def delete(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def create_folder(params: List[Argument], ctx: Context) -> None:
+def cmd_mkdir(params: List[Argument], ctx: Context) -> None:
     """
     Batch: MKDIR/MD command.
 
@@ -858,7 +858,7 @@ def _get_listdir_lines(folder: str, ctx: Context) -> list:
 
 
 @what_func
-def list_folder(params: List[Argument], ctx: Context) -> None:
+def cmd_dir(params: List[Argument], ctx: Context) -> None:
     """
     Batch: DIR command.
 
@@ -887,7 +887,7 @@ def list_folder(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def remove_folder(params: List[Argument], ctx: Context) -> None:
+def cmd_rmdir(params: List[Argument], ctx: Context) -> None:
     """
     Batch: RMDIR command.
 
@@ -947,7 +947,7 @@ def remove_folder(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def rem_comment(params: List[Argument], ctx: Context) -> None:
+def cmd_rem(params: List[Argument], ctx: Context) -> None:
     """
     Batch: REM command.
 
@@ -968,7 +968,7 @@ def rem_comment(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def goto(params: List[Argument], ctx: Context) -> None:
+def cmd_goto(params: List[Argument], ctx: Context) -> None:
     """
     Batch: GOTO command.
 
@@ -998,7 +998,7 @@ def goto(params: List[Argument], ctx: Context) -> None:
 
 
 @what_func
-def ver(params: list, ctx: Context) -> None:
+def cmd_ver(params: list, ctx: Context) -> None:
     """
     Batch: VER command.
 
@@ -1026,32 +1026,32 @@ def get_cmd_map():
         dict with mapping Command enum to a function it should call
     """
     return {
-        CommandType.ECHO: echo,
-        CommandType.CD: cd,
-        CommandType.SET: set_cmd,
-        CommandType.PROMPT: prompt,
-        CommandType.TITLE: title,
-        CommandType.PAUSE: pause,
-        CommandType.EXIT: exit_cmd,
-        CommandType.SETLOCAL: setlocal,
-        CommandType.DELETE: delete,
-        CommandType.ERASE: delete,
-        CommandType.HELP: help_cmd,
-        CommandType.MKDIR: create_folder,
-        CommandType.MD: create_folder,
-        CommandType.DIR: list_folder,
-        CommandType.CLS: clear_screen,
-        CommandType.DATE: date,
-        CommandType.RMDIR: remove_folder,
-        CommandType.RD: remove_folder,
-        CommandType.TYPE: type_cmd,
-        CommandType.PATH: path_cmd,
-        CommandType.REM: rem_comment,
-        CommandType.PUSHD: pushd,
-        CommandType.POPD: popd,
-        CommandType.TIME: time,
-        CommandType.GOTO: goto,
-        CommandType.VER: ver
+        CommandType.ECHO: cmd_echo,
+        CommandType.CD: cmd_cd,
+        CommandType.SET: cmd_set,
+        CommandType.PROMPT: cmd_prompt,
+        CommandType.TITLE: cmd_title,
+        CommandType.PAUSE: cmd_pause,
+        CommandType.EXIT: cmd_exit,
+        CommandType.SETLOCAL: cmd_setlocal,
+        CommandType.DEL: cmd_del,
+        CommandType.ERASE: cmd_del,
+        CommandType.HELP: cmd_help,
+        CommandType.MKDIR: cmd_mkdir,
+        CommandType.MD: cmd_mkdir,
+        CommandType.DIR: cmd_dir,
+        CommandType.CLS: cmd_cls,
+        CommandType.DATE: cmd_date,
+        CommandType.RMDIR: cmd_rmdir,
+        CommandType.RD: cmd_rmdir,
+        CommandType.TYPE: cmd_type,
+        CommandType.PATH: cmd_path,
+        CommandType.REM: cmd_rem,
+        CommandType.PUSHD: cmd_pushd,
+        CommandType.POPD: cmd_popd,
+        CommandType.TIME: cmd_time,
+        CommandType.GOTO: cmd_goto,
+        CommandType.VER: cmd_ver
     }
 
 

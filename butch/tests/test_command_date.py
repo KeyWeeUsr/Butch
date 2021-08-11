@@ -12,20 +12,20 @@ class DateCommand(TestCase):
     def test_date_help(self):
         import sys
         from butch.context import Context
-        from butch.commands import date
+        from butch.commands import cmd_date
         from butch.commandtype import CommandType
         from butch.tokens import Argument
         from butch.constants import PARAM_HELP
 
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
-            date(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_date(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.DATE, file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
 
         ctx.collect_output = True
         with patch("butch.commands.print_help") as prnt:
-            date(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_date(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(
             cmd=CommandType.DATE, file=ctx.output.stdout
         )
@@ -34,13 +34,13 @@ class DateCommand(TestCase):
     def test_date_print_only(self):
         import sys
         from butch.context import Context
-        from butch.commands import date
+        from butch.commands import cmd_date
         from butch.tokens import Argument
 
         ctx = Context()
         date_mock = patch("butch.commands.datetime")
         with date_mock as dmock, patch("builtins.print") as prnt:
-            date(params=[Argument(value="/t")], ctx=ctx)
+            cmd_date(params=[Argument(value="/t")], ctx=ctx)
         dmock.now.assert_called_once_with()
         strf = dmock.now.return_value.strftime
         strf.assert_called_once_with("%x")
@@ -50,7 +50,7 @@ class DateCommand(TestCase):
         ctx.collect_output = True
         date_mock = patch("butch.commands.datetime")
         with date_mock as dmock, patch("builtins.print") as prnt:
-            date(params=[Argument(value="/T")], ctx=ctx)
+            cmd_date(params=[Argument(value="/T")], ctx=ctx)
         dmock.now.assert_called_once_with()
         strf = dmock.now.return_value.strftime
         strf.assert_called_once_with("%x")
@@ -60,14 +60,14 @@ class DateCommand(TestCase):
     def test_date_print_ask(self):
         import sys
         from butch.context import Context
-        from butch.commands import date
+        from butch.commands import cmd_date
 
         ctx = Context()
         date_mock = patch("butch.commands.datetime")
         print_mock = patch("builtins.print")
         input_mock = patch("builtins.input")
         with date_mock as dmock, print_mock as prnt, input_mock as inp:
-            date(params=[], ctx=ctx)
+            cmd_date(params=[], ctx=ctx)
         dmock.now.assert_called_once_with()
         strf = dmock.now.return_value.strftime
         strf.assert_called_once_with("%a %x")
@@ -84,7 +84,7 @@ class DateCommand(TestCase):
         print_mock = patch("builtins.print")
         input_mock = patch("builtins.input")
         with date_mock as dmock, print_mock as prnt, input_mock as inp:
-            date(params=[], ctx=ctx)
+            cmd_date(params=[], ctx=ctx)
         dmock.now.assert_called_once_with()
         strf = dmock.now.return_value.strftime
         strf.assert_called_once_with("%a %x")
@@ -99,14 +99,14 @@ class DateCommand(TestCase):
     def test_date_print_interrupt(self):
         import sys
         from butch.context import Context
-        from butch.commands import date
+        from butch.commands import cmd_date
 
         ctx = Context()
         date_mock = patch("butch.commands.datetime")
         print_mock = patch("builtins.print")
         input_mock = patch("builtins.input", side_effect=KeyboardInterrupt)
         with date_mock as dmock, print_mock as prnt, input_mock as inp:
-            date(params=[], ctx=ctx)
+            cmd_date(params=[], ctx=ctx)
         dmock.now.assert_called_once_with()
         strf = dmock.now.return_value.strftime
         strf.assert_called_once_with("%a %x")
@@ -123,7 +123,7 @@ class DateCommand(TestCase):
         print_mock = patch("builtins.print")
         input_mock = patch("builtins.input", side_effect=KeyboardInterrupt)
         with date_mock as dmock, print_mock as prnt, input_mock as inp:
-            date(params=[], ctx=ctx)
+            cmd_date(params=[], ctx=ctx)
         dmock.now.assert_called_once_with()
         strf = dmock.now.return_value.strftime
         strf.assert_called_once_with("%a %x")

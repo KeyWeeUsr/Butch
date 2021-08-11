@@ -12,19 +12,19 @@ class PushdCommand(TestCase):
     def test_pushd_help(self):
         import sys
         from butch.context import Context
-        from butch.commands import pushd
+        from butch.commands import cmd_pushd
         from butch.commandtype import CommandType
         from butch.tokens import Argument
         from butch.constants import PARAM_HELP
 
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
-            pushd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_pushd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.PUSHD, file=sys.stdout)
 
         ctx.collect_output = True
         with patch("butch.commands.print_help") as prnt:
-            pushd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_pushd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(
             cmd=CommandType.PUSHD, file=ctx.output.stdout
         )
@@ -32,12 +32,12 @@ class PushdCommand(TestCase):
     def test_pushd_empty(self):
         import sys
         from butch.context import Context
-        from butch.commands import pushd
+        from butch.commands import cmd_pushd
 
         ctx = Context()
         self.assertEqual(ctx.error_level, 0)
         with patch("builtins.print") as prnt:
-            pushd(params=[], ctx=ctx)
+            cmd_pushd(params=[], ctx=ctx)
         prnt.assert_called_once_with(file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
 
@@ -45,7 +45,7 @@ class PushdCommand(TestCase):
         ctx.error_level = 0
         self.assertEqual(ctx.error_level, 0)
         with patch("builtins.print") as prnt:
-            pushd(params=[], ctx=ctx)
+            cmd_pushd(params=[], ctx=ctx)
         prnt.assert_called_once_with(file=ctx.output.stdout)
         self.assertEqual(ctx.error_level, 0)
 
@@ -53,7 +53,7 @@ class PushdCommand(TestCase):
         import sys
         from os.path import abspath
         from butch.context import Context
-        from butch.commands import pushd
+        from butch.commands import cmd_pushd
         from butch.tokens import Argument
 
         ctx = Context()
@@ -64,7 +64,7 @@ class PushdCommand(TestCase):
         isdir_mock = patch("butch.context.isdir", return_value=True)
         exists_mock = patch("butch.context.exists", return_value=True)
         with exists_mock, isdir_mock, patch("butch.context.chdir") as cdir:
-            pushd(params=[
+            cmd_pushd(params=[
                 Argument(value=part)
                 for part in path.split(" ")
             ], ctx=ctx)
@@ -76,7 +76,7 @@ class PushdCommand(TestCase):
         import sys
         from os.path import abspath
         from butch.context import Context
-        from butch.commands import pushd
+        from butch.commands import cmd_pushd
         from butch.tokens import Argument
 
         ctx = Context()
@@ -86,7 +86,7 @@ class PushdCommand(TestCase):
         self.assertEqual(ctx.pushd_history, [])
         isdir_mock = patch("butch.context.isdir", return_value=False)
         with isdir_mock, patch("butch.context.chdir") as cdir:
-            pushd(params=[Argument(value=path)], ctx=ctx)
+            cmd_pushd(params=[Argument(value=path)], ctx=ctx)
         cdir.assert_not_called()
         self.assertEqual(ctx.error_level, 1)
         self.assertEqual(ctx.pushd_history, [])
@@ -95,7 +95,7 @@ class PushdCommand(TestCase):
         import sys
         from os.path import abspath
         from butch.context import Context
-        from butch.commands import pushd
+        from butch.commands import cmd_pushd
         from butch.tokens import Argument
         from butch.constants import PATH_NOT_FOUND
 
@@ -111,7 +111,7 @@ class PushdCommand(TestCase):
         isdir_mock = patch("butch.context.isdir", return_value=True)
         print_mock = patch("builtins.print")
         with isdir_mock, chdir_mock as cdir, print_mock as prnt:
-            pushd(params=[Argument(value=path)], ctx=ctx)
+            cmd_pushd(params=[Argument(value=path)], ctx=ctx)
         cdir.assert_called_once_with(path)
         prnt.assert_called_once_with(PATH_NOT_FOUND, file=sys.stderr)
         self.assertEqual(ctx.error_level, 1)

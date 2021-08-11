@@ -12,20 +12,20 @@ class VerCommand(TestCase):
     def test_ver_help(self):
         import sys
         from butch.context import Context
-        from butch.commands import ver
+        from butch.commands import cmd_ver
         from butch.tokens import Argument
         from butch.constants import PARAM_HELP
         from butch.commandtype import CommandType
 
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
-            ver(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_ver(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.VER, file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
 
         ctx.collect_output = True
         with patch("butch.commands.print_help") as prnt:
-            ver(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_ver(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(
             cmd=CommandType.VER, file=ctx.output.stdout
         )
@@ -34,7 +34,7 @@ class VerCommand(TestCase):
     def test_ver_platform(self):
         import sys
         from butch.context import Context
-        from butch.commands import ver
+        from butch.commands import cmd_ver
         from butch.tokens import Argument
 
         ctx = Context()
@@ -45,7 +45,7 @@ class VerCommand(TestCase):
         platform_mock = patch("butch.commands.platform", return_value=dummy)
         print_mock = patch("builtins.print")
         with platform_mock as plf, print_mock as prnt:
-            self.assertIsNone(ver(params=[], ctx=ctx))
+            self.assertIsNone(cmd_ver(params=[], ctx=ctx))
         plf.assert_called_once_with()
         prnt.assert_called_once_with(dummy, file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
@@ -55,7 +55,7 @@ class VerCommand(TestCase):
         platform_mock = patch("butch.commands.platform", return_value=dummy)
         print_mock = patch("builtins.print")
         with platform_mock as plf, print_mock as prnt:
-            self.assertIsNone(ver(params=[Argument(value="abc")], ctx=ctx))
+            self.assertIsNone(cmd_ver(params=[Argument(value="abc")], ctx=ctx))
         plf.assert_called_once_with()
         prnt.assert_called_once_with(dummy, file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
@@ -66,7 +66,7 @@ class VerCommand(TestCase):
         platform_mock = patch("butch.commands.platform", return_value=dummy)
         print_mock = patch("builtins.print")
         with platform_mock as plf, print_mock as prnt:
-            self.assertIsNone(ver(params=[], ctx=ctx))
+            self.assertIsNone(cmd_ver(params=[], ctx=ctx))
         plf.assert_called_once_with()
         prnt.assert_called_once_with(dummy, file=ctx.output.stdout)
         self.assertEqual(ctx.error_level, 0)
@@ -77,7 +77,7 @@ class VerCommand(TestCase):
         platform_mock = patch("butch.commands.platform", return_value=dummy)
         print_mock = patch("builtins.print")
         with platform_mock as plf, print_mock as prnt:
-            self.assertIsNone(ver(params=[Argument(value="abc")], ctx=ctx))
+            self.assertIsNone(cmd_ver(params=[Argument(value="abc")], ctx=ctx))
         plf.assert_called_once_with()
         prnt.assert_called_once_with(dummy, file=ctx.output.stdout)
         self.assertEqual(ctx.error_level, 0)

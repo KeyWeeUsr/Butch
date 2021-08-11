@@ -22,7 +22,7 @@ class Caller(TestCase):
         args = [Argument(value=value) for value in params]
 
         ctx = Context()
-        with patch("butch.commands.echo") as echo:
+        with patch("butch.commands.cmd_echo") as echo:
             self.assertEqual(call(cmd=Command(
                 cmd=CommandType.ECHO,
                 args=args
@@ -194,7 +194,7 @@ class Caller(TestCase):
         args = [Argument(value=value) for value in params]
 
         ctx = Context()
-        echo_mock = patch("butch.commands.echo")
+        echo_mock = patch("butch.commands.cmd_echo")
         dummy = MagicMock()
         unk_mock = self.assertRaises(UnknownCommand)
 

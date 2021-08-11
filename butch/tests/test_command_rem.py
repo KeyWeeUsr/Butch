@@ -12,55 +12,55 @@ class RemCommand(TestCase):
     def test_rem_help(self):
         import sys
         from butch.context import Context
-        from butch.commands import rem_comment
+        from butch.commands import cmd_rem
         from butch.tokens import Argument
         from butch.constants import PARAM_HELP
         from butch.commandtype import CommandType
 
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
-            rem_comment(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_rem(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.REM, file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
 
         ctx.collect_output = True
         with patch("butch.commands.print_help") as prnt:
-            rem_comment(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_rem(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(
             cmd=CommandType.REM, file=ctx.output.stdout
         )
         self.assertEqual(ctx.error_level, 0)
 
-    def test_rem_comment(self):
+    def test_cmd_rem(self):
         from butch.context import Context
-        from butch.commands import rem_comment
+        from butch.commands import cmd_rem
         from butch.tokens import Argument
 
         ctx = Context()
         dummy = [Argument(value="dummy")]
         with patch("builtins.print") as prnt:
-            rem_comment(params=dummy, ctx=ctx)
+            cmd_rem(params=dummy, ctx=ctx)
         prnt.assert_not_called()
         self.assertEqual(ctx.error_level, 0)
 
         ctx.collect_output = True
         with patch("builtins.print") as prnt:
-            rem_comment(params=dummy, ctx=ctx)
+            cmd_rem(params=dummy, ctx=ctx)
         prnt.assert_not_called()
         self.assertEqual(ctx.error_level, 0)
 
     def test_rem_empty(self):
         from butch.context import Context
-        from butch.commands import rem_comment
+        from butch.commands import cmd_rem
 
         ctx = Context()
         with patch("builtins.print") as prnt:
-            rem_comment(params=[], ctx=ctx)
+            cmd_rem(params=[], ctx=ctx)
         prnt.assert_not_called()
         self.assertEqual(ctx.error_level, 0)
 
         ctx.collect_output = True
         with patch("builtins.print") as prnt:
-            rem_comment(params=[], ctx=ctx)
+            cmd_rem(params=[], ctx=ctx)
         prnt.assert_not_called()
         self.assertEqual(ctx.error_level, 0)

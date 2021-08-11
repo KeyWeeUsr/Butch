@@ -14,7 +14,7 @@ class CommandType(enum.Enum):
     PAUSE = "pause"
     EXIT = "exit"
     SETLOCAL = "setlocal"
-    DELETE = "del"
+    DEL = "del"
     ERASE = "erase"
     HELP = "help"
     MKDIR = "mkdir"

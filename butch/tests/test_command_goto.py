@@ -12,20 +12,20 @@ class GotoCommand(TestCase):
     def test_goto_help(self):
         import sys
         from butch.context import Context
-        from butch.commands import goto
+        from butch.commands import cmd_goto
         from butch.tokens import Argument
         from butch.constants import PARAM_HELP
         from butch.commandtype import CommandType
 
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
-            goto(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_goto(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(cmd=CommandType.GOTO, file=sys.stdout)
         self.assertEqual(ctx.error_level, 0)
 
         ctx.collect_output = True
         with patch("butch.commands.print_help") as prnt:
-            goto(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_goto(params=[Argument(value=PARAM_HELP)], ctx=ctx)
         prnt.assert_called_once_with(
             cmd=CommandType.GOTO, file=ctx.output.stdout
         )
@@ -33,22 +33,22 @@ class GotoCommand(TestCase):
 
     def test_goto_without_label(self):
         from butch.context import Context
-        from butch.commands import goto
+        from butch.commands import cmd_goto
 
         ctx = Context()
         self.assertEqual(ctx.error_level, 0)
-        self.assertIsNone(goto(params=[], ctx=ctx))
+        self.assertIsNone(cmd_goto(params=[], ctx=ctx))
         self.assertEqual(ctx.error_level, 1)
 
     def test_goto_colon_eof(self):
         from butch.context import Context
-        from butch.commands import goto
+        from butch.commands import cmd_goto
         from butch.jumptype import JumpTypeEof
         from butch.tokens import Argument
 
         ctx = Context()
         self.assertEqual(ctx.error_level, 0)
         self.assertIsNone(ctx.jump)
-        self.assertIsNone(goto(params=[Argument(value=":eof")], ctx=ctx))
+        self.assertIsNone(cmd_goto(params=[Argument(value=":eof")], ctx=ctx))
         self.assertEqual(ctx.jump, JumpTypeEof())
         self.assertEqual(ctx.error_level, 0)

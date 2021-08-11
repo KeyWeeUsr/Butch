@@ -13,14 +13,14 @@ class TypeCommand(TestCase):
         import sys
         from os.path import abspath
         from butch.context import Context
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.tokens import Argument
 
         dummy = "dummy"
 
         ctx = Context()
         ctx.collect_output = True
-        type_cmd(params=[Argument(value=abspath(__file__))], ctx=ctx)
+        cmd_type(params=[Argument(value=abspath(__file__))], ctx=ctx)
 
         pipe = ctx.output.stdout
         self.assertEqual(pipe.read(), "")  # no seek
@@ -32,7 +32,7 @@ class TypeCommand(TestCase):
         import sys
         from os.path import abspath
         from butch.context import Context
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.tokens import Argument
 
         dummy = "dummy"
@@ -40,7 +40,7 @@ class TypeCommand(TestCase):
         ctx = Context()
         ctx.collect_output = True
         path = abspath(__file__)
-        type_cmd(params=[Argument(value=path)] * 2, ctx=ctx)
+        cmd_type(params=[Argument(value=path)] * 2, ctx=ctx)
 
         pipe = ctx.output.stdout
         self.assertEqual(pipe.read(), "")  # no seek
@@ -56,12 +56,12 @@ class TypeCommand(TestCase):
         import sys
         from butch.context import Context
         from butch.constants import SYNTAX_INCORRECT
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
 
         ctx = Context()
         ctx.collect_output = True
         self.assertEqual(ctx.error_level, 0)
-        type_cmd(params=[], ctx=ctx)
+        cmd_type(params=[], ctx=ctx)
         self.assertEqual(ctx.error_level, 1)
 
         pipe = ctx.output.stdout
@@ -73,13 +73,13 @@ class TypeCommand(TestCase):
         import sys
         from butch.context import Context
         from butch.constants import PARAM_HELP
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.commandtype import CommandType
         from butch.tokens import Argument
 
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
-            type_cmd(params=[Argument(value=PARAM_HELP)], ctx=ctx)
+            cmd_type(params=[Argument(value=PARAM_HELP)], ctx=ctx)
 
         prnt.assert_called_once_with(cmd=CommandType.TYPE, file=sys.stdout)
 
@@ -87,7 +87,7 @@ class TypeCommand(TestCase):
         import sys
         from os.path import abspath, dirname
         from butch.context import Context
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.constants import ACCESS_DENIED
         from butch.tokens import Argument
 
@@ -95,7 +95,7 @@ class TypeCommand(TestCase):
 
         ctx = Context()
         ctx.collect_output = True
-        type_cmd(params=[Argument(value=dirname(abspath(__file__)))], ctx=ctx)
+        cmd_type(params=[Argument(value=dirname(abspath(__file__)))], ctx=ctx)
 
         pipe = ctx.output.stdout
         self.assertEqual(pipe.read(), "")  # no seek
@@ -107,7 +107,7 @@ class TypeCommand(TestCase):
         import sys
         from os.path import abspath, dirname
         from butch.context import Context
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.constants import FILE_NOT_FOUND
         from butch.tokens import Argument
 
@@ -115,7 +115,7 @@ class TypeCommand(TestCase):
 
         ctx = Context()
         ctx.collect_output = True
-        type_cmd(params=[Argument(value=dummy)], ctx=ctx)
+        cmd_type(params=[Argument(value=dummy)], ctx=ctx)
 
         pipe = ctx.output.stdout
         self.assertEqual(pipe.read(), "")  # no seek
@@ -127,7 +127,7 @@ class TypeCommand(TestCase):
         import sys
         from os.path import abspath, dirname
         from butch.context import Context
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.constants import ACCESS_DENIED, ERROR_PROCESSING
         from butch.tokens import Argument
 
@@ -136,7 +136,7 @@ class TypeCommand(TestCase):
         ctx = Context()
         ctx.collect_output = True
         path = dirname(abspath(__file__))
-        type_cmd(params=[Argument(value=path)] * 2, ctx=ctx)
+        cmd_type(params=[Argument(value=path)] * 2, ctx=ctx)
 
         pipe = ctx.output.stdout
         self.assertEqual(pipe.read(), "")  # no seek
@@ -150,7 +150,7 @@ class TypeCommand(TestCase):
         import sys
         from os.path import abspath, dirname
         from butch.context import Context
-        from butch.commands import type_cmd
+        from butch.commands import cmd_type
         from butch.constants import FILE_NOT_FOUND, ERROR_PROCESSING
         from butch.tokens import Argument
 
@@ -158,7 +158,7 @@ class TypeCommand(TestCase):
 
         ctx = Context()
         ctx.collect_output = True
-        type_cmd(params=[Argument(value=dummy)] * 2, ctx=ctx)
+        cmd_type(params=[Argument(value=dummy)] * 2, ctx=ctx)
 
         pipe = ctx.output.stdout
         self.assertEqual(pipe.read(), "")  # no seek
