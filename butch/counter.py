@@ -118,7 +118,7 @@ class Count:  # noqa: WPS214
         """
         return self._value < other
 
-    def __lte__(self, other: int):
+    def __le__(self, other: int):
         """
         Implement <= operator.
 
@@ -142,7 +142,7 @@ class Count:  # noqa: WPS214
         """
         return self._value > other
 
-    def __gte__(self, other: int):
+    def __ge__(self, other: int):
         """
         Implement >= operator.
 
