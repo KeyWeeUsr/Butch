@@ -11,6 +11,7 @@ from butch.commands import get_cmd_map
 from butch.context import Context
 from butch.inputs import CommandInput
 from butch.tokenizer import Command, Connector, Pipe, Redirection, RedirType
+from butch.tokens import Block
 
 
 FILE_CHUNK = 512
@@ -60,7 +61,7 @@ def _handle_redirection_input(redir_target: str, ctx: Context):
 
 
 def new_call(  # noqa: WPS317
-        cmd: Union[Command, Connector],  # noqa: WPS318
+        cmd: Union[Block, Command, Connector],  # noqa: WPS318
         ctx: Context, child: bool = False  # noqa: WPS318
 ) -> None:
     """
@@ -78,7 +79,12 @@ def new_call(  # noqa: WPS317
     log("Calling command %r", cmd)
 
     command = cmd
-    if isinstance(command, Connector):
+    if isinstance(command, Block):
+        for subcmd in command:
+            new_call(cmd=subcmd, ctx=ctx, child=False)
+        ctx.history = command
+        return
+    elif isinstance(command, Connector):
         log("\t- unpacking connector")
         is_redir = isinstance(command, Redirection)
         is_pipe = isinstance(command, Pipe)
