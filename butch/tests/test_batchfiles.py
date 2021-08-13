@@ -59,12 +59,15 @@ def assert_bat_token_match(batch_path: str):
 
     ctx = Context()
     with open(batch_path) as bat_file:
-        tokens = tokenize(text=bat_file.read(), ctx=ctx)
+        text = bat_file.read()
+        tokens_newline = tokenize(text=text, ctx=ctx)
+        tokens_stripped = tokenize(text=text.rstrip("\n"), ctx=ctx)
 
     with open(join(BATCH_FOLDER, f"{batch_path}.pickle"), "rb") as file:
-        expected_tokens = pickle.load(file)
+        expected = pickle.load(file)
 
-    assert tokens == expected_tokens, (tokens, expected_tokens)
+    assert tokens_newline == expected, (tokens_newline, expected)
+    assert tokens_stripped == expected, (tokens_stripped, expected)
     assert ctx.error_level == 0
 
 
