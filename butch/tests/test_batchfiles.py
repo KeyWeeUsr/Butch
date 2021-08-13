@@ -4,6 +4,7 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=too-many-lines,too-many-locals
 import sys
+import pickle
 from io import StringIO
 from typing import Callable
 from unittest import main, TestCase
@@ -52,19 +53,40 @@ def assert_bat_output_match(
         assert left == right, (left, right)
 
 
+def assert_bat_token_match(batch_path: str, tokens: list) -> bool:
+    with open(join(BATCH_FOLDER, f"{batch_path}.pickle"), "rb") as file:
+        expected_tokens = pickle.load(file)
+
+    assert tokens == expected_tokens, (tokens, expected_tokens)
+
+
 class BatchFiles(TestCase):
     # pylint: disable=too-many-public-methods
 
     @patch("builtins.print")
-    def test_hello_new(self, stdout):
+    def test_hello_execution(self, stdout):
         script_name = "hello.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         ctx = Context()
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls)
+        self.assertEqual(ctx.error_level, 0)
+
+    @patch("builtins.print")
+    def test_hello_tokenization(self, stdout):
+        script_name = "hello.bat"
+
+        from butch.context import Context
+        from butch.tokenizer import tokenize
+
+        ctx = Context()
+        path = join(BATCH_FOLDER, script_name)
+        with open(path) as bat_file:
+            tokens = tokenize(text=bat_file.read(), ctx=ctx)
+        assert_bat_token_match(path, tokens)
         self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
