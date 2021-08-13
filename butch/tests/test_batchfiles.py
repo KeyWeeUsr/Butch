@@ -110,10 +110,10 @@ class BatchFiles(TestCase):
         script_name = "cd_nonexisting.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         ctx = Context()
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(
             script_name, stdout.mock_calls,
             concat=True
@@ -125,14 +125,14 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "cd_nonexisting.bat"))
 
     @patch("builtins.print")
-    def test_set_join_new(self, stdout):
+    def test_set_join_execution(self, stdout):
         script_name = "set_join.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         ctx = Context()
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls)
         self.assertEqual(ctx.error_level, 0)
 
