@@ -118,7 +118,7 @@ class BatchFiles(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
-    def test_cd_nonexisting_new(self, stdout):
+    def test_cd_nonexisting_execution(self, stdout):
         script_name = "cd_nonexisting.bat"
 
         from butch.context import Context
@@ -131,6 +131,20 @@ class BatchFiles(TestCase):
             concat=True
         )
         self.assertEqual(ctx.error_level, 1)
+
+    @patch("builtins.print")
+    def test_cd_nonexisting_tokenization(self, stdout):
+        script_name = "cd_nonexisting.bat"
+
+        from butch.context import Context
+        from butch.tokenizer import tokenize
+
+        ctx = Context()
+        path = join(BATCH_FOLDER, script_name)
+        with open(path) as bat_file:
+            tokens = tokenize(text=bat_file.read(), ctx=ctx)
+        assert_bat_token_match(path, tokens)
+        self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
     def test_set_join_new(self, stdout):
