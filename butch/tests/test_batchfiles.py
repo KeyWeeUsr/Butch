@@ -399,7 +399,7 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "mkdir_nonexisting.bat"))
 
     @patch("builtins.print")
-    def test_mkdir_tree(self, stdout):
+    def test_mkdir_tree_execution(self, stdout):
         script_name = "mkdir_tree.bat"
 
         from butch.context import Context
@@ -415,6 +415,11 @@ class BatchFiles(TestCase):
 
         self.assertFalse(exists(tree))
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_mkdir_tree_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "mkdir_tree.bat"))
 
     @patch("builtins.print")
     def test_type_file(self, stdout):
