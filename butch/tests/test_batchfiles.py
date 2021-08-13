@@ -281,7 +281,7 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "set_quote_7.bat"))
 
     @patch("builtins.print")
-    def test_delete_file(self, stdout):
+    def test_delete_file_execution(self, stdout):
         from os import remove
 
         script_name = "delete_file.bat"
@@ -300,6 +300,11 @@ class BatchFiles(TestCase):
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         self.assertFalse(exists(tmp))
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_delete_file_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "delete_file.bat"))
 
     @staticmethod
     @patch("builtins.print")
