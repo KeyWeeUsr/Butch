@@ -90,18 +90,32 @@ class BatchFiles(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
-    def test_cd_existing_new(self, stdout):
+    def test_cd_existing_execution(self, stdout):
         script_name = "cd_existing.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         with patch("butch.context.chdir") as cdr:
             ctx = Context()
-            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
             cdr.assert_called_once_with("..")
             assert_bat_output_match(script_name, stdout.mock_calls)
             self.assertEqual(ctx.error_level, 0)
+
+    @patch("builtins.print")
+    def test_cd_existing_tokenization(self, stdout):
+        script_name = "cd_existing.bat"
+
+        from butch.context import Context
+        from butch.tokenizer import tokenize
+
+        ctx = Context()
+        path = join(BATCH_FOLDER, script_name)
+        with open(path) as bat_file:
+            tokens = tokenize(text=bat_file.read(), ctx=ctx)
+        assert_bat_token_match(path, tokens)
+        self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
     def test_cd_nonexisting_new(self, stdout):
