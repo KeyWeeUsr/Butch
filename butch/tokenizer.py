@@ -150,7 +150,7 @@ class Connector(Token):
         return f"<{self.name}: [{self.left}, {self.right}]>"
 
     def __eq__(self, other: Any):
-        if not isinstance(other, Pipe):
+        if not isinstance(other, Connector):
             return False
         if self.name != other.name:
             return False
@@ -215,6 +215,19 @@ class Redirection(Connector):
         if self.append:
             direction *= 2
         return f"<{self.name}: {self.left} {direction} {self.right}>"
+
+    def __eq__(self, other: Any):
+        if not super().__eq__(other):
+            return False
+        if self.type != other.type:
+            return False
+        if self.left != other.left:
+            return False
+        if self.right != other.right:
+            return False
+        if self.append != other.append:
+            return False
+        return True
 
 
 def handle_char_cr(pos: Count, ctx: Context = None, log=emptyf) -> None:
