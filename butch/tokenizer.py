@@ -381,6 +381,7 @@ def handle_char_newline(
         if not output:
             log("\t\t- appending to output: %r", found.data)
             output.append(found.data)
+            found.clear()
         else:
             log("\t\t- output present, check if connector")
             last = output[-1]
@@ -482,6 +483,10 @@ def handle_char_newline(
 
         buff.clear()
         found.clear()
+    else:
+        if found:
+            output.append(found.data)
+            found.clear()
 
     if compound > 0:
         # do not move to the next line,
@@ -805,7 +810,7 @@ def tokenize(text: str, ctx: Context, debug: bool = False) -> list:
                 text=text, buff=buff, output=output, block=block,
                 found=found_command, compound=compound, log=log
             )
-        elif char in SPECIAL_SPLITTERS:
+        elif char in SPECIAL_SPLITTERS and not flags[Flag.COLON_COMMENT]:
             handle_char_splitter(
                 pos=idx, text=text, buff=buff, output=output,
                 found=found_command, block=block, log=log
