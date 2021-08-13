@@ -478,7 +478,7 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "type_print_folder.bat"))
 
     @patch("builtins.print")
-    def test_type_multifile(self, stdout):
+    def test_type_multifile_execution(self, stdout):
         from os import remove
 
         script_name = "type_print_multiple.bat"
@@ -515,6 +515,11 @@ class BatchFiles(TestCase):
             script_name, stdout.mock_calls, concat=True,
             splitter=preserve_lf
         )
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_type_multifile_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "type_print_multiple.bat"))
 
     @patch("builtins.print")
     def test_type_multifile_halffail(self, stdout):
