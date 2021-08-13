@@ -83,8 +83,9 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls)
         self.assertEqual(ctx.error_level, 0)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_hello_tokenization(self, stdout):
+    def test_hello_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "hello.bat"))
 
     @patch("builtins.print")
@@ -101,8 +102,9 @@ class BatchFiles(TestCase):
             assert_bat_output_match(script_name, stdout.mock_calls)
             self.assertEqual(ctx.error_level, 0)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_cd_existing_tokenization(self, stdout):
+    def test_cd_existing_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "cd_existing.bat"))
 
     @patch("builtins.print")
@@ -120,8 +122,9 @@ class BatchFiles(TestCase):
         )
         self.assertEqual(ctx.error_level, 1)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_cd_nonexisting_tokenization(self, stdout):
+    def test_cd_nonexisting_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "cd_nonexisting.bat"))
 
     @patch("builtins.print")
@@ -136,8 +139,9 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls)
         self.assertEqual(ctx.error_level, 0)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_set_join_tokenization(self, stdout):
+    def test_set_join_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "set_join.bat"))
 
     @patch("builtins.print")
@@ -152,8 +156,9 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 0)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_echo_quote_tokenization(self, stdout):
+    def test_echo_quote_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "hello_quote.bat"))
 
     @staticmethod
