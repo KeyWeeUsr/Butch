@@ -180,8 +180,13 @@ Syntax
 - [X] Quotes (``"``) in words
 - [ ] Conditions (``IF``, ``ELSE``)
 - [ ] Caret escaping (``^``)
-- [ ] Code blocks (``(``, ``)``)
-- [ ] Code blocks (multi-line block with ``(``, ``)``)
+- [/] Code blocks (``(``, ``)``)
+
+  *pending:*
+
+  - [ ] nested blocks
+  - [X] multi-line block
+
 - [X] Redirection to commands (``|`` - pipes)
 
   *pending:*
