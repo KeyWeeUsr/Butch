@@ -7,6 +7,7 @@ import sys
 from collections import defaultdict
 from enum import Enum, auto
 from os import environ
+from typing import Any
 
 from butch.context import Context
 from butch.commands import get_reverse_cmd_map
@@ -97,6 +98,21 @@ class Command(Token):
     def __repr__(self):
         prefix = "@" if not self.echo else ""
         return f'<{prefix}Command: "{self.name}" {self.args}>'
+
+    def __eq__(self, other: Any):
+        if not isinstance(other, Command):
+            return False
+        if self.cmd.value != other.cmd.value:
+            return False
+        if self.name != other.name:
+            return False
+        if self.value != other.value:
+            return False
+        if self.args != other.args:
+            return False
+        if self.echo != other.echo:
+            return False
+        return True
 
 
 class Connector(Token):
