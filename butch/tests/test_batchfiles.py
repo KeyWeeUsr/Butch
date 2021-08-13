@@ -311,7 +311,7 @@ class BatchFiles(TestCase):
 
     @staticmethod
     @patch("builtins.print")
-    def test_delete_file_syntax(stdout):
+    def test_delete_file_syntax_execution(stdout):
         script_name = "delete_file_syntax.bat"
 
         from butch.context import Context
@@ -320,6 +320,11 @@ class BatchFiles(TestCase):
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_delete_file_syntax_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "delete_file_syntax.bat"))
 
     def test_delete_folder_pipe(self):
         from os import mkdir, rmdir, listdir
