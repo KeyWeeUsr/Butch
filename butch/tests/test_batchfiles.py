@@ -137,6 +137,10 @@ class BatchFiles(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
+    def test_set_join_tokenization(self, stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "set_join.bat"))
+
+    @patch("builtins.print")
     def test_echo_quote(self, stdout):
         script_name = "hello_quote.bat"
 
