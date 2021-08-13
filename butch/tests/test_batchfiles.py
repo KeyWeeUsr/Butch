@@ -158,7 +158,7 @@ class BatchFiles(TestCase):
 
     @staticmethod
     @patch("builtins.print")
-    def test_set_quote(stdout):
+    def test_set_quote_execution(stdout):
         script_name = "set_quote.bat"
 
         from butch.context import Context
@@ -167,6 +167,11 @@ class BatchFiles(TestCase):
         ctx = Context(history_enabled=False)
         handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_set_quote_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "set_quote.bat"))
 
     @staticmethod
     @patch("builtins.print")
