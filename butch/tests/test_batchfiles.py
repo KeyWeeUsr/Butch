@@ -907,7 +907,7 @@ class BatchFiles(TestCase):
         self.assertEqual(ctx.error_level, 0)
 
     @patch("builtins.print")
-    def test_block_echo(self, stdout):
+    def test_block_echo_execution(self, stdout):
         script_name = "block_echo.bat"
 
         from butch.context import Context
@@ -918,8 +918,13 @@ class BatchFiles(TestCase):
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 0)
 
+    @staticmethod
     @patch("builtins.print")
-    def test_block_errorlevel(self, stdout):
+    def test_block_echo_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "block_echo.bat"))
+
+    @patch("builtins.print")
+    def test_block_errorlevel_execution(self, stdout):
         script_name = "block_errorlevel.bat"
 
         from butch.context import Context
@@ -929,6 +934,11 @@ class BatchFiles(TestCase):
         handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
         self.assertEqual(ctx.error_level, 0)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_block_errorlevel_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "block_errorlevel.bat"))
 
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"
