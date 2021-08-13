@@ -377,7 +377,7 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "delete_folder_files.bat"))
 
     @patch("builtins.print")
-    def test_mkdir_nonexisting(self, stdout):
+    def test_mkdir_nonexisting_execution(self, stdout):
         script_name = "mkdir_nonexisting.bat"
 
         from butch.context import Context
@@ -392,6 +392,11 @@ class BatchFiles(TestCase):
 
         self.assertFalse(exists("new-folder"))
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_mkdir_nonexisting_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "mkdir_nonexisting.bat"))
 
     @patch("builtins.print")
     def test_mkdir_tree(self, stdout):
