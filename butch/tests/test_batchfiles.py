@@ -451,13 +451,13 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "type_print.bat"))
 
     @patch("builtins.print")
-    def test_type_folder(self, stdout):
+    def test_type_folder_execution(self, stdout):
         from os import rmdir, mkdir
 
         script_name = "type_print_folder.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         filename = "new-folder"
         ctx = Context()
@@ -466,11 +466,16 @@ class BatchFiles(TestCase):
             rmdir(filename)
         mkdir(filename)
 
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         self.assertTrue(exists(filename))
         rmdir(filename)
 
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_type_folder_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "type_print_folder.bat"))
 
     @patch("builtins.print")
     def test_type_multifile(self, stdout):
