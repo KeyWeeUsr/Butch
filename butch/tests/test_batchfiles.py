@@ -807,6 +807,11 @@ class BatchFiles(TestCase):
             comments += 1
         self.assertEqual(comments, 48)
 
+    @staticmethod
+    @patch("builtins.print")
+    def test_rem_complex_comment_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "rem_complex.bat"))
+
     @patch("builtins.print")
     def test_pushd_tmp(self, stdout):
         script_name = "pushd_tmp.bat"
