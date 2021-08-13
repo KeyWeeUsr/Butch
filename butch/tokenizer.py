@@ -149,6 +149,17 @@ class Connector(Token):
     def __repr__(self):
         return f"<{self.name}: [{self.left}, {self.right}]>"
 
+    def __eq__(self, other: Any):
+        if not isinstance(other, Pipe):
+            return False
+        if self.name != other.name:
+            return False
+        if self.left != other.left:
+            return False
+        if self.right != other.right:
+            return False
+        return True
+
 
 class Concat(Connector):
     "Token holding the raw value of a concatenation and its properties."
