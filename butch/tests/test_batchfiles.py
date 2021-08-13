@@ -326,7 +326,7 @@ class BatchFiles(TestCase):
     def test_delete_file_syntax_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "delete_file_syntax.bat"))
 
-    def test_delete_folder_pipe(self):
+    def test_delete_folder_pipe_execution(self):
         from os import mkdir, rmdir, listdir
         from shutil import rmtree
 
@@ -370,6 +370,11 @@ class BatchFiles(TestCase):
             self.assertTrue(exists(tmp_folder))
             self.assertEqual(listdir(tmp_folder), [])
             rmdir(tmp_folder)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_delete_folder_pipe_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "delete_folder_files.bat"))
 
     @patch("builtins.print")
     def test_mkdir_nonexisting(self, stdout):
