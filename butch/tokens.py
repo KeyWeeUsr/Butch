@@ -1,5 +1,7 @@
 """Module for storing the tokens for tokenizer."""
 
+from typing import Any
+
 
 class Token:
     pass
@@ -162,3 +164,17 @@ class Block(Token):
 
     def __iter__(self):
         return self.values.__iter__()
+
+    def __eq__(self, other: Any):
+        if not isinstance(other, Block):
+            return False
+
+        own_vals = self.values
+        other_vals = other.values
+        if len(own_vals) != len(other_vals):
+            return False
+
+        for left, right in zip(own_vals, other_vals):
+            if left != right:
+                return False
+        return True
