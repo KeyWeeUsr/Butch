@@ -290,7 +290,7 @@ class BatchFiles(TestCase):
         script_name = "delete_file.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         ctx = Context(history_enabled=False)
         tmp = script_name.replace(".bat", ".tmp")
@@ -300,7 +300,7 @@ class BatchFiles(TestCase):
         with open(tmp, "w") as file:
             file.write(".")
 
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         self.assertFalse(exists(tmp))
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
@@ -315,10 +315,10 @@ class BatchFiles(TestCase):
         script_name = "delete_file_syntax.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         ctx = Context(history_enabled=False)
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
     @staticmethod
@@ -337,7 +337,7 @@ class BatchFiles(TestCase):
 
         from butch.context import Context
         from butch.constants import SURE
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         with open(join(folder, script_name)) as file:
             script = file.readlines()
@@ -352,7 +352,7 @@ class BatchFiles(TestCase):
 
             mkdir(tmp_folder)
 
-            handle_new(text=join(folder, script_name), ctx=ctx)
+            handle(text=join(folder, script_name), ctx=ctx)
             rmv.assert_not_called()  # captured STDOUT prevents the call
 
             mcalls = stdout.mock_calls
@@ -381,13 +381,13 @@ class BatchFiles(TestCase):
         script_name = "mkdir_nonexisting.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         ctx = Context()
         self.assertFalse(exists("new-folder"))
 
         with patch("butch.commands.makedirs") as mdrs:
-            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
             mdrs.assert_called_once()
 
         self.assertFalse(exists("new-folder"))
@@ -403,14 +403,14 @@ class BatchFiles(TestCase):
         script_name = "mkdir_tree.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         tree = join("new-folder", "with", "sub", "folders")
         ctx = Context()
         self.assertFalse(exists(tree))
 
         with patch("butch.commands.makedirs") as mdrs:
-            handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+            handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
             mdrs.assert_called_once()
 
         self.assertFalse(exists(tree))
@@ -422,13 +422,13 @@ class BatchFiles(TestCase):
         assert_bat_token_match(join(BATCH_FOLDER, "mkdir_tree.bat"))
 
     @patch("builtins.print")
-    def test_type_file(self, stdout):
+    def test_type_file_execution(self, stdout):
         from os import remove
 
         script_name = "type_print.bat"
 
         from butch.context import Context
-        from butch.handler import handle as handle_new
+        from butch.handler import handle
 
         filename = "new-file.txt"
         ctx = Context()
@@ -439,11 +439,16 @@ class BatchFiles(TestCase):
         with open(filename, "w") as file:
             file.write("hello type")
 
-        handle_new(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
         self.assertTrue(exists(filename))
         remove(filename)
 
         assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+    @staticmethod
+    @patch("builtins.print")
+    def test_type_file_tokenization(stdout):
+        assert_bat_token_match(join(BATCH_FOLDER, "type_print.bat"))
 
     @patch("builtins.print")
     def test_type_folder(self, stdout):
