@@ -21,7 +21,7 @@ def assert_bat_output_match(
         batch_path: str, mock_calls: _CallList,
         splitter: Callable = default_output_splitter,
         concat: bool = False, file_buff: StringIO = None
-) -> bool:
+):
     with open(join(BATCH_FOLDER, f"{batch_path}.out")) as file:
         output = file.readlines()
     mock_call_len = len(mock_calls)
@@ -53,11 +53,19 @@ def assert_bat_output_match(
         assert left == right, (left, right)
 
 
-def assert_bat_token_match(batch_path: str, tokens: list) -> bool:
+def assert_bat_token_match(batch_path: str):
+    from butch.context import Context
+    from butch.tokenizer import tokenize
+
+    ctx = Context()
+    with open(batch_path) as bat_file:
+        tokens = tokenize(text=bat_file.read(), ctx=ctx)
+
     with open(join(BATCH_FOLDER, f"{batch_path}.pickle"), "rb") as file:
         expected_tokens = pickle.load(file)
 
     assert tokens == expected_tokens, (tokens, expected_tokens)
+    assert ctx.error_level == 0
 
 
 class BatchFiles(TestCase):
@@ -77,17 +85,7 @@ class BatchFiles(TestCase):
 
     @patch("builtins.print")
     def test_hello_tokenization(self, stdout):
-        script_name = "hello.bat"
-
-        from butch.context import Context
-        from butch.tokenizer import tokenize
-
-        ctx = Context()
-        path = join(BATCH_FOLDER, script_name)
-        with open(path) as bat_file:
-            tokens = tokenize(text=bat_file.read(), ctx=ctx)
-        assert_bat_token_match(path, tokens)
-        self.assertEqual(ctx.error_level, 0)
+        assert_bat_token_match(join(BATCH_FOLDER, "hello.bat"))
 
     @patch("builtins.print")
     def test_cd_existing_execution(self, stdout):
@@ -105,17 +103,7 @@ class BatchFiles(TestCase):
 
     @patch("builtins.print")
     def test_cd_existing_tokenization(self, stdout):
-        script_name = "cd_existing.bat"
-
-        from butch.context import Context
-        from butch.tokenizer import tokenize
-
-        ctx = Context()
-        path = join(BATCH_FOLDER, script_name)
-        with open(path) as bat_file:
-            tokens = tokenize(text=bat_file.read(), ctx=ctx)
-        assert_bat_token_match(path, tokens)
-        self.assertEqual(ctx.error_level, 0)
+        assert_bat_token_match(join(BATCH_FOLDER, "cd_existing.bat"))
 
     @patch("builtins.print")
     def test_cd_nonexisting_execution(self, stdout):
@@ -134,17 +122,7 @@ class BatchFiles(TestCase):
 
     @patch("builtins.print")
     def test_cd_nonexisting_tokenization(self, stdout):
-        script_name = "cd_nonexisting.bat"
-
-        from butch.context import Context
-        from butch.tokenizer import tokenize
-
-        ctx = Context()
-        path = join(BATCH_FOLDER, script_name)
-        with open(path) as bat_file:
-            tokens = tokenize(text=bat_file.read(), ctx=ctx)
-        assert_bat_token_match(path, tokens)
-        self.assertEqual(ctx.error_level, 0)
+        assert_bat_token_match(join(BATCH_FOLDER, "cd_nonexisting.bat"))
 
     @patch("builtins.print")
     def test_set_join_new(self, stdout):
