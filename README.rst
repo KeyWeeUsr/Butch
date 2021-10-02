@@ -9,6 +9,8 @@ Butch - The free Batch interpreter
 
 Named after the famous Pulp Fiction boxer |butch|_ from Tennessee.
 
+* Chat: https://matrix.to/#/#butch:matrix.org
+
 **********
 How to run
 **********
