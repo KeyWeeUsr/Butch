@@ -7,6 +7,7 @@ PATTERN = environ.get("PATTERN", "test*.py")
 HTML = environ.get("HTML", "")
 HTML_OPEN = environ.get("HTML_OPEN", "")
 
+
 def main():
     proc = Popen([
         "coverage", "run",
