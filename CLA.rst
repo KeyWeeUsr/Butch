@@ -162,5 +162,6 @@ Contributors' signatures
 ======== ================= ================= ================ =================================================== =================
 Username Full name ("You") E-mail            Country ISO code Full fingerprint of the signing key                 Date (YYYY-MM-DD)
 ======== ================= ================= ================ =================================================== =================
-<fill>   <fill>            <fill>            <fill>           XXXX XXXX XXXX XXXX XXXX  XXXX XXXX XXXX XXXX XXXX  YYYY-MM-DD
+stesi13  Stefan Simko      stevo.simko@gmail Slovakia         7961 F0FB 17FE A664 838F  546F E576 F55B F6E9 25A6  2021-10-05
+                           .com
 ======== ================= ================= ================ =================================================== =================
