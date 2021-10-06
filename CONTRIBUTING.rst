@@ -71,3 +71,29 @@ Modify some files and open a pull request
 #. Create a new pull request (don't forget to describe your changes)
 #. Wait for review (adjust after review if necessary)
 #. Wait for the merge
+
+*******************
+Commit naming guide
+*******************
+
+Use these tags for small/atomic commits to distinguish between various code
+patches:
+
+* ``[INIT]`` - the first commit in the repo
+* ``[CLA]`` - CLA related commits (signing, merging)
+* ``[ADD]`` - new features, files, etc
+* ``[FIX]`` - fixing a bug or incorrectly implemented behavior
+* ``[DEL]`` - only removing line(s)/file(s)
+* ``[REF]`` - patches related to large code or behavior refactoring that might
+  break compatibility
+* ``[SUB]`` - git submodule related changes
+
+Examples::
+
+    [INIT] Add initial empty commit
+    [CLA] <username> signed
+    [ADD] Add new CLI option --option
+    [FIX] Fix passing incorrect arguments to function
+    [DEL] Remove deprecated code
+    [REF] Split single large file into package/modules
+    [SUB] Add submodule for X
