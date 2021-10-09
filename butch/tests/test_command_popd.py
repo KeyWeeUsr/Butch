@@ -17,7 +17,7 @@ class PopdCommand(TestCase):
         from butch.constants import PARAM_HELP
         from butch.commandtype import CommandType
 
-        if not sys.platform.startswith('win32') or not sys.platform.startswith('linux'):
+        if not sys.platform.startswith('linux'):
             return
 
         ctx = Context()

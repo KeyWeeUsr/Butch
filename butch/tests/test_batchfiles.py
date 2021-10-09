@@ -816,7 +816,7 @@ class BatchFiles(TestCase):
     def test_pushd_tmp(self, stdout):
         script_name = "pushd_tmp.bat"
 
-        if not sys.platform.startswith('win32') or not sys.platform.startswith('linux'):
+        if not sys.platform.startswith('linux'):
           return
 
         from os import getcwd, chdir
@@ -842,7 +842,7 @@ class BatchFiles(TestCase):
     @patch("builtins.print")
     def test_popd(self, stdout):
 
-        if not sys.platform.startswith('win32') or not sys.platform.startswith('linux'):
+        if not sys.platform.startswith('linux'):
             return
         script_name = "popd.bat"
 
@@ -872,7 +872,7 @@ class BatchFiles(TestCase):
     def test_popd_removed(self, stdout):
         script_name = "popd_removed.bat"
 
-        if not sys.platform.startswith('win32') or not sys.platform.startswith('linux'):
+        if not sys.platform.startswith('linux'):
             return
 
         from os import getcwd, chdir
