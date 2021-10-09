@@ -17,6 +17,9 @@ class PopdCommand(TestCase):
         from butch.constants import PARAM_HELP
         from butch.commandtype import CommandType
 
+        if not sys.platform.startswith('linux'):
+            return
+
         ctx = Context()
         with patch("butch.commands.print_help") as prnt:
             cmd_popd(params=[Argument(value=PARAM_HELP)], ctx=ctx)

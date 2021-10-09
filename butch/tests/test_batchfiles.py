@@ -816,6 +816,9 @@ class BatchFiles(TestCase):
     def test_pushd_tmp(self, stdout):
         script_name = "pushd_tmp.bat"
 
+        if not sys.platform.startswith('linux'):
+          return
+
         from os import getcwd, chdir
         from shutil import rmtree
         from butch.context import Context
@@ -838,6 +841,9 @@ class BatchFiles(TestCase):
 
     @patch("builtins.print")
     def test_popd(self, stdout):
+
+        if not sys.platform.startswith('linux'):
+            return
         script_name = "popd.bat"
 
         from os import getcwd, chdir
@@ -865,6 +871,9 @@ class BatchFiles(TestCase):
     @patch("builtins.print")
     def test_popd_removed(self, stdout):
         script_name = "popd_removed.bat"
+
+        if not sys.platform.startswith('linux'):
+            return
 
         from os import getcwd, chdir
         from shutil import rmtree
