@@ -48,6 +48,8 @@ Linux and MacOS
 #. ``pip install --editable .[dev]``
 #. ``python test.py``
 
+If you use ZSH shell add double quotes to escape brackets ``pip install --editable ."[dev]"``
+
 Windows
 =======
 
