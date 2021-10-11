@@ -7,10 +7,12 @@ from collections import defaultdict
 from datetime import datetime
 from functools import wraps
 from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
-from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
+from os import (
+    environ, getcwd, listdir, makedirs, remove, stat, statvfs, renames
+)
 from os.path import abspath, exists, isdir, join
 from platform import system, platform
-from shutil import rmtree
+from shutil import rmtree, move
 from typing import List, Tuple
 
 from butch.commandtype import CommandType
@@ -476,6 +478,58 @@ def cmd_cd(params: list, ctx: Context) -> None:
 
 
 @what_func
+def cmd_move(params: list, ctx: Context) -> None:
+    """
+    Batch: MOVE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
+
+    ctx.error_level = 0
+    out = get_output(ctx=ctx)
+
+    params = _expand_params(params=params, ctx=ctx)
+    params_len = len(params)
+
+    if not params_len:
+        print(SYNTAX_INCORRECT, file=out)
+        ctx.error_level = 1
+        return
+
+    if params_len == 1:
+        first_param = params[0]
+        if (first_param.lower() == PARAM_HELP):
+            print_help(cmd=CommandType.MOVE, file=out)
+            return
+
+    if params_len >= 2:
+
+        from_source = params[0]
+        to_destination = params[1]
+
+        file_from_abs = abspath(from_source)
+        file_to_abs = abspath(to_destination)
+
+        if not exists(file_from_abs):
+            os_path = file_from_abs.replace("/", "\\")
+            print(f"Could Not Find {os_path}", file=sys.stderr)
+            ctx.error_level = 0
+            return
+
+        if not exists(file_to_abs):
+            os_path = file_to_abs.replace("/", "\\")
+            print(f"Could Not Find {os_path}", file=sys.stderr)
+            ctx.error_level = 0
+            return
+
+        move(file_from_abs, file_to_abs)
+        ctx.error_level = 0
+        ctx.piped = False
+
+
+@what_func
 def cmd_prompt(params: list, ctx: Context) -> None:
     """
     Batch: PROMPT command.
@@ -740,6 +794,7 @@ def cmd_del(params: List[Argument], ctx: Context) -> None:
                 continue
             for file_item in listdir(param):
                 remove(join(path, file_item))
+
             return
         if prompt_for_all:
             answer = ""
@@ -1054,7 +1109,8 @@ def get_cmd_map():
         CommandType.POPD: cmd_popd,
         CommandType.TIME: cmd_time,
         CommandType.GOTO: cmd_goto,
-        CommandType.VER: cmd_ver
+        CommandType.VER: cmd_ver,
+        CommandType.MOVE: cmd_move
     }
 
 

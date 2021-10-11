@@ -3,6 +3,7 @@
 # pylint: disable=missing-function-docstring,missing-class-docstring
 # pylint: disable=missing-module-docstring
 # pylint: disable=too-many-lines,too-many-locals
+from os import remove
 import sys
 import pickle
 from io import StringIO
@@ -282,6 +283,36 @@ class BatchFiles(TestCase):
     @patch("builtins.print")
     def test_set_quote_7_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "set_quote_7.bat"))
+
+    @patch("builtins.print")
+    def test_move_file_execution(self, stdout):
+        from os import remove, mkdir, rmdir
+
+        script_name = "move.bat"
+
+        from butch.context import Context
+        from butch.handler import handle
+
+        ctx = Context(history_enabled=False)
+        tmp = script_name.replace(".bat", ".tmp")
+        tmp_dir = script_name.replace(".bat", "")
+
+        if exists(join(tmp_dir, tmp)):
+            remove(join(tmp_dir, tmp))
+
+        if exists(tmp):
+            remove(tmp)
+        with open(tmp, "w") as file:
+            file.write(".")
+
+        if exists(tmp_dir):
+            rmdir(tmp_dir)
+        mkdir(tmp_dir)
+
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        self.assertFalse(exists(tmp))
+        self.assertTrue(exists(join(tmp_dir, tmp)))
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
 
     @patch("builtins.print")
     def test_delete_file_execution(self, stdout):
@@ -817,7 +848,7 @@ class BatchFiles(TestCase):
         script_name = "pushd_tmp.bat"
 
         if not sys.platform.startswith('linux'):
-          return
+            return
 
         from os import getcwd, chdir
         from shutil import rmtree
