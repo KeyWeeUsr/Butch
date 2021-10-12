@@ -32,3 +32,4 @@ class CommandType(enum.Enum):
     TIME = "time"
     GOTO = "goto"
     VER = "ver"
+    MOVE = "move"
