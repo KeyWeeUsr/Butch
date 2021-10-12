@@ -84,7 +84,7 @@ def new_call(  # noqa: WPS317
             new_call(cmd=subcmd, ctx=ctx, child=False)
         ctx.history = command
         return
-    elif isinstance(command, Connector):
+    if isinstance(command, Connector):
         log("\t- unpacking connector")
         is_redir = isinstance(command, Redirection)
         is_pipe = isinstance(command, Pipe)

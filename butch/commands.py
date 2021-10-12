@@ -10,8 +10,8 @@ from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
 from os.path import abspath, exists, isdir, join
 from platform import system, platform
-from shutil import rmtree
-from typing import List, Tuple
+from shutil import rmtree, move
+from typing import List
 
 from butch.commandtype import CommandType
 from butch.constants import (
@@ -501,6 +501,34 @@ def cmd_move(params: list, ctx: Context) -> None:
         if first_param.lower() == PARAM_HELP:
             print_help(cmd=CommandType.MOVE, file=out)
             return
+
+    if params_len == 2:
+        first_par = params[0]
+        second_par = params[1]
+
+        if first_par.lower() == PARAM_HELP or second_par.lower() == PARAM_HELP:
+            print(SYNTAX_INCORRECT, file=out)
+            ctx.error_level = 1
+            return
+
+        file_from_abs = abspath(first_par)
+        file_to_abs = abspath(second_par)
+
+    if not exists(file_from_abs):
+        os_path = file_from_abs.replace("/", "\\")
+        print(f"Could Not Find {os_path}", file=sys.stderr)
+        ctx.error_level = 0
+        return
+
+    if not exists(file_to_abs):
+        os_path = file_to_abs.replace("/", "\\")
+        print(f"Could Not Find {os_path}", file=sys.stderr)
+        ctx.error_level = 0
+        return
+
+    move(file_from_abs, file_to_abs)
+    ctx.error_level = 0
+    ctx.piped = False
 
 
 @what_func
