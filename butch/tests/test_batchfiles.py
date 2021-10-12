@@ -817,7 +817,7 @@ class BatchFiles(TestCase):
         script_name = "pushd_tmp.bat"
 
         if not sys.platform.startswith('linux'):
-          return
+            return
 
         from os import getcwd, chdir
         from shutil import rmtree

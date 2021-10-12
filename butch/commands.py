@@ -476,6 +476,34 @@ def cmd_cd(params: list, ctx: Context) -> None:
 
 
 @what_func
+def cmd_move(params: list, ctx: Context) -> None:
+    """
+    Batch: MOVE command.
+
+    Args:
+        params (list): list of Argument instances for the Command
+        ctx (Context): Context instance
+    """
+
+    ctx.error_level = 0
+    out = get_output(ctx=ctx)
+
+    params = _expand_params(params=params, ctx=ctx)
+    params_len = len(params)
+
+    if not params_len:
+        print(SYNTAX_INCORRECT, file=out)
+        ctx.error_level = 1
+        return
+
+    if params_len == 1:
+        first_param = params[0]
+        if first_param.lower() == PARAM_HELP:
+            print_help(cmd=CommandType.MOVE, file=out)
+            return
+
+
+@what_func
 def cmd_prompt(params: list, ctx: Context) -> None:
     """
     Batch: PROMPT command.
@@ -1054,7 +1082,8 @@ def get_cmd_map():
         CommandType.POPD: cmd_popd,
         CommandType.TIME: cmd_time,
         CommandType.GOTO: cmd_goto,
-        CommandType.VER: cmd_ver
+        CommandType.VER: cmd_ver,
+        CommandType.MOVE: cmd_move
     }
 
 
