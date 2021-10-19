@@ -495,40 +495,32 @@ def cmd_move(params: list, ctx: Context) -> None:
         print(SYNTAX_INCORRECT, file=out)
         ctx.error_level = 1
         return
+    target_par = params[params_len - 1]
+    file_to_abs = abspath(target_par)
 
-    if params_len == 1:
-        first_param = params[0]
-        if first_param.lower() == PARAM_HELP:
+    for param in params:
+        low = param.lower()
+        if low in PARAM_HELP:
             print_help(cmd=CommandType.MOVE, file=out)
             return
-
-    if params_len == 2:
-        first_par = params[0]
-        second_par = params[1]
-
-        if first_par.lower() == PARAM_HELP or second_par.lower() == PARAM_HELP:
-            print(SYNTAX_INCORRECT, file=out)
+        if not exists(file_to_abs):
+            os_path = file_to_abs.replace("/", "\\")
+            print(f"Could Not Find {os_path}", file=sys.stderr)
             ctx.error_level = 1
             return
+        file_from_abs = abspath(param)
 
-        file_from_abs = abspath(first_par)
-        file_to_abs = abspath(second_par)
+        if (file_from_abs == file_to_abs):
+            continue
 
-    if not exists(file_from_abs):
-        os_path = file_from_abs.replace("/", "\\")
-        print(f"Could Not Find {os_path}", file=sys.stderr)
+        if not exists(file_from_abs):
+            os_path = file_from_abs.replace("/", "\\")
+            print(f"Could Not Find {os_path}", file=sys.stderr)
+            ctx.error_level = 1
+            return
+        move(file_from_abs, file_to_abs)
         ctx.error_level = 0
-        return
-
-    if not exists(file_to_abs):
-        os_path = file_to_abs.replace("/", "\\")
-        print(f"Could Not Find {os_path}", file=sys.stderr)
-        ctx.error_level = 0
-        return
-
-    move(file_from_abs, file_to_abs)
-    ctx.error_level = 0
-    ctx.piped = False
+        ctx.piped = False
 
 
 @what_func

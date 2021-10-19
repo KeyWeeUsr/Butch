@@ -3,7 +3,7 @@
 import sys
 
 from argparse import ArgumentParser, Namespace
-
+from os.path import exists
 from butch.context import Context, get_context
 from butch.handler import handle_input, handle
 
