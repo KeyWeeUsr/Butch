@@ -4,8 +4,10 @@ import sys
 
 from argparse import ArgumentParser, Namespace
 from os.path import exists
+from butch.caller import new_call
 from butch.context import Context, get_context
-from butch.handler import handle_input, handle
+from butch.handler import handle_input, handle_file, handle
+from butch.tokenizer import tokenize
 
 
 def loop(ctx: Context):
