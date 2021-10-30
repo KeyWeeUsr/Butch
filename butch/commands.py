@@ -10,8 +10,8 @@ from locale import LC_CTYPE, LC_NUMERIC, getlocale, setlocale
 from os import environ, getcwd, listdir, makedirs, remove, stat, statvfs
 from os.path import abspath, exists, isdir, join
 from platform import system, platform
-from shutil import rmtree
-from typing import List, Tuple
+from shutil import rmtree, move
+from typing import List
 
 from butch.commandtype import CommandType
 from butch.constants import (
@@ -487,7 +487,7 @@ def cmd_move(params: list, ctx: Context) -> None:
 
     ctx.error_level = 0
     out = get_output(ctx=ctx)
-
+    log = ctx.log.debug
     params = _expand_params(params=params, ctx=ctx)
     params_len = len(params)
 
@@ -495,12 +495,32 @@ def cmd_move(params: list, ctx: Context) -> None:
         print(SYNTAX_INCORRECT, file=out)
         ctx.error_level = 1
         return
+    if PARAM_HELP in params:
+        print_help(cmd=CommandType.MOVE, file=out)
+        return
+    target_par = params[params_len - 1]
+    file_to_abs = abspath(target_par)
 
-    if params_len == 1:
-        first_param = params[0]
-        if first_param.lower() == PARAM_HELP:
-            print_help(cmd=CommandType.MOVE, file=out)
+    if not isdir(file_to_abs):
+        log("got %r, is not dir", target_par)
+        print(DIR_INVALID)
+        ctx.error_level = 1
+        return
+
+    for param in params:
+        file_from_abs = abspath(param)
+
+        if not exists(file_from_abs):
+            os_path = file_from_abs.replace("/", "\\")
+            print(f"Could Not Find {os_path}", file=sys.stderr)
+            ctx.error_level = 1
             return
+
+        if file_from_abs == file_to_abs:
+            continue
+        move(file_from_abs, file_to_abs)
+        ctx.error_level = 0
+        ctx.piped = False
 
 
 @what_func
