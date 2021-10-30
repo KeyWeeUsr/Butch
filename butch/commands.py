@@ -498,8 +498,16 @@ def cmd_move(params: list, ctx: Context) -> None:
     if PARAM_HELP in params:
         print_help(cmd=CommandType.MOVE, file=out)
         return
-    target_par = params[params_len - 1]
-    file_to_abs = abspath(target_par)
+
+    *sources, target = params
+    file_to_abs = abspath(target)
+
+    for source in sources:
+        if exists(abspath(source)):
+            continue
+        print(FILE_NOT_FOUND, file=sys.stderr)
+        ctx.error_level = 1
+        return
 
     if not isdir(file_to_abs):
         log("got %r, is not dir", target_par)
