@@ -955,7 +955,6 @@ class BatchFiles(TestCase):
     def test_block_errorlevel_tokenization(stdout):
         assert_bat_token_match(join(BATCH_FOLDER, "block_errorlevel.bat"))
 
-
     @patch("builtins.print")
     def test_move_execution(self, stdout):
         script_name = "move.bat"
@@ -981,6 +980,33 @@ class BatchFiles(TestCase):
         self.assertFalse(exists(join(ROOT, "existing")))
         self.assertFalse(exists(join(ROOT, "first1")))
         self.assertFalse(exists(join(ROOT, "first2")))
+
+    @patch("builtins.print")
+    def test_move_overwrite_execution(self, stdout):
+        script_name = "move_overwrite.bat"
+
+        from butch.context import Context
+        from butch.handler import handle
+        from os import remove, mkdir
+
+        source = "source"
+        dest = "dest"
+        for folder in (source, dest):
+            middle = join(ROOT, folder)
+            mkdir(middle)
+            with open(join(middle, "file1"), "w") as file:
+                file.write(f"{folder}-hello")
+
+            with open(join(middle, "file2"), "w") as file:
+                file.write(f"{folder}-world")
+
+        ctx = Context(history_enabled=False)
+        handle(text=join(BATCH_FOLDER, script_name), ctx=ctx)
+        assert_bat_output_match(script_name, stdout.mock_calls, concat=True)
+
+        self.assertEqual(ctx.error_level, 0)
+        self.assertFalse(exists(join(ROOT, source)))
+        self.assertFalse(exists(join(ROOT, dest)))
 
     def ignore_test_set_join_expansion(self):
         script_name = "set_join_expansion.bat"

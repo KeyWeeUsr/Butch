@@ -13,7 +13,7 @@ from os import (
 )
 from os.path import abspath, exists, isdir, join
 from platform import system, platform
-from shutil import rmtree, move
+from shutil import rmtree, move, _basename
 from typing import List
 
 from butch.commandtype import CommandType
@@ -565,8 +565,20 @@ def cmd_move(params: list, ctx: Context) -> None:
 
     patterns = glob(source)
     if len(patterns) > 1 and dest_isdir:
+        pass_all = False
         for src in patterns:
-            move(src, dest)
+            new_name = join(dest, _basename(src))
+            if not exists(new_name):
+                move(src, dest)
+                continue
+            if not pass_all and not suppress:
+                answer = input(f"Overwrite {new_name}? (Yes/No/All)")
+                answer = answer.lower()[:3]
+                if "all" in answer:
+                    pass_all = True
+                if not pass_all and "yes" not in answer:
+                    continue
+            rename(abspath(src), new_name)
         ctx.error_level = 0
         ctx.piped = False
         return
