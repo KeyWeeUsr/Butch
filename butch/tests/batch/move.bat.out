@@ -16,7 +16,8 @@ world
 <stderr> Cannot move multiple files to a single file.
 1
 0
-<stderr> Cannot move multiple files to a single file.
+<stderr> The system cannot find the path specified.
+	0 file(s) moved.
 1
 0
 0

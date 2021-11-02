@@ -493,6 +493,7 @@ def cmd_move(params: list, ctx: Context) -> None:
     out = get_output(ctx=ctx)
     log = ctx.log.debug
     params = _expand_params(params=params, ctx=ctx)
+    params = [param.replace("\\", "/") for param in params]
     params_len = len(params)
 
     # move
