@@ -147,6 +147,7 @@ def cmd_type(params: List[Argument], ctx: Context) -> None:
     out = get_output(ctx=ctx)
 
     params = _expand_params(params=params, ctx=ctx)
+    params = [param.replace("\\", "/") for param in params]
     params_len = len(params)
 
     if not params_len:
@@ -800,6 +801,7 @@ def cmd_del(params: List[Argument], ctx: Context) -> None:
 
     out = get_output(ctx=ctx)
     params = _expand_params(params=params, ctx=ctx)
+    params = [param.replace("\\", "/") for param in params]
     params_len = len(params)
 
     if not params_len:
